@@ -1,0 +1,17 @@
+.price {
+  display: inline-flex;
+  align-items: baseline;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.price .symbol { font-size: 22rpx; margin-right: 2rpx; }
+.price .int { font-size: 32rpx; }
+.price .dec { font-size: 22rpx; }
+
+.price-sm .int { font-size: 26rpx; }
+.price-sm .dec { font-size: 20rpx; }
+.price-sm .symbol { font-size: 20rpx; }
+
+.price-lg .int { font-size: 44rpx; }
+.price-lg .dec { font-size: 28rpx; }
+.price-lg .symbol { font-size: 26rpx; }

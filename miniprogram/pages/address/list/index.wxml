@@ -1,0 +1,29 @@
+<view class="addr-page">
+  <view wx:if="{{list.length}}" class="list">
+    <view
+      wx:for="{{list}}"
+      wx:key="id"
+      class="card item"
+      data-idx="{{index}}"
+      bindtap="pick"
+    >
+      <view class="head">
+        <text class="name">{{item.name}}</text>
+        <text class="phone">{{item.phone}}</text>
+        <text wx:if="{{item.isDefault}}" class="tag">默认</text>
+      </view>
+      <view class="detail">{{item.detail}}</view>
+      <view class="actions">
+        <view wx:if="{{!item.isDefault}}" class="action" data-id="{{item.id}}" catchtap="setDefault">设为默认</view>
+        <view class="action" data-id="{{item.id}}" catchtap="goEdit">编辑</view>
+        <view class="action danger" data-id="{{item.id}}" catchtap="remove">删除</view>
+      </view>
+    </view>
+  </view>
+
+  <empty wx:else text="还没有收货地址" icon="📍" />
+
+  <view class="bar safe-bottom">
+    <view class="btn-primary" bindtap="goEdit">新增收货地址</view>
+  </view>
+</view>

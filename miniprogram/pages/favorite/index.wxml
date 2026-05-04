@@ -1,0 +1,6 @@
+<view class="fav">
+  <view wx:if="{{list.length}}" class="goods-grid">
+    <goods-card wx:for="{{list}}" wx:key="id" goods="{{item}}" />
+  </view>
+  <empty wx:else text="还没有收藏的商品" icon="❤️" />
+</view>

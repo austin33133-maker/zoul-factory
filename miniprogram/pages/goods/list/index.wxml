@@ -1,0 +1,17 @@
+<view class="list-page">
+  <view class="sort-bar">
+    <view class="sort-item {{sort === 'default' ? 'active' : ''}}" data-sort="default" bindtap="changeSort">综合</view>
+    <view class="sort-item {{sort === 'sales' ? 'active' : ''}}" data-sort="sales" bindtap="changeSort">销量</view>
+    <view class="sort-item {{sort === 'price-asc' ? 'active' : ''}}" data-sort="price-asc" bindtap="changeSort">价格 ↑</view>
+    <view class="sort-item {{sort === 'price-desc' ? 'active' : ''}}" data-sort="price-desc" bindtap="changeSort">价格 ↓</view>
+  </view>
+
+  <view wx:if="{{list.length}}" class="goods-grid">
+    <goods-card wx:for="{{list}}" wx:key="id" goods="{{item}}" />
+  </view>
+
+  <empty wx:elif="{{!loading}}" text="暂无商品" icon="📦" />
+
+  <loading wx:if="{{loading && !list.length}}" />
+  <view wx:if="{{finished && list.length}}" class="footer-tip">— 没有更多了 —</view>
+</view>

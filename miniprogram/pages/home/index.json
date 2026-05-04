@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "周尔工厂",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "goods-card": "/components/goods-card/index",
+    "loading": "/components/loading/index"
+  }
+}

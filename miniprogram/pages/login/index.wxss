@@ -1,0 +1,7 @@
+.login { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-top: 200rpx; background: #fff; }
+.login .logo { font-size: 160rpx; }
+.login .brand { font-size: 48rpx; font-weight: 700; margin-top: 24rpx; }
+.login .slogan { color: #999; font-size: 26rpx; margin-top: 12rpx; }
+.login .actions { width: 100%; padding: 0 60rpx; margin-top: 200rpx; }
+.login .btn-primary.big { width: 100%; padding: 24rpx; font-size: 30rpx; border-radius: 999rpx; }
+.login .agree { text-align: center; color: #aaa; font-size: 22rpx; margin-top: 24rpx; }

@@ -1,0 +1,41 @@
+{
+  "pages": [
+    "pages/home/index",
+    "pages/category/index",
+    "pages/cart/index",
+    "pages/user/index",
+    "pages/search/index",
+    "pages/goods/list/index",
+    "pages/goods/detail/index",
+    "pages/order/confirm/index",
+    "pages/order/list/index",
+    "pages/order/detail/index",
+    "pages/pay/index",
+    "pages/address/list/index",
+    "pages/address/edit/index",
+    "pages/coupon/index",
+    "pages/favorite/index",
+    "pages/login/index"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTitleText": "周尔工厂",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f5f5f7"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#ff4d4f",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/home/index", "text": "首页" },
+      { "pagePath": "pages/category/index", "text": "分类" },
+      { "pagePath": "pages/cart/index", "text": "购物车" },
+      { "pagePath": "pages/user/index", "text": "我的" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "../sitemap.json"
+}

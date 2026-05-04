@@ -1,0 +1,31 @@
+<view class="home">
+  <view class="search-bar" bindtap="goSearch">
+    <view class="search-box">
+      <text class="search-icon">🔍</text>
+      <text class="search-placeholder">搜索商品 · 试试 "T恤"</text>
+    </view>
+  </view>
+
+  <swiper class="banners" indicator-dots="true" autoplay="true" circular="true" interval="3500">
+    <swiper-item wx:for="{{banners}}" wx:key="id" data-gid="{{item.goodsId}}" bindtap="onBannerTap">
+      <image class="banner-img" src="{{item.image}}" mode="aspectFill"></image>
+    </swiper-item>
+  </swiper>
+
+  <view class="cat-grid card">
+    <view class="cat-item" wx:for="{{categories}}" wx:key="id" data-id="{{item.id}}" bindtap="onCategoryTap">
+      <image class="cat-icon" src="{{item.icon}}"></image>
+      <text class="cat-name">{{item.name}}</text>
+    </view>
+  </view>
+
+  <view class="section-title">
+    <text>为你推荐</text>
+  </view>
+
+  <loading wx:if="{{loading}}" />
+
+  <view class="goods-grid">
+    <goods-card wx:for="{{recommend}}" wx:key="id" goods="{{item}}" />
+  </view>
+</view>

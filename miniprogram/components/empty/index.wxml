@@ -1,0 +1,5 @@
+<view class="empty">
+  <view class="icon">{{icon}}</view>
+  <view class="text">{{text}}</view>
+  <slot></slot>
+</view>

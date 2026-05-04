@@ -1,0 +1,11 @@
+.search { padding-bottom: 40rpx; }
+.search-bar { display: flex; align-items: center; padding: 16rpx 24rpx; background: #fff; gap: 16rpx; }
+.search-bar .input { flex: 1; background: #f2f2f3; border-radius: 999rpx; padding: 16rpx 24rpx; font-size: 28rpx; }
+.search-bar .cancel { color: var(--color-primary); font-size: 28rpx; }
+
+.block { margin: 24rpx; }
+.block-head { padding-bottom: 16rpx; }
+.block-title { font-weight: 600; font-size: 28rpx; }
+.tags { display: flex; flex-wrap: wrap; gap: 16rpx; }
+.kw-tag { padding: 12rpx 28rpx; background: #fff; border-radius: 999rpx; font-size: 26rpx; color: #333; }
+.kw-tag.hot { background: var(--color-primary-light); color: var(--color-primary); }

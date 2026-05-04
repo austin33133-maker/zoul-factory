@@ -1,0 +1,17 @@
+.pay { padding: 16rpx; }
+.amount-box { padding: 80rpx 0; text-align: center; background: #fff; border-radius: var(--radius-md); }
+.amount-box .label { color: #999; font-size: 24rpx; margin-bottom: 16rpx; }
+
+.method { margin-top: 16rpx; padding: 0 24rpx; }
+.method .m-row { display: flex; align-items: center; padding: 32rpx 0; }
+.method .ic { font-size: 48rpx; margin-right: 24rpx; }
+.method .m-name { font-size: 30rpx; font-weight: 600; }
+.method .m-desc { color: #999; font-size: 24rpx; margin-top: 4rpx; }
+.method .checked { color: var(--color-primary); font-size: 36rpx; }
+
+.actions { display: flex; gap: 16rpx; padding: 32rpx 16rpx; }
+.actions .btn-cancel { flex: 1; padding: 24rpx; border: 2rpx solid var(--color-border); border-radius: 999rpx; text-align: center; font-size: 28rpx; }
+.actions .btn-pay { flex: 2; padding: 24rpx; background: var(--color-primary); color: #fff; border-radius: 999rpx; text-align: center; font-size: 28rpx; }
+.actions .btn-pay.disabled { background: #ffb8b8; }
+
+.tip { color: #aaa; font-size: 22rpx; text-align: center; padding: 0 32rpx 32rpx; }

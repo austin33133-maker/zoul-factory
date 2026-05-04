@@ -1,0 +1,18 @@
+.home { padding-bottom: 40rpx; }
+
+.search-bar { padding: 20rpx 24rpx; background: #fff; }
+.search-box { background: #f2f2f3; border-radius: 999rpx; height: 64rpx; display: flex; align-items: center; padding: 0 24rpx; }
+.search-icon { margin-right: 12rpx; }
+.search-placeholder { color: #999; font-size: 26rpx; }
+
+.banners { width: 100%; height: 320rpx; }
+.banner-img { width: 100%; height: 100%; }
+
+.cat-grid { display: flex; flex-wrap: wrap; padding: 24rpx 0; margin: 24rpx; }
+.cat-item { width: 25%; display: flex; flex-direction: column; align-items: center; padding: 16rpx 0; }
+.cat-icon { width: 84rpx; height: 84rpx; border-radius: 50%; background: #eee; }
+.cat-name { font-size: 24rpx; margin-top: 12rpx; color: #333; }
+
+.section-title { padding: 16rpx 24rpx; font-size: 32rpx; font-weight: 600; }
+
+.goods-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16rpx; padding: 0 24rpx; }

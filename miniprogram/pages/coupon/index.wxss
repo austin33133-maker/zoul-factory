@@ -1,0 +1,11 @@
+.coupons { padding: 16rpx; }
+.list { display: flex; flex-direction: column; gap: 16rpx; }
+.coupon { display: flex; background: #fff; border-radius: var(--radius-md); overflow: hidden; }
+.coupon .left { width: 240rpx; background: linear-gradient(135deg, #ff7875, #ff4d4f); color: #fff; padding: 32rpx 16rpx; text-align: center; position: relative; }
+.coupon .left::after { content: ''; position: absolute; top: 0; right: -10rpx; bottom: 0; width: 20rpx; background: radial-gradient(circle at 0 50%, transparent 12rpx, #fff 12rpx); }
+.coupon .amount { font-size: 32rpx; }
+.coupon .amount .num { font-size: 56rpx; font-weight: 700; margin: 0 4rpx; }
+.coupon .threshold { font-size: 22rpx; opacity: 0.9; margin-top: 8rpx; }
+.coupon .right { flex: 1; padding: 28rpx 24rpx; }
+.coupon .name { font-size: 28rpx; font-weight: 600; }
+.coupon .expire { color: #999; font-size: 22rpx; margin-top: 12rpx; }

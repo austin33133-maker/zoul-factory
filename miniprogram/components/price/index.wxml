@@ -1,0 +1,5 @@
+<view class="price price-{{size}}">
+  <text wx:if="{{showSymbol}}" class="symbol">¥</text>
+  <text class="int">{{intPart}}</text>
+  <text class="dec">.{{decPart}}</text>
+</view>

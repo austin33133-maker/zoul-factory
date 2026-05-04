@@ -1,0 +1,46 @@
+<view wx:if="{{order}}" class="detail">
+  <view class="status-card">
+    <view class="status-text">{{order.statusText}}</view>
+    <view wx:if="{{order.expressNo}}" class="express-text">{{order.expressCompany}} · {{order.expressNo}}</view>
+  </view>
+
+  <view wx:if="{{order.address}}" class="card sec addr">
+    <view class="addr-title">📍 {{order.address.name}} {{order.address.phone}}</view>
+    <view class="addr-detail">{{order.address.detail}}</view>
+  </view>
+
+  <view class="card sec">
+    <view class="goods-item" wx:for="{{order.items}}" wx:key="skuId">
+      <image class="cover" src="{{item.cover}}" mode="aspectFill"></image>
+      <view class="meta flex-1">
+        <view class="title ellipsis-2">{{item.title}}</view>
+        <view class="spec">{{item.specText}}</view>
+      </view>
+      <view class="right">
+        <price value="{{item.price}}" />
+        <view class="count">×{{item.count}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card sec amount">
+    <view class="row"><text>商品金额</text><text>¥{{(order.payAmount + (order.discount || 0) - (order.freight || 0))/100}}</text></view>
+    <view class="row"><text>运费</text><text>{{order.freight ? '¥' + order.freight/100 : '包邮'}}</text></view>
+    <view wx:if="{{order.discount}}" class="row"><text>优惠</text><text>-¥{{order.discount/100}}</text></view>
+    <view class="row total"><text>实付款</text><price value="{{order.payAmount}}" size="lg" /></view>
+  </view>
+
+  <view class="card sec info">
+    <view class="row" bindtap="copyOid"><text>订单编号</text><text>{{order.id}}</text></view>
+    <view class="row"><text>下单时间</text><text>{{createdAtText}}</text></view>
+    <view wx:if="{{paidAtText}}" class="row"><text>支付时间</text><text>{{paidAtText}}</text></view>
+  </view>
+
+  <view class="ops safe-bottom">
+    <block wx:if="{{order.status === 'pending_pay'}}">
+      <view class="op" bindtap="cancelOrder">取消订单</view>
+      <view class="op primary" bindtap="payOrder">去支付</view>
+    </block>
+    <view wx:elif="{{order.status === 'shipped'}}" class="op primary" bindtap="confirmReceive">确认收货</view>
+  </view>
+</view>

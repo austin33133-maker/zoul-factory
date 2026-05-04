@@ -1,0 +1,89 @@
+page {
+  --color-primary: #ff4d4f;
+  --color-primary-light: #fff1f0;
+  --color-text: #1f1f1f;
+  --color-text-secondary: #666;
+  --color-text-tertiary: #999;
+  --color-border: #ececec;
+  --color-bg: #f5f5f7;
+  --color-card: #ffffff;
+  --radius-sm: 8rpx;
+  --radius-md: 16rpx;
+  --radius-lg: 24rpx;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 28rpx;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+}
+
+view, text, image, scroll-view, button, input { box-sizing: border-box; }
+
+.flex { display: flex; }
+.flex-1 { flex: 1; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-col { display: flex; flex-direction: column; }
+
+.text-primary { color: var(--color-primary); }
+.text-secondary { color: var(--color-text-secondary); }
+.text-tertiary { color: var(--color-text-tertiary); }
+.text-bold { font-weight: 600; }
+.text-sm { font-size: 24rpx; }
+.text-lg { font-size: 32rpx; }
+.text-xl { font-size: 36rpx; }
+
+.card {
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 999rpx;
+  padding: 20rpx 40rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+}
+.btn-primary[disabled], .btn-primary.disabled {
+  background: #ffb8b8;
+}
+
+.btn-outline {
+  border: 2rpx solid var(--color-primary);
+  color: var(--color-primary);
+  background: transparent;
+  border-radius: 999rpx;
+  padding: 16rpx 32rpx;
+}
+
+.divider { height: 2rpx; background: var(--color-border); }
+.gap-sm { padding: 12rpx; }
+.gap-md { padding: 24rpx; }
+
+.ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ellipsis-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 20rpx;
+  padding: 4rpx 12rpx;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  margin-right: 8rpx;
+}
+
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }

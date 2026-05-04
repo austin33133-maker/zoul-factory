@@ -1,0 +1,31 @@
+<view class="search">
+  <view class="search-bar">
+    <input
+      class="input"
+      placeholder="搜索商品"
+      confirm-type="search"
+      value="{{keyword}}"
+      bindinput="onInput"
+      bindconfirm="onConfirm"
+      focus="true"
+    />
+    <view class="cancel" bindtap="onConfirm">搜索</view>
+  </view>
+
+  <view wx:if="{{history.length}}" class="block">
+    <view class="block-head flex-between">
+      <text class="block-title">搜索历史</text>
+      <text class="text-tertiary text-sm" bindtap="clearHistory">清空</text>
+    </view>
+    <view class="tags">
+      <view wx:for="{{history}}" wx:key="*this" class="kw-tag" data-kw="{{item}}" bindtap="tapHistory">{{item}}</view>
+    </view>
+  </view>
+
+  <view class="block">
+    <view class="block-head"><text class="block-title">热门搜索</text></view>
+    <view class="tags">
+      <view wx:for="{{hot}}" wx:key="*this" class="kw-tag hot" data-kw="{{item}}" bindtap="tapHistory">{{item}}</view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,27 @@
+.confirm { padding: 16rpx 16rpx 140rpx; }
+.addr-card { padding: 24rpx; position: relative; margin-bottom: 16rpx; }
+.addr-card .addr-title { font-size: 30rpx; font-weight: 600; }
+.addr-card .addr-detail { font-size: 26rpx; color: #666; margin-top: 8rpx; }
+.addr-card .addr-empty { padding: 16rpx 0; color: var(--color-primary); font-size: 28rpx; }
+.addr-card .arrow { position: absolute; right: 24rpx; top: 50%; transform: translateY(-50%); color: #ccc; font-size: 32rpx; }
+
+.goods { padding: 16rpx 24rpx; margin-bottom: 16rpx; }
+.goods .goods-item { display: flex; padding: 16rpx 0; }
+.goods .goods-item + .goods-item { border-top: 2rpx solid var(--color-border); }
+.goods .cover { width: 140rpx; height: 140rpx; border-radius: 12rpx; background: #eee; }
+.goods .meta { padding: 0 16rpx; }
+.goods .title { font-size: 26rpx; }
+.goods .spec { font-size: 22rpx; color: #999; padding: 4rpx 8rpx; background: #f3f3f3; border-radius: 6rpx; display: inline-block; margin-top: 8rpx; }
+.goods .right { text-align: right; }
+.goods .count { font-size: 24rpx; color: #999; margin-top: 8rpx; }
+
+.extras { margin-bottom: 16rpx; }
+.extras .row { display: flex; align-items: center; padding: 24rpx; border-bottom: 2rpx solid var(--color-border); font-size: 26rpx; }
+.extras .row:last-child { border-bottom: 0; }
+.extras .label { color: #555; margin-right: 16rpx; }
+.extras .arrow { color: #ccc; font-size: 32rpx; margin-left: 12rpx; }
+.extras .remark-input { flex: 1; text-align: right; font-size: 26rpx; }
+
+.bar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 2rpx solid var(--color-border); display: flex; align-items: center; padding: 16rpx 24rpx; }
+.bar .total { display: flex; align-items: center; font-size: 26rpx; gap: 8rpx; }
+.bar .btn-submit { background: var(--color-primary); color: #fff; padding: 22rpx 60rpx; border-radius: 999rpx; font-size: 28rpx; }

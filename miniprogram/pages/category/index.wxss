@@ -1,0 +1,11 @@
+.cat-page { display: flex; height: 100vh; }
+.left { width: 180rpx; background: #f5f5f7; height: 100%; }
+.left-item { padding: 28rpx 0; text-align: center; font-size: 26rpx; color: #555; position: relative; }
+.left-item.active { background: #fff; color: var(--color-primary); font-weight: 600; }
+.left-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 6rpx; height: 40rpx; background: var(--color-primary); border-radius: 0 6rpx 6rpx 0; }
+
+.right { flex: 1; height: 100%; padding: 24rpx; }
+.all-btn { color: var(--color-primary); font-size: 26rpx; padding: 12rpx 20rpx; background: var(--color-primary-light); border-radius: 999rpx; display: inline-block; margin-bottom: 24rpx; }
+.sub-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24rpx; }
+.sub-item { display: flex; flex-direction: column; align-items: center; font-size: 24rpx; color: #333; }
+.sub-circle { width: 96rpx; height: 96rpx; border-radius: 50%; background: linear-gradient(135deg, #ffd6d6, #ffb3b3); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 36rpx; margin-bottom: 12rpx; }

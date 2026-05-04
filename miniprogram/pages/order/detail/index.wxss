@@ -1,0 +1,26 @@
+.detail { padding-bottom: 140rpx; }
+.status-card { padding: 60rpx 32rpx; background: linear-gradient(135deg, #ff7875, #ff4d4f); color: #fff; }
+.status-card .status-text { font-size: 36rpx; font-weight: 600; }
+.status-card .express-text { margin-top: 16rpx; opacity: 0.85; font-size: 26rpx; }
+
+.sec { margin: 16rpx; padding: 24rpx; }
+.addr .addr-title { font-size: 28rpx; font-weight: 600; }
+.addr .addr-detail { font-size: 26rpx; color: #555; margin-top: 8rpx; }
+
+.goods-item { display: flex; padding: 12rpx 0; }
+.goods-item + .goods-item { border-top: 2rpx solid var(--color-border); }
+.goods-item .cover { width: 140rpx; height: 140rpx; border-radius: 12rpx; background: #eee; }
+.goods-item .meta { padding: 0 16rpx; }
+.goods-item .title { font-size: 26rpx; }
+.goods-item .spec { font-size: 22rpx; color: #999; padding: 4rpx 8rpx; background: #f3f3f3; border-radius: 6rpx; display: inline-block; margin-top: 6rpx; }
+.goods-item .right { text-align: right; }
+.goods-item .count { font-size: 24rpx; color: #999; margin-top: 6rpx; }
+
+.amount .row { display: flex; justify-content: space-between; padding: 12rpx 0; font-size: 26rpx; color: #555; }
+.amount .row.total { padding-top: 20rpx; margin-top: 8rpx; border-top: 2rpx solid var(--color-border); align-items: center; color: #333; }
+
+.info .row { display: flex; justify-content: space-between; padding: 12rpx 0; font-size: 26rpx; color: #555; }
+
+.ops { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 2rpx solid var(--color-border); display: flex; justify-content: flex-end; gap: 16rpx; padding: 16rpx 24rpx; }
+.ops .op { padding: 16rpx 36rpx; border: 2rpx solid #ddd; border-radius: 999rpx; font-size: 26rpx; color: #555; }
+.ops .op.primary { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }

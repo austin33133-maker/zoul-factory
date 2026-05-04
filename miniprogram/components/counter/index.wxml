@@ -1,0 +1,5 @@
+<view class="counter">
+  <view class="btn {{value <= min ? 'disabled' : ''}}" bindtap="dec">−</view>
+  <view class="num">{{value}}</view>
+  <view class="btn {{value >= max ? 'disabled' : ''}}" bindtap="inc">+</view>
+</view>

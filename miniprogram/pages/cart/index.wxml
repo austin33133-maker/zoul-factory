@@ -1,0 +1,43 @@
+<view class="cart">
+  <block wx:if="{{items.length}}">
+    <view class="list">
+      <view class="cart-item card" wx:for="{{items}}" wx:key="skuId">
+        <view
+          class="check {{item.checked ? 'on' : ''}}"
+          data-gid="{{item.goodsId}}"
+          data-sid="{{item.skuId}}"
+          data-checked="{{item.checked}}"
+          bindtap="toggleItem"
+        ></view>
+        <image class="cover" src="{{item.cover}}" mode="aspectFill"></image>
+        <view class="meta flex-1">
+          <view class="title ellipsis-2">{{item.title}}</view>
+          <view class="spec">{{item.specText}}</view>
+          <view class="bottom flex-between">
+            <price value="{{item.price}}" />
+            <counter
+              value="{{item.count}}"
+              data-gid="{{item.goodsId}}"
+              data-sid="{{item.skuId}}"
+              bind:change="onCountChange"
+            />
+          </view>
+        </view>
+        <view class="del" data-gid="{{item.goodsId}}" data-sid="{{item.skuId}}" bindtap="removeItem">×</view>
+      </view>
+    </view>
+
+    <view class="bar safe-bottom">
+      <view class="check {{allChecked ? 'on' : ''}}" bindtap="toggleAll"></view>
+      <view class="all-label" bindtap="toggleAll">全选</view>
+      <view class="flex-1 total">
+        合计 <price value="{{totalFen}}" />
+      </view>
+      <view class="btn-checkout" bindtap="goCheckout">去结算({{totalCount}})</view>
+    </view>
+  </block>
+
+  <empty wx:else text="购物车空空如也" icon="🛒">
+    <view class="btn-primary" bindtap="goShopping">去逛逛</view>
+  </empty>
+</view>

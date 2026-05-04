@@ -1,0 +1,8 @@
+.list-page { padding-bottom: 40rpx; }
+.sort-bar { display: flex; background: #fff; border-bottom: 2rpx solid var(--color-border); position: sticky; top: 0; z-index: 10; }
+.sort-item { flex: 1; text-align: center; padding: 24rpx 0; font-size: 28rpx; color: #555; }
+.sort-item.active { color: var(--color-primary); font-weight: 600; }
+
+.goods-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16rpx; padding: 16rpx; }
+
+.footer-tip { text-align: center; padding: 32rpx 0; color: #aaa; font-size: 24rpx; }

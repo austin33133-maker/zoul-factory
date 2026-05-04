@@ -1,0 +1,2 @@
+.fav { padding: 16rpx; }
+.goods-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16rpx; }

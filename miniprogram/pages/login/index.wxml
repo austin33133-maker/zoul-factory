@@ -1,0 +1,10 @@
+<view class="login">
+  <view class="logo">🛍️</view>
+  <view class="brand">周尔工厂</view>
+  <view class="slogan">优选好物 · 一站直达</view>
+
+  <view class="actions safe-bottom">
+    <button class="btn-primary big" bindtap="wxLogin" disabled="{{loading}}">微信一键登录</button>
+    <view class="agree">登录即表示同意《用户协议》《隐私政策》</view>
+  </view>
+</view>

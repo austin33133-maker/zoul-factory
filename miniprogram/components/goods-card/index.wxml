@@ -1,0 +1,13 @@
+<view class="card goods-card goods-card-{{layout}}" bindtap="onTap">
+  <image class="cover" src="{{goods.cover}}" mode="aspectFill" lazy-load="true"></image>
+  <view class="info">
+    <view class="title ellipsis-2">{{goods.title}}</view>
+    <view class="tags" wx:if="{{goods.tags && goods.tags.length}}">
+      <text wx:for="{{goods.tags}}" wx:key="*this" class="tag">{{item}}</text>
+    </view>
+    <view class="bottom flex-between">
+      <price value="{{goods.price}}" size="md" />
+      <text class="text-tertiary text-sm">已售 {{goods.sales}}</text>
+    </view>
+  </view>
+</view>

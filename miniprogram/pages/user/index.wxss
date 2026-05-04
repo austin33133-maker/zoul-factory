@@ -1,0 +1,24 @@
+.user { padding-bottom: 80rpx; }
+.header { display: flex; align-items: center; padding: 60rpx 32rpx 40rpx; background: linear-gradient(135deg, #ff7875, #ff4d4f); color: #fff; }
+.header .avatar { width: 120rpx; height: 120rpx; border-radius: 50%; background: #eee; border: 4rpx solid rgba(255,255,255,0.4); }
+.header .guest-avatar { display: flex; align-items: center; justify-content: center; font-size: 64rpx; background: rgba(255,255,255,0.3); }
+.header .info { padding-left: 24rpx; }
+.header .nick { font-size: 36rpx; font-weight: 600; }
+.header .lvl { font-size: 24rpx; opacity: 0.85; margin-top: 8rpx; }
+.header .guest { display: flex; align-items: center; }
+
+.sec { margin: 16rpx; padding: 24rpx; }
+.sec-head { padding-bottom: 16rpx; }
+.sec-title { font-size: 28rpx; font-weight: 600; }
+
+.order-tabs { display: flex; }
+.ot-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 16rpx 0; }
+.ot-icon { font-size: 40rpx; }
+.ot-label { font-size: 24rpx; color: #555; margin-top: 8rpx; }
+
+.tools { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16rpx; }
+.tool-item { display: flex; flex-direction: column; align-items: center; padding: 16rpx 0; }
+.t-icon { font-size: 40rpx; }
+.t-label { font-size: 24rpx; color: #555; margin-top: 8rpx; }
+
+.logout { margin: 60rpx 32rpx 0; padding: 24rpx; background: #fff; border-radius: var(--radius-md); text-align: center; color: var(--color-primary); font-size: 28rpx; }

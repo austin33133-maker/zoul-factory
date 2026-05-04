@@ -1,0 +1,9 @@
+.edit { padding: 16rpx 16rpx 160rpx; }
+.row { display: flex; align-items: center; padding: 24rpx; border-bottom: 2rpx solid var(--color-border); font-size: 26rpx; }
+.row:last-child { border-bottom: 0; }
+.row.col { flex-direction: column; align-items: stretch; }
+.row .label { width: 160rpx; color: #555; }
+.row .input { flex: 1; font-size: 28rpx; }
+.row .textarea { width: 100%; min-height: 160rpx; margin-top: 16rpx; font-size: 28rpx; }
+.bar { position: fixed; left: 24rpx; right: 24rpx; bottom: 16rpx; }
+.bar .btn-primary { width: 100%; padding: 24rpx; }

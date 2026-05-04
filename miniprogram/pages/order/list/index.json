@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "我的订单",
+  "usingComponents": {
+    "price": "/components/price/index",
+    "empty": "/components/empty/index"
+  }
+}

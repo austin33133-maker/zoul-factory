@@ -1,0 +1,43 @@
+<view class="mask {{show ? 'show' : ''}}" bindtap="close" catchtouchmove="noop">
+  <view class="sheet" catchtap="noop">
+    <view class="head">
+      <image class="cover" src="{{goods.cover}}" mode="aspectFill"></image>
+      <view class="meta flex-1">
+        <price value="{{matchedSku.price || goods.price}}" size="lg" />
+        <view class="text-secondary text-sm">库存 {{matchedSku.stock || goods.stock}}</view>
+        <view class="text-tertiary text-sm" wx:if="{{matchedSku}}">已选 {{matchedSku.specText}}</view>
+      </view>
+      <view class="close" bindtap="close">×</view>
+    </view>
+
+    <scroll-view class="body" scroll-y="true">
+      <view class="spec-group" wx:for="{{goods.specs}}" wx:key="name" wx:for-item="spec">
+        <view class="spec-name">{{spec.name}}</view>
+        <view class="spec-values">
+          <view
+            wx:for="{{spec.values}}"
+            wx:key="*this"
+            wx:for-item="val"
+            class="spec-val {{selectedSpecs[spec.name] === val ? 'active' : ''}}"
+            data-name="{{spec.name}}"
+            data-value="{{val}}"
+            bindtap="selectSpec"
+          >{{val}}</view>
+        </view>
+      </view>
+
+      <view class="count-row flex-between">
+        <view>数量</view>
+        <counter value="{{count}}" min="{{1}}" max="{{matchedSku.stock || 99}}" bind:change="onCountChange" />
+      </view>
+    </scroll-view>
+
+    <view class="actions safe-bottom" wx:if="{{mode === 'both'}}">
+      <view class="btn-cart" data-action="cart" bindtap="confirm">加入购物车</view>
+      <view class="btn-buy" data-action="buy" bindtap="confirm">立即购买</view>
+    </view>
+    <view class="actions safe-bottom" wx:else>
+      <view class="btn-buy full" data-action="{{mode}}" bindtap="confirm">{{mode === 'buy' ? '立即购买' : '加入购物车'}}</view>
+    </view>
+  </view>
+</view>

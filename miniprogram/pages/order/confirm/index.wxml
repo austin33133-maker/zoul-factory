@@ -1,0 +1,49 @@
+<view class="confirm">
+  <view class="addr-card card" bindtap="selectAddress">
+    <block wx:if="{{address}}">
+      <view class="addr-title">{{address.name}} {{address.phone}}</view>
+      <view class="addr-detail">{{address.detail}}</view>
+    </block>
+    <view wx:else class="addr-empty">
+      <text>＋ 选择收货地址</text>
+    </view>
+    <text class="arrow">›</text>
+  </view>
+
+  <view class="goods card">
+    <view class="goods-item" wx:for="{{items}}" wx:key="skuId">
+      <image class="cover" src="{{item.cover}}" mode="aspectFill"></image>
+      <view class="meta flex-1">
+        <view class="title ellipsis-2">{{item.title}}</view>
+        <view class="spec">{{item.specText}}</view>
+      </view>
+      <view class="right">
+        <price value="{{item.price}}" />
+        <view class="count">×{{item.count}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="extras card">
+    <view class="row" bindtap="pickCoupon">
+      <text class="label">优惠券</text>
+      <text class="flex-1 text-right {{discount ? 'text-primary' : 'text-tertiary'}}">{{discount ? '-¥' + discount/100 : '不使用'}}</text>
+      <text class="arrow">›</text>
+    </view>
+    <view class="row">
+      <text class="label">运费</text>
+      <text class="flex-1 text-right">{{freight === 0 ? '包邮' : '¥' + freight/100}}</text>
+    </view>
+    <view class="row">
+      <text class="label">备注</text>
+      <input class="remark-input" placeholder="选填，给商家留言" bindinput="onRemark" value="{{remark}}" />
+    </view>
+  </view>
+
+  <view class="bar safe-bottom">
+    <view class="flex-1 total">
+      合计 <price value="{{payAmount}}" size="lg" />
+    </view>
+    <view class="btn-submit" bindtap="submit">提交订单</view>
+  </view>
+</view>

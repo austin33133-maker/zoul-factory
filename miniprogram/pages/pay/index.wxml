@@ -1,0 +1,24 @@
+<view wx:if="{{order}}" class="pay">
+  <view class="amount-box">
+    <view class="label">应付金额</view>
+    <price value="{{order.payAmount}}" size="lg" />
+  </view>
+
+  <view class="method card">
+    <view class="m-row">
+      <view class="ic">💚</view>
+      <view class="flex-1">
+        <view class="m-name">微信支付</view>
+        <view class="m-desc">推荐使用微信支付</view>
+      </view>
+      <view class="checked">●</view>
+    </view>
+  </view>
+
+  <view class="actions safe-bottom">
+    <view class="btn-cancel" bindtap="onCancel">稍后再付</view>
+    <view class="btn-pay {{paying ? 'disabled' : ''}}" bindtap="pay">立即支付</view>
+  </view>
+
+  <view class="tip">本项目为演示环境，支付为模拟流程，不会发生真实扣款。</view>
+</view>

@@ -1,0 +1,12 @@
+.addr-page { padding: 16rpx 16rpx 160rpx; }
+.list { display: flex; flex-direction: column; gap: 16rpx; }
+.item { padding: 24rpx; }
+.item .head { display: flex; align-items: center; gap: 12rpx; font-size: 28rpx; }
+.item .head .name { font-weight: 600; }
+.item .head .phone { color: #555; }
+.item .detail { color: #666; font-size: 26rpx; margin-top: 12rpx; }
+.item .actions { display: flex; justify-content: flex-end; gap: 24rpx; margin-top: 16rpx; padding-top: 16rpx; border-top: 2rpx solid var(--color-border); font-size: 24rpx; color: #555; }
+.item .actions .danger { color: var(--color-primary); }
+
+.bar { position: fixed; left: 24rpx; right: 24rpx; bottom: 16rpx; }
+.bar .btn-primary { width: 100%; padding: 24rpx; }

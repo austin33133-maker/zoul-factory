@@ -1,0 +1,35 @@
+<loading wx:if="{{loading}}" />
+
+<view wx:else class="cat-page">
+  <scroll-view class="left" scroll-y="true">
+    <view
+      wx:for="{{categories}}"
+      wx:key="id"
+      class="left-item {{activeId === item.id ? 'active' : ''}}"
+      data-id="{{item.id}}"
+      bindtap="selectCat"
+    >{{item.name}}</view>
+  </scroll-view>
+
+  <scroll-view class="right" scroll-y="true">
+    <block wx:for="{{categories}}" wx:key="id" wx:for-item="cat">
+      <view wx:if="{{cat.id === activeId}}" class="right-content">
+        <view class="all-btn" data-cid="{{cat.id}}" bindtap="goAll">查看 {{cat.name}} 全部 ›</view>
+        <view class="sub-grid">
+          <view
+            wx:for="{{cat.children}}"
+            wx:key="id"
+            wx:for-item="sub"
+            class="sub-item"
+            data-cid="{{cat.id}}"
+            data-sid="{{sub.id}}"
+            bindtap="goSub"
+          >
+            <view class="sub-circle">{{sub.name[0]}}</view>
+            <text>{{sub.name}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+  </scroll-view>
+</view>

@@ -1,0 +1,10 @@
+.goods-card { display: flex; flex-direction: column; }
+.goods-card .cover { width: 100%; height: 340rpx; background: #eee; }
+.goods-card .info { padding: 16rpx; }
+.goods-card .title { font-size: 26rpx; line-height: 1.4; min-height: 72rpx; }
+.goods-card .tags { margin: 8rpx 0; }
+.goods-card .bottom { margin-top: 8rpx; }
+
+.goods-card-list { flex-direction: row; }
+.goods-card-list .cover { width: 220rpx; height: 220rpx; border-radius: var(--radius-md); }
+.goods-card-list .info { flex: 1; padding: 0 0 0 20rpx; display: flex; flex-direction: column; justify-content: space-between; }

@@ -1,0 +1,49 @@
+<view class="user">
+  <view class="header">
+    <block wx:if="{{isLoggedIn}}">
+      <image class="avatar" src="{{userInfo.avatar || 'https://picsum.photos/seed/avatar/200'}}"></image>
+      <view class="info">
+        <view class="nick">{{userInfo.nickname || '微信用户'}}</view>
+        <view class="lvl">{{userInfo.level || 'VIP1'}} · 积分 {{userInfo.points || 0}}</view>
+      </view>
+    </block>
+    <view wx:else class="guest" bindtap="goLogin">
+      <view class="avatar guest-avatar">👤</view>
+      <view class="info">
+        <view class="nick">点击登录</view>
+        <view class="lvl">登录后享受更多服务</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card sec">
+    <view class="sec-head flex-between" bindtap="goAllOrders">
+      <text class="sec-title">我的订单</text>
+      <text class="text-tertiary text-sm">查看全部 ›</text>
+    </view>
+    <view class="order-tabs">
+      <view
+        wx:for="{{orderTabs}}"
+        wx:key="key"
+        class="ot-item"
+        data-key="{{item.key}}"
+        bindtap="goOrderTab"
+      >
+        <view class="ot-icon">{{item.icon}}</view>
+        <view class="ot-label">{{item.label}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card sec">
+    <view class="sec-head"><text class="sec-title">常用工具</text></view>
+    <view class="tools">
+      <view wx:for="{{tools}}" wx:key="key" class="tool-item" data-key="{{item.key}}" bindtap="goTool">
+        <view class="t-icon">{{item.icon}}</view>
+        <view class="t-label">{{item.label}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{isLoggedIn}}" class="logout" bindtap="logout">退出登录</view>
+</view>
