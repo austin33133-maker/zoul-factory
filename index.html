@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>45W GaN 智能氮化镓充电器 | 45W GaN Smart Charger</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    color: #1a1a2e;
+    background: #fafafa;
+    line-height: 1.6;
+  }
+  .page { max-width: 1200px; margin: 0 auto; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #3d2c8d 50%, #6b46c1 100%);
+    color: #fff;
+    padding: 80px 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    border-radius: 0 0 24px 24px;
+  }
+  .hero-img {
+    background: radial-gradient(circle at center, #b8a4e6 0%, transparent 70%);
+    border-radius: 24px;
+    padding: 40px;
+    text-align: center;
+    min-height: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .charger-mock {
+    width: 280px;
+    height: 280px;
+    background: linear-gradient(145deg, #c9c0d9, #8a7fa8);
+    border-radius: 36px;
+    position: relative;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+    transform: perspective(800px) rotateY(-20deg) rotateX(10deg);
+  }
+  .charger-face {
+    position: absolute;
+    top: 30px; right: 30px;
+    width: 200px; height: 200px;
+    background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .charger-eyes {
+    width: 110px; height: 80px;
+    border: 3px solid;
+    border-image: linear-gradient(135deg, #a78bfa, #60a5fa) 1;
+    border-radius: 16px;
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .charger-eyes::before, .charger-eyes::after {
+    content: ''; position: absolute; top: 50%;
+    width: 22px; height: 4px; background: #fff;
+    transform: translateY(-50%); border-radius: 2px;
+  }
+  .charger-eyes::before { left: 18px; }
+  .charger-eyes::after { right: 18px; }
+  .charger-eyes .zz {
+    position: absolute; top: -14px; right: -8px;
+    color: #fff; font-weight: 700; font-size: 18px;
+  }
+  .charger-btn {
+    width: 32px; height: 32px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-radius: 50%;
+  }
+  .charger-label {
+    position: absolute;
+    bottom: 28px; left: 24px;
+    color: rgba(26,26,46,0.55);
+    font-weight: 800; font-size: 28px;
+    font-style: italic;
+  }
+  .charger-label small {
+    display: block; font-size: 10px;
+    letter-spacing: 2px; font-style: normal;
+  }
+
+  .hero-text h1 {
+    font-size: 44px; line-height: 1.15;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #fff, #c9b8ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero-text .en { font-size: 22px; opacity: 0.85; margin-bottom: 24px; }
+  .hero-text .tagline { font-size: 16px; opacity: 0.75; margin-bottom: 32px; max-width: 480px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 32px; }
+  .badge {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    backdrop-filter: blur(10px);
+  }
+  .price {
+    font-size: 18px;
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  .price .big { font-size: 42px; font-weight: 800; color: #fbbf24; }
+  .price .old { text-decoration: line-through; opacity: 0.5; }
+
+  /* SECTIONS */
+  section { padding: 70px 40px; }
+  .section-title {
+    text-align: center;
+    margin-bottom: 50px;
+  }
+  .section-title h2 {
+    font-size: 34px;
+    margin-bottom: 6px;
+  }
+  .section-title .en {
+    color: #6b46c1;
+    font-size: 16px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* FEATURES */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .feature {
+    background: #fff;
+    border-radius: 20px;
+    padding: 32px 24px;
+    box-shadow: 0 6px 24px rgba(107,70,193,0.08);
+    border: 1px solid rgba(107,70,193,0.08);
+    transition: transform 0.3s;
+  }
+  .feature:hover { transform: translateY(-6px); }
+  .feature-icon {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, #a78bfa, #6b46c1);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; margin-bottom: 18px;
+  }
+  .feature h3 { font-size: 20px; margin-bottom: 4px; }
+  .feature .en { color: #6b46c1; font-size: 13px; margin-bottom: 12px; letter-spacing: 1px; }
+  .feature p { color: #555; font-size: 14px; }
+  .feature p.en-desc { color: #888; font-size: 13px; margin-top: 6px; font-style: italic; }
+
+  /* SPECS */
+  .specs-section { background: #1a1a2e; color: #fff; }
+  .specs-section .section-title h2 { color: #fff; }
+  .specs-section .section-title .en { color: #a78bfa; }
+  .specs-table {
+    max-width: 760px; margin: 0 auto;
+    background: rgba(255,255,255,0.04);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .specs-row {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    padding: 18px 28px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .specs-row:last-child { border-bottom: none; }
+  .specs-label { color: #a78bfa; font-weight: 600; }
+  .specs-label small { display: block; color: #777; font-weight: 400; font-size: 12px; }
+
+  /* SCENARIOS */
+  .scenarios {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+  .scenario {
+    background: linear-gradient(160deg, #f3f0ff, #fff);
+    border-radius: 16px;
+    padding: 28px 18px;
+    text-align: center;
+    border: 1px solid #e9e4f7;
+  }
+  .scenario-emoji { font-size: 42px; margin-bottom: 10px; }
+  .scenario h4 { font-size: 16px; margin-bottom: 2px; }
+  .scenario .en { font-size: 12px; color: #6b46c1; letter-spacing: 1px; }
+
+  /* COMPARE */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 6px 24px rgba(107,70,193,0.08);
+  }
+  .compare-table th, .compare-table td {
+    padding: 16px 20px;
+    text-align: center;
+    border-bottom: 1px solid #f0ecf9;
+  }
+  .compare-table thead { background: linear-gradient(135deg, #6b46c1, #a78bfa); color: #fff; }
+  .compare-table .ours { background: #faf7ff; font-weight: 600; color: #6b46c1; }
+  .compare-table .ours-col { background: #f3f0ff; }
+
+  /* PACKAGE */
+  .package {
+    background: linear-gradient(135deg, #faf7ff, #fff);
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+  }
+  .package-items {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+  }
+  .pkg-item {
+    text-align: center;
+  }
+  .pkg-item-icon {
+    width: 80px; height: 80px;
+    background: #fff;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    margin: 0 auto 10px;
+    box-shadow: 0 4px 16px rgba(107,70,193,0.1);
+  }
+
+  /* FOOTER */
+  footer {
+    background: #1a1a2e;
+    color: #aaa;
+    padding: 30px 40px;
+    text-align: center;
+    font-size: 13px;
+  }
+
+  @media (max-width: 800px) {
+    .hero { grid-template-columns: 1fr; padding: 40px 20px; }
+    .features, .scenarios { grid-template-columns: 1fr 1fr; }
+    .hero-text h1 { font-size: 32px; }
+    section { padding: 50px 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-img">
+      <div class="charger-mock">
+        <div class="charger-face">
+          <div class="charger-eyes"><span class="zz">Z<small>z</small></span></div>
+          <div class="charger-btn"></div>
+        </div>
+        <div class="charger-label">45w<small>GaN CHARGER</small></div>
+      </div>
+    </div>
+    <div class="hero-text">
+      <h1>45W 智能氮化镓充电器</h1>
+      <div class="en">45W Smart GaN Charger · Mini Cube</div>
+      <p class="tagline">
+        小巧机身,澎湃动力。GaN III 代芯片加持,体积更小、效率更高、温度更低。
+        <br><br>
+        <em>Compact body, powerful output. Powered by 3rd-gen GaN tech — smaller, cooler, and faster than ever.</em>
+      </p>
+      <div class="badges">
+        <span class="badge">⚡ PD 3.0 快充</span>
+        <span class="badge">🔌 Type-C 接口</span>
+        <span class="badge">🌡️ 智能温控</span>
+        <span class="badge">🛡️ 8重保护</span>
+        <span class="badge">✈️ 折叠插脚</span>
+      </div>
+      <div class="price">
+        <span>¥</span><span class="big">169</span>
+        <span class="old">¥299</span>
+        <span>· $23.99</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section>
+    <div class="section-title">
+      <div class="en">Core Features</div>
+      <h2>六大核心亮点</h2>
+    </div>
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">⚡</div>
+        <h3>45W 极速快充</h3>
+        <div class="en">45W FAST CHARGING</div>
+        <p>30分钟充至 70%,告别长时间等待。兼容 PD3.0 / PPS / QC4+ 多种快充协议。</p>
+        <p class="en-desc">0–70% in 30 min. Compatible with PD3.0, PPS, QC4+ and more.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🧊</div>
+        <h3>第三代氮化镓</h3>
+        <div class="en">3rd-GEN GaN TECH</div>
+        <p>采用 GaN III 芯片,体积缩小 40%,转换效率高达 95%,发热更低。</p>
+        <p class="en-desc">40% smaller, 95% efficiency. Less heat, more power.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">💡</div>
+        <h3>呼吸灯交互</h3>
+        <div class="en">RGB BREATHING LIGHT</div>
+        <p>萌系机器人面板搭配 RGB 呼吸灯,充电状态一目了然,睡眠模式自动暗光。</p>
+        <p class="en-desc">Cute robot face with RGB lighting. Auto-dims in sleep mode.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🛡️</div>
+        <h3>8 重智能保护</h3>
+        <div class="en">8-LAYER PROTECTION</div>
+        <p>过压、过流、过温、短路、过载、过充、电涌、电磁干扰全方位防护。</p>
+        <p class="en-desc">Over-voltage, over-current, over-heat, short-circuit & more.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📦</div>
+        <h3>口袋便携</h3>
+        <div class="en">POCKET-SIZED</div>
+        <p>整机仅 65g 重,折叠插脚设计,出差通勤随身携带毫无负担。</p>
+        <p class="en-desc">Only 65g. Foldable plug for easy travel.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🌍</div>
+        <h3>全球宽电压</h3>
+        <div class="en">UNIVERSAL VOLTAGE</div>
+        <p>100-240V 宽幅电压输入,全球通用,出国旅行无需变压器。</p>
+        <p class="en-desc">100–240V input. Works worldwide, no adapter needed.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SPECS -->
+  <section class="specs-section">
+    <div class="section-title">
+      <div class="en">Specifications</div>
+      <h2>产品规格参数</h2>
+    </div>
+    <div class="specs-table">
+      <div class="specs-row">
+        <div class="specs-label">型号<small>Model</small></div>
+        <div>ZOUL-GN45</div>
+      </div>
+      <div class="specs-row">
+        <div class="specs-label">输入<small>Input</small></div>
+        <div>AC 100-240V ~ 50/60Hz 1.2A Max</div>
+      </div>
+      <div class="specs-row">
+        <div class="specs-label">输出<small>Output</small></div>
+        <div>5V/3A · 9V/3A · 12V/3A · 15V/3A · 20V/2.25A</div>
+      </div>
+      <div class="specs-row">
+        <div class="specs-label">最大功率<small>Max Power</small></div>
+        <div>45W (PD3.0 / PPS)</div>
+      </div>
+      <div class="specs-row">
+        <div class="specs-label">接口<small>Port</small></div>
+        <div>USB Type-C × 1</div>
+      </div>
+      <div class="specs-row">
+        <div class="specs-label">尺寸<small>Dimensions</small></div>
+        <div>42 × 42 × 32 mm</div>
+      </div>
+      <div class="specs-row">
+        <div class="specs-label">重量<small>Weight</small></div>
+        <div>约 65g / 2.3oz</div>
+      </div>
+      <div class="specs-row">
+        <div class="specs-label">外壳材质<small>Material</small></div>
+        <div>PC 阻燃外壳 + 铝合金面板 (Flame-retardant PC + Aluminum)</div>
+      </div>
+      <div class="specs-row">
+        <div class="specs-label">认证<small>Certifications</small></div>
+        <div>CCC · FCC · CE · RoHS · PSE</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCENARIOS -->
+  <section>
+    <div class="section-title">
+      <div class="en">Use Scenarios</div>
+      <h2>多设备兼容场景</h2>
+    </div>
+    <div class="scenarios">
+      <div class="scenario">
+        <div class="scenario-emoji">📱</div>
+        <h4>智能手机</h4>
+        <div class="en">SMARTPHONE</div>
+      </div>
+      <div class="scenario">
+        <div class="scenario-emoji">💻</div>
+        <h4>轻薄笔记本</h4>
+        <div class="en">LAPTOP</div>
+      </div>
+      <div class="scenario">
+        <div class="scenario-emoji">📟</div>
+        <h4>平板电脑</h4>
+        <div class="en">TABLET</div>
+      </div>
+      <div class="scenario">
+        <div class="scenario-emoji">🎧</div>
+        <h4>无线耳机</h4>
+        <div class="en">EARBUDS</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPARE -->
+  <section>
+    <div class="section-title">
+      <div class="en">Why Choose Us</div>
+      <h2>对比传统充电器</h2>
+    </div>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>项目 / Item</th>
+          <th>传统充电器<br><small>Traditional</small></th>
+          <th class="ours-col">ZOUL 45W GaN<br><small>Ours</small></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>体积 / Size</td><td>大而笨重</td><td class="ours">小巧便携 (-40%)</td></tr>
+        <tr><td>功率 / Power</td><td>5W - 18W</td><td class="ours">45W PD 快充</td></tr>
+        <tr><td>转换效率 / Efficiency</td><td>~ 80%</td><td class="ours">高达 95%</td></tr>
+        <tr><td>发热 / Heat</td><td>明显发烫</td><td class="ours">恒温智控</td></tr>
+        <tr><td>设计 / Design</td><td>普通白色</td><td class="ours">萌系 RGB 呼吸灯</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- PACKAGE -->
+  <section>
+    <div class="section-title">
+      <div class="en">In The Box</div>
+      <h2>包装清单</h2>
+    </div>
+    <div class="package">
+      <div class="package-items">
+        <div class="pkg-item">
+          <div class="pkg-item-icon">🔌</div>
+          <div>45W 充电器 × 1</div>
+          <small>Charger × 1</small>
+        </div>
+        <div class="pkg-item">
+          <div class="pkg-item-icon">🔗</div>
+          <div>1m C-to-C 线 × 1</div>
+          <small>USB-C Cable × 1</small>
+        </div>
+        <div class="pkg-item">
+          <div class="pkg-item-icon">📖</div>
+          <div>使用说明书 × 1</div>
+          <small>User Manual × 1</small>
+        </div>
+        <div class="pkg-item">
+          <div class="pkg-item-icon">🛡️</div>
+          <div>保修卡 × 1</div>
+          <small>Warranty Card × 1</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>ZOUL Factory · 24个月质保 / 24-Month Warranty · 7天无理由退换 / 7-Day Returns</p>
+    <p style="margin-top: 8px; opacity: 0.6;">© 2026 ZOUL. All rights reserved.</p>
+  </footer>
+
+</div>
+</body>
+</html>
