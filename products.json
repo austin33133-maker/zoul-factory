@@ -1,0 +1,24 @@
+[
+  {
+    "id": "starter-prompt-pack",
+    "name": "AI Prompt Pack — Starter",
+    "description": "50 hand-picked prompts for coding, writing, and research.",
+    "price_cents": 900,
+    "image": "https://placehold.co/600x400/111827/ffffff?text=Prompt+Pack",
+    "deliver": {
+      "type": "url",
+      "value": "https://example.com/your-private-download-link"
+    }
+  },
+  {
+    "id": "consulting-30min",
+    "name": "30-min Consulting Call",
+    "description": "Book a 30-minute 1:1 session. You receive a Calendly link after payment.",
+    "price_cents": 4900,
+    "image": "https://placehold.co/600x400/0f766e/ffffff?text=Consulting",
+    "deliver": {
+      "type": "message",
+      "value": "Thanks! Book your slot here: https://calendly.com/your-handle/30min"
+    }
+  }
+]
