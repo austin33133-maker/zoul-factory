@@ -5,6 +5,8 @@ import { getLevel } from '../game/levels.js';
 import { Save } from '../storage.js';
 import { Audio } from '../audio.js';
 import { drawPrincess, drawSpeech } from '../ui/princess.js';
+import { drawFruit } from '../ui/fruits.js';
+import { drawCrate as drawDetailedCrate, drawGiftBox, drawBombOverlay, drawRocketOverlay, drawLightballOverlay, drawIceOverlay, drawJellyTile } from '../ui/items.js';
 import { drawRoundedRect, fillCircle, easeOutCubic, easeOutBack, clamp, lerp, rand, randInt, choice, showToast } from '../utils.js';
 import { modal } from '../ui/modal.js';
 
@@ -591,23 +593,7 @@ export class GameScene {
     if (tiles) for (let r = 0; r < CONFIG.ROWS; r++) for (let c = 0; c < CONFIG.COLS; c++) {
       const tl = tiles[r][c]; if (!tl) continue;
       const x = g.padX + c * g.cell, y = g.top + r * g.cell;
-      if (tl.type === 'jelly') {
-        const pct = tl.hp / tl.maxHp;
-        const grad = ctx.createLinearGradient(x, y, x, y + g.cell);
-        grad.addColorStop(0, `rgba(255,216,77,${0.65 * pct + 0.2})`);
-        grad.addColorStop(1, `rgba(255,139,61,${0.6 * pct + 0.2})`);
-        ctx.fillStyle = grad;
-        ctx.fillRect(x + 2, y + 2, g.cell - 4, g.cell - 4);
-        // 高光
-        ctx.fillStyle = `rgba(255,255,255,${0.18 + 0.18 * pct})`;
-        ctx.fillRect(x + 4, y + 4, g.cell - 8, (g.cell - 8) * 0.3);
-        // 多层标记
-        if (tl.maxHp > 1) {
-          ctx.fillStyle = '#7c3a14'; ctx.font = '600 12px sans-serif';
-          ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-          ctx.fillText(`x${tl.hp}`, x + 4, y + 4);
-        }
-      }
+      if (tl.type === 'jelly') drawJellyTile(ctx, x, y, g.cell, tl.hp, tl.maxHp, this.t);
     }
 
     // 棋子
@@ -687,119 +673,55 @@ export class GameScene {
   }
 
   drawPiece(ctx, piece, s, g) {
-    if (piece.kind === KIND.CRATE) { this.drawCrate(ctx, piece, s, g); return; }
-    if (piece.kind === KIND.GIFT) { this.drawGift(ctx, piece, s, g); return; }
+    if (piece.kind === KIND.CRATE) {
+      ctx.save();
+      ctx.globalAlpha = s.alpha;
+      ctx.translate(s.x, s.y); ctx.scale(s.scale, s.scale);
+      drawDetailedCrate(ctx, 0, 0, g.cell * 0.82, piece.hp, piece.maxHp, this.t);
+      ctx.restore();
+      return;
+    }
+    if (piece.kind === KIND.GIFT) {
+      ctx.save();
+      ctx.globalAlpha = s.alpha;
+      ctx.translate(s.x, s.y); ctx.scale(s.scale, s.scale);
+      drawGiftBox(ctx, 0, 0, g.cell * 0.82, this.t);
+      ctx.restore();
+      return;
+    }
     if (piece.kind === KIND.PRINCESS) { this.drawPrincessPiece(ctx, piece, s, g); return; }
-    const col = CONFIG.COLORS.find(c => c.id === piece.color) || CONFIG.COLORS[0];
-    const r = g.cell * 0.42;
-    const x = s.x, y = s.y;
+    const r = g.cell * 0.46;
     ctx.save();
     ctx.globalAlpha = s.alpha;
-    ctx.translate(x, y);
-    ctx.scale(s.scale, s.scale);
-    // 阴影
-    ctx.save();
-    ctx.translate(0, r * 0.85);
-    ctx.scale(1, 0.3);
-    fillCircle(ctx, 0, 0, r * 0.9, 'rgba(0,0,0,0.4)');
-    ctx.restore();
-    // 主球渐变
-    const grad = ctx.createRadialGradient(-r * 0.3, -r * 0.4, r * 0.1, 0, 0, r);
-    grad.addColorStop(0, lighten(col.hex, 0.5));
-    grad.addColorStop(0.5, col.hex);
-    grad.addColorStop(1, darken(col.hex, 0.25));
-    ctx.fillStyle = grad;
-    fillCircle(ctx, 0, 0, r);
-    // 高光
-    ctx.fillStyle = 'rgba(255,255,255,0.45)';
-    ctx.beginPath();
-    ctx.ellipse(-r * 0.35, -r * 0.4, r * 0.32, r * 0.18, -0.6, 0, Math.PI * 2);
-    ctx.fill();
-    // 描边
-    ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
-
-    // 特殊覆盖
-    if (piece.special === SPECIAL.BOMB) {
-      ctx.fillStyle = 'rgba(0,0,0,0.55)';
-      fillCircle(ctx, 0, 0, r * 0.55);
-      ctx.fillStyle = '#fff'; ctx.font = `700 ${r * 0.7}px sans-serif`;
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('💣', 0, 0);
-    } else if (piece.special === SPECIAL.ROCKET_H || piece.special === SPECIAL.ROCKET_V) {
-      ctx.fillStyle = 'rgba(255,255,255,0.85)';
-      ctx.font = `700 ${r * 0.75}px sans-serif`;
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.save();
-      if (piece.special === SPECIAL.ROCKET_V) ctx.rotate(Math.PI / 2);
-      ctx.fillText('⇆', 0, 2);
-      ctx.restore();
-    } else if (piece.special === SPECIAL.LIGHTBALL) {
-      const pulse = (Math.sin(this.t / 200) + 1) / 2;
-      const lg = ctx.createRadialGradient(0, 0, r * 0.1, 0, 0, r);
-      lg.addColorStop(0, '#fff');
-      lg.addColorStop(0.6, '#fff7c2');
-      lg.addColorStop(1, '#ff8b3d');
-      ctx.fillStyle = lg;
-      fillCircle(ctx, 0, 0, r);
-      ctx.fillStyle = 'rgba(255,255,255,' + (0.4 + pulse * 0.3) + ')';
-      fillCircle(ctx, 0, 0, r * 0.7);
-    } else {
-      // 在球面上画水果 emoji
-      ctx.font = `${r * 1.15}px sans-serif`;
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(col.label, 0, r * 0.06);
-    }
-    // 冰冻覆盖层
-    if (piece.frozen) {
-      const ice = ctx.createRadialGradient(0, -r * 0.3, r * 0.1, 0, 0, r * 1.1);
-      ice.addColorStop(0, 'rgba(220,240,255,0.5)');
-      ice.addColorStop(0.7, 'rgba(120,200,255,0.55)');
-      ice.addColorStop(1, 'rgba(80,150,220,0.7)');
-      ctx.fillStyle = ice;
-      drawRoundedRect(ctx, -r * 1.05, -r * 1.05, r * 2.1, r * 2.1, 10);
-      ctx.fill();
-      // 冰裂纹
-      ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-      ctx.lineWidth = 1.6;
-      ctx.beginPath();
-      ctx.moveTo(-r * 0.7, -r * 0.4); ctx.lineTo(0, 0); ctx.lineTo(r * 0.4, -r * 0.5);
-      ctx.moveTo(0, 0); ctx.lineTo(-r * 0.2, r * 0.7);
-      ctx.stroke();
-    }
-    ctx.restore();
-  }
-
-  drawGift(ctx, piece, s, g) {
-    const sz = g.cell * 0.78;
-    ctx.save();
     ctx.translate(s.x, s.y);
     ctx.scale(s.scale, s.scale);
-    // 摆动
-    const wob = Math.sin(this.t / 280) * 0.06;
-    ctx.rotate(wob);
-    // 阴影
-    ctx.save();
-    ctx.translate(0, sz * 0.45);
-    ctx.scale(1, 0.3);
-    fillCircle(ctx, 0, 0, sz * 0.45, 'rgba(0,0,0,0.4)');
-    ctx.restore();
-    // 礼物主体
-    const grad = ctx.createLinearGradient(0, -sz/2, 0, sz/2);
-    grad.addColorStop(0, '#ff8b3d');
-    grad.addColorStop(1, '#ff5e3a');
-    drawRoundedRect(ctx, -sz/2, -sz/2, sz, sz, 8);
-    ctx.fillStyle = grad; ctx.fill();
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
-    // 丝带
-    ctx.fillStyle = '#ffd84d';
-    ctx.fillRect(-sz/2, -sz * 0.08, sz, sz * 0.16);
-    ctx.fillRect(-sz * 0.08, -sz/2, sz * 0.16, sz);
-    // 蝴蝶结
-    ctx.fillStyle = '#ffe666';
-    fillCircle(ctx, -sz * 0.15, -sz/2 + 4, sz * 0.12);
-    fillCircle(ctx,  sz * 0.15, -sz/2 + 4, sz * 0.12);
-    fillCircle(ctx, 0, -sz/2 + 4, sz * 0.08, '#ffd84d');
+
+    // 特殊棋子覆盖：仍保留底部水果作为颜色提示
+    if (piece.special) {
+      // 淡水果背景
+      ctx.save();
+      ctx.globalAlpha *= 0.55;
+      drawFruit(ctx, piece.color, 0, 0, r * 0.9, this.t);
+      ctx.restore();
+      // 特殊覆盖
+      if (piece.special === SPECIAL.BOMB) drawBombOverlay(ctx, r, this.t);
+      else if (piece.special === SPECIAL.ROCKET_H) drawRocketOverlay(ctx, r, false);
+      else if (piece.special === SPECIAL.ROCKET_V) drawRocketOverlay(ctx, r, true);
+      else if (piece.special === SPECIAL.LIGHTBALL) drawLightballOverlay(ctx, r, this.t);
+    } else {
+      // 普通：精绘水果
+      const ok = drawFruit(ctx, piece.color, 0, 0, r, this.t);
+      if (!ok) {
+        // 回退到圆 + emoji
+        const col = CONFIG.COLORS.find(c => c.id === piece.color) || CONFIG.COLORS[0];
+        fillCircle(ctx, 0, 0, r, col.hex);
+        ctx.font = `${r * 1.15}px sans-serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(col.label, 0, r * 0.06);
+      }
+    }
+    // 冰冻覆盖
+    if (piece.frozen) drawIceOverlay(ctx, r);
     ctx.restore();
   }
 
@@ -822,53 +744,6 @@ export class GameScene {
     ctx.restore();
   }
 
-  drawHUD_marker_dummy() {}
-
-  drawCrate(ctx, piece, s, g) {
-    const sz = g.cell * 0.78;
-    ctx.save();
-    ctx.translate(s.x, s.y);
-    ctx.scale(s.scale, s.scale);
-    // 阴影
-    ctx.save();
-    ctx.translate(0, sz * 0.45);
-    ctx.scale(1, 0.3);
-    fillCircle(ctx, 0, 0, sz * 0.45, 'rgba(0,0,0,0.4)');
-    ctx.restore();
-    // 木箱主体
-    const grad = ctx.createLinearGradient(0, -sz/2, 0, sz/2);
-    grad.addColorStop(0, '#c8884a');
-    grad.addColorStop(1, '#7c4a1e');
-    drawRoundedRect(ctx, -sz/2, -sz/2, sz, sz, 6);
-    ctx.fillStyle = grad; ctx.fill();
-    ctx.strokeStyle = '#4a2810'; ctx.lineWidth = 2.5; ctx.stroke();
-    // 木纹
-    ctx.strokeStyle = 'rgba(74,40,16,0.55)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(-sz/2 + 6, -sz/6); ctx.lineTo(sz/2 - 6, -sz/6);
-    ctx.moveTo(-sz/2 + 6,  sz/6); ctx.lineTo(sz/2 - 6,  sz/6);
-    ctx.stroke();
-    // 钉子
-    for (const [dx, dy] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
-      fillCircle(ctx, dx * (sz/2 - 6), dy * (sz/2 - 6), 2.4, '#5a2810');
-    }
-    // 血量 (hp > 1 时显示 cracks 减少)
-    if (piece.hp < piece.maxHp) {
-      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.8;
-      ctx.beginPath();
-      ctx.moveTo(-sz * 0.2, -sz * 0.2); ctx.lineTo(sz * 0.1, 0); ctx.lineTo(-sz * 0.05, sz * 0.2);
-      ctx.stroke();
-    }
-    if (piece.maxHp > 1) {
-      // HP 标记
-      ctx.fillStyle = '#fff';
-      ctx.font = '700 14px sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(`x${piece.hp}`, 0, 2);
-    }
-    ctx.restore();
-  }
 
   drawHUD(ctx) {
     const w = CONFIG.CANVAS_W;
