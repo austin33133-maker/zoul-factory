@@ -17,7 +17,10 @@ export const KIND = {
 };
 
 export const TILE = {
-  JELLY: 'jelly'           // 果冻地块（铺在格子底下）
+  JELLY: 'jelly',          // 果冻地块（铺在格子底下）
+  VINE: 'vine',            // 藤蔓：覆盖在格子上，相邻消除可断，每步会蔓延
+  PORTAL_IN: 'portalIn',   // 传送门入口
+  PORTAL_OUT: 'portalOut'  // 传送门出口
 };
 
 let idSeq = 1;
@@ -299,21 +302,67 @@ export function comboTargets(grid, aPos, bPos) {
 }
 
 // 重力：返回 fall plan { from:[r,c], to:[r,c] }
-export function applyGravity(grid) {
+// tiles 可选；若包含 PORTAL_IN，落入入口的棋子会被传送到 PORTAL_OUT，再继续下落
+export function applyGravity(grid, tiles = null) {
   const rows = grid.length, cols = grid[0].length;
   const falls = [];
-  for (let c = 0; c < cols; c++) {
-    let writeRow = rows - 1;
-    for (let r = rows - 1; r >= 0; r--) {
-      if (grid[r][c]) {
-        if (r !== writeRow) {
-          grid[writeRow][c] = grid[r][c];
-          grid[r][c] = null;
-          falls.push({ from: [r, c], to: [writeRow, c] });
+
+  // 收集传送门 entry -> exit 映射
+  const portalMap = new Map();
+  if (tiles) {
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      const t = tiles[r][c];
+      if (t && t.type === TILE.PORTAL_IN) portalMap.set(r + ',' + c, t.to);
+    }
+  }
+
+  if (portalMap.size === 0) {
+    // 快路径: 标准列重力
+    for (let c = 0; c < cols; c++) {
+      let writeRow = rows - 1;
+      for (let r = rows - 1; r >= 0; r--) {
+        if (grid[r][c]) {
+          if (r !== writeRow) {
+            grid[writeRow][c] = grid[r][c];
+            grid[r][c] = null;
+            falls.push({ from: [r, c], to: [writeRow, c] });
+          }
+          writeRow--;
         }
-        writeRow--;
       }
     }
+    return falls;
+  }
+
+  // 慢路径: 单步迭代直到稳定
+  let safety = 400;
+  while (safety-- > 0) {
+    let moved = false;
+    // 自底向上扫描，每个棋子尝试 (1) 落入下方空格 (2) 进入传送门
+    for (let r = rows - 1; r >= 0; r--) {
+      for (let c = 0; c < cols; c++) {
+        const p = grid[r][c];
+        if (!p) continue;
+        // 入口在当前位置: 传送
+        const key = r + ',' + c;
+        if (portalMap.has(key)) {
+          const [tr, tc] = portalMap.get(key);
+          if (!grid[tr][tc]) {
+            grid[tr][tc] = p; grid[r][c] = null;
+            falls.push({ from: [r, c], to: [tr, tc], portal: true });
+            moved = true;
+            continue;
+          }
+        }
+        // 普通下落
+        if (r + 1 < rows && !grid[r + 1][c]) {
+          grid[r + 1][c] = p; grid[r][c] = null;
+          falls.push({ from: [r, c], to: [r + 1, c] });
+          moved = true;
+        }
+      }
+    }
+    if (!moved) break;
   }
   return falls;
 }
@@ -385,9 +434,16 @@ export function createTiles(rows = CONFIG.ROWS, cols = CONFIG.COLS) {
 export function injectTiles(tiles, cfg) {
   if (!cfg) return;
   if (cfg.jelly) for (const [r, c, hp] of cfg.jelly) {
-    if (r >= 0 && r < tiles.length && c >= 0 && c < tiles[0].length) {
-      tiles[r][c] = { type: TILE.JELLY, hp: hp || 1, maxHp: hp || 1 };
-    }
+    if (inBoundsRC(tiles, r, c)) tiles[r][c] = { type: TILE.JELLY, hp: hp || 1, maxHp: hp || 1 };
+  }
+  if (cfg.vine) for (const [r, c] of cfg.vine) {
+    if (inBoundsRC(tiles, r, c)) tiles[r][c] = { type: TILE.VINE };
+  }
+  // 传送门: { portals: [{ from:[r,c], to:[r,c] }] }
+  if (cfg.portals) for (const p of cfg.portals) {
+    const [fr, fc] = p.from, [tr, tc] = p.to;
+    if (inBoundsRC(tiles, fr, fc)) tiles[fr][fc] = { type: TILE.PORTAL_IN, to: [tr, tc] };
+    if (inBoundsRC(tiles, tr, tc)) tiles[tr][tc] = { type: TILE.PORTAL_OUT, from: [fr, fc] };
   }
 }
 
@@ -399,27 +455,43 @@ export function processAdjacency(grid, tiles, clearedCells) {
   const tileBreaks = [];
   const tileDamages = [];
 
+  const vineBreaksKeys = new Set();
+
   for (const cell of clearedCells) {
     const { r, c } = cell;
-    // 自身格子上的果冻 tile
-    if (tiles && tiles[r] && tiles[r][c] && tiles[r][c].type === TILE.JELLY) {
-      tiles[r][c].hp -= 1;
-      if (tiles[r][c].hp <= 0) {
-        tileBreaks.push({ r, c, tile: tiles[r][c] });
-        tiles[r][c] = null;
-      } else {
-        tileDamages.push({ r, c, tile: tiles[r][c] });
+    // 自身格子上的 tile
+    if (tiles && tiles[r] && tiles[r][c]) {
+      const tl = tiles[r][c];
+      if (tl.type === TILE.JELLY) {
+        tl.hp -= 1;
+        if (tl.hp <= 0) { tileBreaks.push({ r, c, tile: tl }); tiles[r][c] = null; }
+        else tileDamages.push({ r, c, tile: tl });
+      } else if (tl.type === TILE.VINE) {
+        vineBreaksKeys.add(r + ',' + c);
       }
     }
     // 相邻格子上的障碍
     for (const [nr, nc] of neighbors(r, c)) {
       if (!inBoundsRC(grid, nr, nc)) continue;
+      // 相邻藤蔓断裂
+      if (tiles && tiles[nr] && tiles[nr][nc] && tiles[nr][nc].type === TILE.VINE) {
+        vineBreaksKeys.add(nr + ',' + nc);
+      }
       const np = grid[nr][nc];
       if (!np) continue;
       const key = nr + ',' + nc;
       if (np.kind === KIND.CRATE && !crateDmg.has(key)) crateDmg.set(key, np);
       else if (np.kind === KIND.GIFT && !giftHits.has(key)) giftHits.set(key, np);
       else if (np.frozen && !unfrozen.find(u => u.piece === np)) unfrozen.push({ r: nr, c: nc, piece: np });
+    }
+  }
+
+  const vineBreaks = [];
+  for (const key of vineBreaksKeys) {
+    const [r, c] = key.split(',').map(Number);
+    if (tiles[r][c]) {
+      vineBreaks.push({ r, c, tile: tiles[r][c] });
+      tiles[r][c] = null;
     }
   }
 
@@ -438,7 +510,7 @@ export function processAdjacency(grid, tiles, clearedCells) {
   }
   for (const u of unfrozen) u.piece.frozen = false;
 
-  return { crateBreaks, crateDamages, giftBreaks, unfrozen, tileBreaks, tileDamages };
+  return { crateBreaks, crateDamages, giftBreaks, unfrozen, tileBreaks, tileDamages, vineBreaks };
 }
 
 // 公主到达底层时"救出"：返回被救出的位置和对应 piece

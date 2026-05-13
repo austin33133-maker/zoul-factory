@@ -11,7 +11,9 @@ export const CHAPTERS = [
   { id: 4, name: '果冻王国',   range: [16, 18], theme: '#ffd84d', emoji: '🟡',
     intro: '黏糊糊的果冻铺满整个王国，消除它们！' },
   { id: 5, name: '皇家秘室',   range: [19, 20], theme: '#b06bff', emoji: '👑',
-    intro: '终极考验：礼物盒派对与救出最后的公主。' }
+    intro: '终极考验：礼物盒派对与救出最后的公主。' },
+  { id: 6, name: '奇境彩园',   range: [21, 23], theme: '#5bc6ff', emoji: '🌀',
+    intro: '橙子公主的奇境之旅：传送门、藤蔓、彩条节日，三个全新挑战！' }
 ];
 
 export function chapterOf(levelId) {
@@ -229,6 +231,41 @@ export const LEVELS = [
     starThresholds: [4000, 8000, 12000],
     palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple'],
     obstacles: { princesses: [[0,4]] }
+  },
+  {
+    id: 21,
+    name: '橙园迷宫',
+    story: '果园里出现了奇怪的传送门，棋子掉进入口会从出口冒出来。',
+    moves: 28,
+    objective: { type: 'collectColor', color: 'orange', amount: 30 },
+    starThresholds: [5000, 9000, 13500],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple'],
+    tiles: {
+      portals: [
+        { from: [3, 2], to: [3, 6] },
+        { from: [5, 7], to: [5, 1] }
+      ]
+    }
+  },
+  {
+    id: 22,
+    name: '蔓延藤林',
+    story: '邪恶藤蔓正在蔓延！消除附近的水果来斩断它们。',
+    moves: 30,
+    objective: { type: 'vineClear', amount: 20 },
+    starThresholds: [4500, 8000, 12000],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple'],
+    vineSpreadRate: 1,
+    tiles: { vine: [[4, 4], [3, 4], [5, 4], [4, 3], [4, 5]] }
+  },
+  {
+    id: 23,
+    name: '彩条节日',
+    story: '为公主举办彩条游行！制造 8 条彩条火箭（4 连消除）。',
+    moves: 26,
+    objective: { type: 'stripes', amount: 8 },
+    starThresholds: [6000, 10000, 15000],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple']
   }
 ];
 

@@ -6,7 +6,7 @@ import { Save } from '../storage.js';
 import { Audio } from '../audio.js';
 import { drawPrincess, drawSpeech } from '../ui/princess.js';
 import { drawFruit } from '../ui/fruits.js';
-import { drawCrate as drawDetailedCrate, drawGiftBox, drawBombOverlay, drawRocketOverlay, drawLightballOverlay, drawIceOverlay, drawJellyTile } from '../ui/items.js';
+import { drawCrate as drawDetailedCrate, drawGiftBox, drawBombOverlay, drawRocketOverlay, drawLightballOverlay, drawIceOverlay, drawJellyTile, drawVineTile, drawPortalTile } from '../ui/items.js';
 import { drawRoundedRect, fillCircle, easeOutCubic, easeOutBack, clamp, lerp, rand, randInt, choice, showToast } from '../utils.js';
 import { modal } from '../ui/modal.js';
 
@@ -195,7 +195,7 @@ export class GameScene {
         if (invalid) { Audio.invalid(); this.say('换不了…', 'worried', 900); }
         else Audio.swap();
       },
-      clear: ({ cells, specialCreations, crateBreaks, crateDamages, giftBreaks, unfrozen, tileBreaks }) => {
+      clear: ({ cells, specialCreations, crateBreaks, crateDamages, giftBreaks, unfrozen, tileBreaks, vineBreaks }) => {
         Audio.pop(0);
         const g = geom();
         cells.forEach(({ r, c, piece }) => this.burstAt(g.padX + c * g.cell + g.cell/2, g.top + r * g.cell + g.cell/2, piece.color));
@@ -223,6 +223,11 @@ export class GameScene {
           const x = g.padX + c * g.cell + g.cell/2, y = g.top + r * g.cell + g.cell/2;
           this.burstAt(x, y, 'yellow', 8);
         });
+        if (vineBreaks) vineBreaks.forEach(({ r, c }) => {
+          const x = g.padX + c * g.cell + g.cell/2, y = g.top + r * g.cell + g.cell/2;
+          this.burstAt(x, y, 'green', 10);
+          this.floatScore('🌿', x, y - 22, '#7be36b');
+        });
         specialCreations.forEach(sc => {
           const [r, c] = sc.pos;
           const p = this.engine.grid[r][c];
@@ -236,7 +241,7 @@ export class GameScene {
         if (crateBreaks?.length) Save.tickTask('crateBroken', crateBreaks.length);
         this.cleanupOrphanSprites();
       },
-      explode: ({ cells, reason, origin, special, crateBreaks, giftBreaks, unfrozen, tileBreaks }) => {
+      explode: ({ cells, reason, origin, special, crateBreaks, giftBreaks, unfrozen, tileBreaks, vineBreaks }) => {
         const g = geom();
         // 火箭尾迹
         if (origin && (special === SPECIAL.ROCKET_H || special === SPECIAL.ROCKET_V)) {
@@ -272,12 +277,24 @@ export class GameScene {
           const x = g.padX + c * g.cell + g.cell/2, y = g.top + r * g.cell + g.cell/2;
           this.burstAt(x, y, 'yellow', 8);
         });
+        if (vineBreaks) vineBreaks.forEach(({ r, c }) => {
+          const x = g.padX + c * g.cell + g.cell/2, y = g.top + r * g.cell + g.cell/2;
+          this.burstAt(x, y, 'green', 10);
+        });
         if (reason === 'combo' || reason === 'lightball') { Audio.lightball(); this.shake(10, 0.5); this.say('哇！', 'wow', 800); }
         else if (reason === 'booster') { Audio.bomb(); this.shake(7, 0.35); }
         else if (special === SPECIAL.BOMB) { Audio.bomb(); this.shake(6, 0.3); }
         else if (special === SPECIAL.ROCKET_H || special === SPECIAL.ROCKET_V) { Audio.rocket(); this.shake(5, 0.25); }
         else { Audio.bomb(); this.shake(4, 0.25); }
         this.cleanupOrphanSprites();
+      },
+      vineSpread: ({ cells }) => {
+        const g = geom();
+        cells.forEach(({ r, c }) => {
+          const x = g.padX + c * g.cell + g.cell/2, y = g.top + r * g.cell + g.cell/2;
+          for (let i = 0; i < 6; i++) this.burstAt(x, y, 'green', 1);
+        });
+        if (cells.length) this.say('藤蔓在蔓延…', 'worried', 900);
       },
       cascade: ({ falls, gen }) => {
         const g = geom();
@@ -446,7 +463,7 @@ export class GameScene {
     });
     if (v === 'next') {
       const next = lv.id + 1;
-      if (next > 20) { showToast('已是最后一关，期待续作 🍊'); this.sm.switchTo('map'); }
+      if (next > 23) { showToast('已是最后一关，期待续作 🍊'); this.sm.switchTo('map'); }
       else {
         if (Save.get().lives <= 0) { showToast('生命不足'); this.sm.switchTo('map'); return; }
         Save.consumeLife();
@@ -594,6 +611,9 @@ export class GameScene {
       const tl = tiles[r][c]; if (!tl) continue;
       const x = g.padX + c * g.cell, y = g.top + r * g.cell;
       if (tl.type === 'jelly') drawJellyTile(ctx, x, y, g.cell, tl.hp, tl.maxHp, this.t);
+      else if (tl.type === 'vine') drawVineTile(ctx, x, y, g.cell, this.t);
+      else if (tl.type === 'portalIn') drawPortalTile(ctx, x, y, g.cell, 'in', this.t);
+      else if (tl.type === 'portalOut') drawPortalTile(ctx, x, y, g.cell, 'out', this.t);
     }
 
     // 棋子
@@ -789,6 +809,10 @@ export class GameScene {
       ctx.fillText(`🟡 ${this.engine.jellyBroken}/${o.amount}`, w - 20, 138);
     } else if (o.type === 'savePrincess') {
       ctx.fillText(`👸 ${this.engine.princessesSaved}/${o.amount}`, w - 20, 138);
+    } else if (o.type === 'vineClear') {
+      ctx.fillText(`🌿 ${this.engine.vinesCleared}/${o.amount}`, w - 20, 138);
+    } else if (o.type === 'stripes') {
+      ctx.fillText(`🎀 ${this.engine.stripesCreated}/${o.amount}`, w - 20, 138);
     } else if (o.type === 'multiColor') {
       ctx.font = '600 18px sans-serif';
       const parts = o.items.map(it => {
@@ -851,6 +875,8 @@ function objectiveText(level) {
   if (o.type === 'crates') return `砸开 📦 ×${o.amount}`;
   if (o.type === 'jelly') return `清除果冻 🟡 ×${o.amount}`;
   if (o.type === 'savePrincess') return `救出公主 👸 ×${o.amount}`;
+  if (o.type === 'vineClear') return `斩断藤蔓 🌿 ×${o.amount}`;
+  if (o.type === 'stripes') return `制造彩条 🎀 ×${o.amount}`;
   if (o.type === 'multiColor') {
     return o.items.map(it => {
       const fr = (CONFIG.COLORS.find(c => c.id === it.color) || {}).label || '';

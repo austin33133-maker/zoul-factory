@@ -240,6 +240,89 @@ export function drawIceOverlay(ctx, r) {
   });
 }
 
+// 🌿 藤蔓 tile：缠绕在格子边缘 + 飘动叶片
+export function drawVineTile(ctx, x, y, sz, t) {
+  ctx.save();
+  ctx.translate(x, y);
+  // 半透绿色底
+  ctx.fillStyle = 'rgba(40,100,30,0.25)';
+  ctx.fillRect(2, 2, sz - 4, sz - 4);
+  // 四角藤条
+  ctx.strokeStyle = '#3f8a23'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+  const offs = 4;
+  // 上边缘
+  ctx.beginPath();
+  ctx.moveTo(offs, offs);
+  ctx.bezierCurveTo(sz * 0.3, offs + 6, sz * 0.7, offs - 4, sz - offs, offs + 4);
+  ctx.stroke();
+  // 下边缘
+  ctx.beginPath();
+  ctx.moveTo(offs, sz - offs);
+  ctx.bezierCurveTo(sz * 0.3, sz - offs - 6, sz * 0.7, sz - offs + 4, sz - offs, sz - offs - 4);
+  ctx.stroke();
+  // 左边缘
+  ctx.beginPath();
+  ctx.moveTo(offs, offs);
+  ctx.bezierCurveTo(offs + 6, sz * 0.3, offs - 4, sz * 0.7, offs + 4, sz - offs);
+  ctx.stroke();
+  // 右边缘
+  ctx.beginPath();
+  ctx.moveTo(sz - offs, offs);
+  ctx.bezierCurveTo(sz - offs - 6, sz * 0.3, sz - offs + 4, sz * 0.7, sz - offs - 4, sz - offs);
+  ctx.stroke();
+  // 飘动叶片
+  const wob = Math.sin(t / 400 + x * 0.01) * 4;
+  ctx.fillStyle = '#7be36b';
+  ctx.beginPath();
+  ctx.ellipse(8, sz / 2 + wob, 6, 3, 0.4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(sz - 8, sz / 2 - wob, 6, 3, -0.4, 0, Math.PI * 2);
+  ctx.fill();
+  // 中心刺
+  ctx.fillStyle = '#3f8a23';
+  ctx.beginPath();
+  ctx.moveTo(sz / 2, 6);
+  ctx.lineTo(sz / 2 - 3, 14);
+  ctx.lineTo(sz / 2 + 3, 14);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+// 🌀 传送门：旋转漩涡（入口蓝紫、出口橙黄）
+export function drawPortalTile(ctx, x, y, sz, kind, t) {
+  ctx.save();
+  ctx.translate(x + sz / 2, y + sz / 2);
+  ctx.rotate(t / 400 * (kind === 'in' ? 1 : -1));
+  const colorIn  = ['#3a1d6e', '#7a3df4', '#5bc6ff'];
+  const colorOut = ['#5d3a14', '#ff8b3d', '#ffd84d'];
+  const cols = kind === 'in' ? colorIn : colorOut;
+  // 螺旋臂
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    const r1 = sz * 0.1, r2 = sz * 0.45;
+    ctx.strokeStyle = cols[i % 3];
+    ctx.lineWidth = 3 - (i % 3);
+    ctx.beginPath();
+    ctx.arc(0, 0, r1 + (r2 - r1) * (i / 12), a, a + 0.6);
+    ctx.stroke();
+  }
+  // 中心核
+  const g = ctx.createRadialGradient(0, 0, sz * 0.05, 0, 0, sz * 0.25);
+  g.addColorStop(0, '#fff');
+  g.addColorStop(1, cols[1]);
+  ctx.fillStyle = g;
+  fillCircle(ctx, 0, 0, sz * 0.18);
+  ctx.restore();
+  // 入口 / 出口标签
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.font = '700 11px sans-serif';
+  ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+  ctx.fillText(kind === 'in' ? 'IN' : 'OUT', x + sz - 4, y + 4);
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+}
+
 // 🟡 果冻 tile 精绘（取代游戏内 inline 渲染）
 export function drawJellyTile(ctx, x, y, sz, hp, maxHp, t) {
   const pct = hp / maxHp;

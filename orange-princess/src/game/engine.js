@@ -29,6 +29,10 @@ export class GameEngine {
     this.cratesBroken = 0;
     this.jellyBroken = 0;
     this.princessesSaved = 0;
+    this.vinesCleared = 0;
+    this.stripesCreated = 0;
+    this.vineSpreadRate = level.vineSpreadRate ?? 1;    // 每步蔓延几次
+    this.tileCfg = level.tiles || null;
     this.giftsOpened = 0;
     const initialPrincesses = (level.obstacles?.princesses || []).length;
     this.princessesToSpawn = level.objective?.type === 'savePrincess'
@@ -50,6 +54,8 @@ export class GameEngine {
     if (o.type === 'crates') return this.cratesBroken >= o.amount;
     if (o.type === 'jelly') return this.jellyBroken >= o.amount;
     if (o.type === 'savePrincess') return this.princessesSaved >= o.amount;
+    if (o.type === 'vineClear') return this.vinesCleared >= o.amount;
+    if (o.type === 'stripes') return this.stripesCreated >= o.amount;
     if (o.type === 'multiColor') return o.items.every(it => (this.collected[it.color] || 0) >= it.amount);
     return false;
   }
@@ -134,6 +140,9 @@ export class GameEngine {
 
     await this._runCascade();
 
+    // 藤蔓蔓延（每步一次）
+    if (this.tileCfg?.vineSpread !== false) this._spreadVines();
+
     // 终局判定
     if (this.isObjectiveDone()) {
       this.phase = Phase.WIN;
@@ -190,9 +199,37 @@ export class GameEngine {
     return true;
   }
 
+  _spreadVines() {
+    if (!this.tiles) return;
+    const rows = this.tiles.length, cols = this.tiles[0].length;
+    // 找所有藤蔓的相邻空 tile 候选
+    const candidates = [];
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      if (this.tiles[r][c]?.type !== TILE.VINE) continue;
+      for (const [nr, nc] of [[r-1,c],[r+1,c],[r,c-1],[r,c+1]]) {
+        if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
+        if (this.tiles[nr][nc]) continue;          // 已有 tile，跳过
+        if (!this.grid[nr][nc]) continue;          // 棋子已被消，跳过
+        const p = this.grid[nr][nc];
+        if (p.kind && p.kind !== KIND.PIECE) continue; // 非普通棋子不感染
+        candidates.push([nr, nc]);
+      }
+    }
+    if (!candidates.length) return;
+    const spawned = [];
+    const n = Math.min(this.vineSpreadRate || 1, candidates.length);
+    for (let i = 0; i < n; i++) {
+      const idx = Math.floor(Math.random() * candidates.length);
+      const [r, c] = candidates.splice(idx, 1)[0];
+      this.tiles[r][c] = { type: TILE.VINE };
+      spawned.push({ r, c });
+    }
+    if (spawned.length) this.emit('vineSpread', { cells: spawned });
+  }
+
   async _runCascade() {
     while (true) {
-      const falls = applyGravity(this.grid);
+      const falls = applyGravity(this.grid, this.tiles);
       // 公主救出检查
       const rescued = rescueArrived(this.grid);
       if (rescued.length) {
@@ -241,13 +278,22 @@ export class GameEngine {
     this.cratesBroken += adj.crateBreaks.length;
     this.jellyBroken += adj.tileBreaks.length;
     this.giftsOpened += adj.giftBreaks.length;
+    this.vinesCleared += (adj.vineBreaks?.length || 0);
+    // 创建特殊棋子计数（彩条收集目标用）
+    if (specialCreations.length) {
+      const stripes = specialCreations.filter(s =>
+        s.special === SPECIAL.ROCKET_H || s.special === SPECIAL.ROCKET_V
+      ).length;
+      this.stripesCreated += stripes;
+    }
     // 礼物盒奖励
     for (const _ of adj.giftBreaks) this.emit('giftReward', this._dropGift());
     this.emit(reason === 'match' ? 'clear' : 'explode', {
       cells: clearedCells, specialCreations, reason, origin, special,
       crateBreaks: adj.crateBreaks, crateDamages: adj.crateDamages,
       giftBreaks: adj.giftBreaks, unfrozen: adj.unfrozen,
-      tileBreaks: adj.tileBreaks, tileDamages: adj.tileDamages
+      tileBreaks: adj.tileBreaks, tileDamages: adj.tileDamages,
+      vineBreaks: adj.vineBreaks
     });
     this.emit('scoreChanged', this.score);
     this.emit('collectChanged', this.collected);
