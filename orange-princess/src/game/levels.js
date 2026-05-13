@@ -147,6 +147,74 @@ export const LEVELS = [
     starThresholds: [7000, 12000, 18000],
     palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple'],
     obstacles: { crates: [[2,2,1],[2,3,1],[2,5,1],[2,6,1],[3,4,2],[4,2,2],[4,6,2],[5,4,2],[6,2,1],[6,3,1],[6,5,1],[6,6,1],[7,3,1],[7,5,1]] }
+  },
+  {
+    id: 16,
+    name: '果冻奶昔',
+    story: '果冻铺满地板！消除棋子来融化所有果冻。',
+    moves: 24,
+    objective: { type: 'jelly', amount: 25 },
+    starThresholds: [4500, 8000, 12000],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple'],
+    tiles: { jelly: [
+      [2,2,1],[2,3,1],[2,4,1],[2,5,1],[2,6,1],
+      [3,2,1],[3,3,1],[3,4,1],[3,5,1],[3,6,1],
+      [5,2,1],[5,3,1],[5,4,1],[5,5,1],[5,6,1],
+      [6,2,1],[6,3,1],[6,4,1],[6,5,1],[6,6,1],
+      [4,0,1],[4,1,1],[4,7,1],[4,8,1],[7,4,1]
+    ]}
+  },
+  {
+    id: 17,
+    name: '双层果冻',
+    story: '更顽固的双层果冻，要打两次才消失。',
+    moves: 26,
+    objective: { type: 'jelly', amount: 18 },
+    starThresholds: [5000, 8500, 13000],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple'],
+    tiles: { jelly: [
+      [3,3,2],[3,4,2],[3,5,2],
+      [4,3,2],[4,4,2],[4,5,2],
+      [5,3,2],[5,4,2],[5,5,2],
+      [2,4,1],[6,4,1],[4,2,1],[4,6,1]
+    ]}
+  },
+  {
+    id: 18,
+    name: '冰封山谷',
+    story: '邪恶法师把水果都冻住了！消除冰块边的水果让它们解冻。',
+    moves: 28,
+    objective: { type: 'multiColor', items: [
+      { color: 'blue', amount: 18 },
+      { color: 'purple', amount: 18 }
+    ]},
+    starThresholds: [5500, 9500, 14000],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple'],
+    obstacles: { ice: [
+      [3,2],[3,3],[3,5],[3,6],
+      [4,2],[4,3],[4,5],[4,6],
+      [5,2],[5,3],[5,5],[5,6]
+    ]}
+  },
+  {
+    id: 19,
+    name: '礼物盒派对',
+    story: '邻居们送来好多礼物！砸开礼物盒掉落随机道具。',
+    moves: 22,
+    objective: { type: 'collectColor', color: 'orange', amount: 22 },
+    starThresholds: [4500, 7500, 11000],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple'],
+    obstacles: { gifts: [[1,2],[1,6],[3,4],[5,2],[5,6],[7,4]] }
+  },
+  {
+    id: 20,
+    name: '救出小公主',
+    story: '楼顶的小公主被困住了！把她从顶端护送到底端。需要救 3 位。',
+    moves: 26,
+    objective: { type: 'savePrincess', amount: 3 },
+    starThresholds: [4000, 8000, 12000],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple'],
+    obstacles: { princesses: [[0,4]] }
   }
 ];
 

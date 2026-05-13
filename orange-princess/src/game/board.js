@@ -11,7 +11,13 @@ export const SPECIAL = {
 
 export const KIND = {
   PIECE: 'piece',
-  CRATE: 'crate'   // 障碍：不参与匹配；相邻消除时受伤
+  CRATE: 'crate',          // 木箱：相邻消除受伤
+  GIFT: 'gift',            // 礼物盒：相邻消除打开，掉随机道具
+  PRINCESS: 'princess'     // 小公主：跟随重力下落，到底层即"救出"
+};
+
+export const TILE = {
+  JELLY: 'jelly'           // 果冻地块（铺在格子底下）
 };
 
 let idSeq = 1;
@@ -21,10 +27,17 @@ function newPiece(color, special = null) {
 export function newCrate(hp = 1) {
   return { id: idSeq++, color: null, special: null, kind: KIND.CRATE, hp, maxHp: hp };
 }
+export function newGift() {
+  return { id: idSeq++, color: null, special: null, kind: KIND.GIFT };
+}
+export function newPrincess() {
+  return { id: idSeq++, color: null, special: null, kind: KIND.PRINCESS };
+}
 
 function pieceColor(p) {
   if (!p) return null;
-  if (p.kind === KIND.CRATE) return null;
+  if (p.kind && p.kind !== KIND.PIECE) return null;
+  if (p.frozen) return null;
   return p.color;
 }
 
@@ -166,9 +179,8 @@ function decideSpecial(group) {
   return null;
 }
 
-// 应用消除：返回 { clearedCells, specialsToTrigger, crateBreaks, crateDamages }
+// 应用消除：返回 { clearedCells, specialsToTrigger }（相邻效果交给 processAdjacency）
 export function applyClear(grid, toClear, specialCreations = [], triggeredBy = null) {
-  const rows = grid.length, cols = grid[0].length;
   const clearedCells = [];
   const specialsToTrigger = [];
   const becomeSpecialKeys = new Set(specialCreations.map(s => s.pos[0] + ',' + s.pos[1]));
@@ -178,7 +190,8 @@ export function applyClear(grid, toClear, specialCreations = [], triggeredBy = n
     if (becomeSpecialKeys.has(key)) continue;
     const p = grid[r][c];
     if (!p) continue;
-    if (p.kind === KIND.CRATE) continue; // 木箱不直接被普通匹配清除（除非被特殊棋子/邻接打击）
+    if (p.kind && p.kind !== KIND.PIECE) continue; // 障碍物不被普通匹配直接清除
+    if (p.frozen) continue;
     clearedCells.push({ r, c, piece: p });
     if (p.special && !(triggeredBy && triggeredBy.r === r && triggeredBy.c === c)) {
       specialsToTrigger.push({ r, c, special: p.special, color: p.color });
@@ -190,31 +203,7 @@ export function applyClear(grid, toClear, specialCreations = [], triggeredBy = n
     grid[r][c] = { id: idSeq++, color: sc.color, special: sc.special, kind: KIND.PIECE };
   }
 
-  // 相邻木箱受到伤害
-  const damaged = new Map();
-  for (const { r, c } of clearedCells) {
-    for (const [nr, nc] of neighbors(r, c)) {
-      if (!inBoundsRC(grid, nr, nc)) continue;
-      const np = grid[nr][nc];
-      if (np && np.kind === KIND.CRATE) {
-        const key = nr + ',' + nc;
-        damaged.set(key, np);
-      }
-    }
-  }
-  const crateBreaks = [], crateDamages = [];
-  for (const [key, crate] of damaged) {
-    crate.hp -= 1;
-    const [r, c] = key.split(',').map(Number);
-    if (crate.hp <= 0) {
-      grid[r][c] = null;
-      crateBreaks.push({ r, c, piece: crate });
-    } else {
-      crateDamages.push({ r, c, piece: crate });
-    }
-  }
-
-  return { clearedCells, specialsToTrigger, crateBreaks, crateDamages };
+  return { clearedCells, specialsToTrigger };
 }
 
 function inBoundsRC(grid, r, c) {
@@ -365,16 +354,105 @@ export function findValidMoves(grid) {
   return moves;
 }
 
-export function isMovable(p) { return !!p && p.kind !== KIND.CRATE; }
+export function isMovable(p) {
+  if (!p) return false;
+  if (p.kind && p.kind !== KIND.PIECE) return false;
+  if (p.frozen) return false;
+  return true;
+}
 
-// 把 obstacles 配置注入到棋盘上（替换该格）
+// 把 obstacles 配置注入到棋盘上
 export function injectObstacles(grid, obstacles) {
   if (!obstacles) return;
-  if (obstacles.crates) {
-    for (const [r, c, hp] of obstacles.crates) {
-      if (inBoundsRC(grid, r, c)) grid[r][c] = newCrate(hp || 1);
+  if (obstacles.crates) for (const [r, c, hp] of obstacles.crates) {
+    if (inBoundsRC(grid, r, c)) grid[r][c] = newCrate(hp || 1);
+  }
+  if (obstacles.gifts) for (const [r, c] of obstacles.gifts) {
+    if (inBoundsRC(grid, r, c)) grid[r][c] = newGift();
+  }
+  if (obstacles.princesses) for (const [r, c] of obstacles.princesses) {
+    if (inBoundsRC(grid, r, c)) grid[r][c] = newPrincess();
+  }
+  if (obstacles.ice) for (const [r, c] of obstacles.ice) {
+    if (inBoundsRC(grid, r, c) && grid[r][c]) grid[r][c].frozen = true;
+  }
+}
+
+// 创建并注入果冻 tiles（与 grid 并存）
+export function createTiles(rows = CONFIG.ROWS, cols = CONFIG.COLS) {
+  return Array.from({ length: rows }, () => Array(cols).fill(null));
+}
+export function injectTiles(tiles, cfg) {
+  if (!cfg) return;
+  if (cfg.jelly) for (const [r, c, hp] of cfg.jelly) {
+    if (r >= 0 && r < tiles.length && c >= 0 && c < tiles[0].length) {
+      tiles[r][c] = { type: TILE.JELLY, hp: hp || 1, maxHp: hp || 1 };
     }
   }
+}
+
+// 在 clearedCells 周边 / 自身上施加额外效果：木箱伤害 / 礼物盒打开 / 冰冻解除 / 果冻减血
+export function processAdjacency(grid, tiles, clearedCells) {
+  const crateDmg = new Map();
+  const giftHits = new Map();
+  const unfrozen = [];
+  const tileBreaks = [];
+  const tileDamages = [];
+
+  for (const cell of clearedCells) {
+    const { r, c } = cell;
+    // 自身格子上的果冻 tile
+    if (tiles && tiles[r] && tiles[r][c] && tiles[r][c].type === TILE.JELLY) {
+      tiles[r][c].hp -= 1;
+      if (tiles[r][c].hp <= 0) {
+        tileBreaks.push({ r, c, tile: tiles[r][c] });
+        tiles[r][c] = null;
+      } else {
+        tileDamages.push({ r, c, tile: tiles[r][c] });
+      }
+    }
+    // 相邻格子上的障碍
+    for (const [nr, nc] of neighbors(r, c)) {
+      if (!inBoundsRC(grid, nr, nc)) continue;
+      const np = grid[nr][nc];
+      if (!np) continue;
+      const key = nr + ',' + nc;
+      if (np.kind === KIND.CRATE && !crateDmg.has(key)) crateDmg.set(key, np);
+      else if (np.kind === KIND.GIFT && !giftHits.has(key)) giftHits.set(key, np);
+      else if (np.frozen && !unfrozen.find(u => u.piece === np)) unfrozen.push({ r: nr, c: nc, piece: np });
+    }
+  }
+
+  const crateBreaks = [], crateDamages = [];
+  for (const [key, cr] of crateDmg) {
+    cr.hp -= 1;
+    const [r, c] = key.split(',').map(Number);
+    if (cr.hp <= 0) { grid[r][c] = null; crateBreaks.push({ r, c, piece: cr }); }
+    else crateDamages.push({ r, c, piece: cr });
+  }
+  const giftBreaks = [];
+  for (const [key, g] of giftHits) {
+    const [r, c] = key.split(',').map(Number);
+    grid[r][c] = null;
+    giftBreaks.push({ r, c, piece: g });
+  }
+  for (const u of unfrozen) u.piece.frozen = false;
+
+  return { crateBreaks, crateDamages, giftBreaks, unfrozen, tileBreaks, tileDamages };
+}
+
+// 公主到达底层时"救出"：返回被救出的位置和对应 piece
+export function rescueArrived(grid) {
+  const rows = grid.length, cols = grid[0].length;
+  const rescued = [];
+  for (let c = 0; c < cols; c++) {
+    const bottom = grid[rows - 1][c];
+    if (bottom && bottom.kind === KIND.PRINCESS) {
+      rescued.push({ r: rows - 1, c, piece: bottom });
+      grid[rows - 1][c] = null;
+    }
+  }
+  return rescued;
 }
 
 export function cloneGrid(grid) {

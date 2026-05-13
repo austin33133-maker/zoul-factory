@@ -2,7 +2,8 @@
 import {
   createBoard, findMatches, applyClear, applyGravity, refill,
   specialTargets, comboTargets, cloneGrid, findValidMoves, SPECIAL, inBounds,
-  injectObstacles, isMovable, KIND
+  injectObstacles, injectTiles, createTiles, processAdjacency, rescueArrived,
+  isMovable, KIND, TILE, newPrincess
 } from './board.js';
 import { CONFIG } from '../config.js';
 
@@ -20,13 +21,21 @@ export class GameEngine {
     this.listeners = listeners;
     this.grid = createBoard(CONFIG.COLS, CONFIG.ROWS, level.palette);
     injectObstacles(this.grid, level.obstacles);
+    this.tiles = createTiles(CONFIG.ROWS, CONFIG.COLS);
+    injectTiles(this.tiles, level.tiles);
     this.movesLeft = level.moves + (level.extraMoves || 0);
     this.score = 0;
     this.collected = {};
     this.cratesBroken = 0;
+    this.jellyBroken = 0;
+    this.princessesSaved = 0;
+    this.giftsOpened = 0;
+    const initialPrincesses = (level.obstacles?.princesses || []).length;
+    this.princessesToSpawn = level.objective?.type === 'savePrincess'
+      ? Math.max(0, level.objective.amount - initialPrincesses)
+      : 0;
     this.phase = Phase.IDLE;
     this.comboLevel = 0;
-    this.appliedBoosters = level.preBoosters || {}; // 战前道具
   }
 
   emit(name, payload) {
@@ -39,6 +48,8 @@ export class GameEngine {
     if (o.type === 'collectColor') return (this.collected[o.color] || 0) >= o.amount;
     if (o.type === 'score') return this.score >= o.amount;
     if (o.type === 'crates') return this.cratesBroken >= o.amount;
+    if (o.type === 'jelly') return this.jellyBroken >= o.amount;
+    if (o.type === 'savePrincess') return this.princessesSaved >= o.amount;
     if (o.type === 'multiColor') return o.items.every(it => (this.collected[it.color] || 0) >= it.amount);
     return false;
   }
@@ -121,18 +132,7 @@ export class GameEngine {
       await this.resolveMatches(matches);
     }
 
-    // 级联
-    while (true) {
-      const falls = applyGravity(this.grid);
-      const gen = refill(this.grid, this.level.palette);
-      this.emit('cascade', { falls, gen });
-      await sleep(220);
-      const next = findMatches(this.grid);
-      if (!next.groups.length) break;
-      this.comboLevel++;
-      this.emit('combo', this.comboLevel);
-      await this.resolveMatches(next);
-    }
+    await this._runCascade();
 
     // 终局判定
     if (this.isObjectiveDone()) {
@@ -178,48 +178,92 @@ export class GameEngine {
       // 重新解算
       let matches = findMatches(this.grid);
       if (matches.groups.length) await this.resolveMatches(matches);
-      while (true) {
-        const falls = applyGravity(this.grid);
-        const gen = refill(this.grid, this.level.palette);
-        this.emit('cascade', { falls, gen });
-        await sleep(220);
-        const next = findMatches(this.grid);
-        if (!next.groups.length) break;
-        await this.resolveMatches(next);
-      }
+      await this._runCascade();
       this.phase = Phase.IDLE;
       return true;
     } else return false;
 
     this.phase = Phase.RESOLVING;
     await this.triggerSet(set, { reason: 'booster' });
-    while (true) {
-      const falls = applyGravity(this.grid);
-      const gen = refill(this.grid, this.level.palette);
-      this.emit('cascade', { falls, gen });
-      await sleep(220);
-      const next = findMatches(this.grid);
-      if (!next.groups.length) break;
-      await this.resolveMatches(next);
-    }
+    await this._runCascade();
     this.phase = Phase.IDLE;
     return true;
   }
 
-  // 普通匹配解析（含创建特殊棋子）
-  async resolveMatches(matches) {
-    const { toClear, specialCreations } = matches;
-    const { clearedCells, specialsToTrigger, crateBreaks, crateDamages } = applyClear(this.grid, toClear, specialCreations);
-    this.score += clearedCells.length * (60 + this.comboLevel * 10);
+  async _runCascade() {
+    while (true) {
+      const falls = applyGravity(this.grid);
+      // 公主救出检查
+      const rescued = rescueArrived(this.grid);
+      if (rescued.length) {
+        this.princessesSaved += rescued.length;
+        this.score += rescued.length * 500;
+        this.emit('princessRescued', { rescued });
+        this.emit('scoreChanged', this.score);
+      }
+      const gen = refill(this.grid, this.level.palette);
+      // 再生公主：把顶部新生成的某个棋子替换成公主
+      if (this.princessesToSpawn > 0 && gen.length) {
+        const topGens = gen.filter(g => g.at[0] === 0);
+        if (topGens.length) {
+          const tg = topGens[Math.floor(Math.random() * topGens.length)];
+          const [r, c] = tg.at;
+          const princess = newPrincess();
+          this.grid[r][c] = princess;
+          tg.piece = princess;
+          this.princessesToSpawn--;
+        }
+      }
+      this.emit('cascade', { falls, gen });
+      await sleep(240);
+      // 救出后让重力再处理一轮
+      if (rescued.length) continue;
+      const next = findMatches(this.grid);
+      if (!next.groups.length) break;
+      this.comboLevel++;
+      this.emit('combo', this.comboLevel);
+      await this.resolveMatches(next);
+    }
+  }
+
+  // 把清除/爆炸的事件归集到一处（含相邻效果与礼物盒奖励）
+  async _commitClear({ clearedCells, specialCreations = [], reason, origin, special }) {
+    const adj = processAdjacency(this.grid, this.tiles, clearedCells);
+    // 计分
+    this.score += clearedCells.length * (80 + this.comboLevel * 10)
+                + adj.crateBreaks.length * 120
+                + adj.giftBreaks.length * 100
+                + adj.tileBreaks.length * 80;
+    // 收集计数
     clearedCells.forEach(({ piece }) => {
       if (piece.kind === KIND.PIECE) this.collected[piece.color] = (this.collected[piece.color] || 0) + 1;
     });
-    this.cratesBroken += crateBreaks.length;
-    this.score += crateBreaks.length * 120;
-    this.emit('clear', { cells: clearedCells, specialCreations, crateBreaks, crateDamages });
+    this.cratesBroken += adj.crateBreaks.length;
+    this.jellyBroken += adj.tileBreaks.length;
+    this.giftsOpened += adj.giftBreaks.length;
+    // 礼物盒奖励
+    for (const _ of adj.giftBreaks) this.emit('giftReward', this._dropGift());
+    this.emit(reason === 'match' ? 'clear' : 'explode', {
+      cells: clearedCells, specialCreations, reason, origin, special,
+      crateBreaks: adj.crateBreaks, crateDamages: adj.crateDamages,
+      giftBreaks: adj.giftBreaks, unfrozen: adj.unfrozen,
+      tileBreaks: adj.tileBreaks, tileDamages: adj.tileDamages
+    });
     this.emit('scoreChanged', this.score);
     this.emit('collectChanged', this.collected);
-    await sleep(260);
+    await sleep(240);
+  }
+
+  _dropGift() {
+    const pool = ['hammer', 'bomb', 'swap'];
+    const key = pool[Math.floor(Math.random() * pool.length)];
+    return { type: key };
+  }
+
+  async resolveMatches(matches) {
+    const { toClear, specialCreations } = matches;
+    const { clearedCells, specialsToTrigger } = applyClear(this.grid, toClear, specialCreations);
+    await this._commitClear({ clearedCells, specialCreations, reason: 'match' });
     for (const sp of specialsToTrigger) {
       const set = specialTargets(this.grid, sp.r, sp.c, sp.special, sp.color);
       set.add(sp.r + ',' + sp.c);
@@ -227,34 +271,23 @@ export class GameEngine {
     }
   }
 
-  // 触发任意一组目标格（来自 booster / lightball / combo / 链式）
   async triggerSet(set, meta = {}) {
     const cells = [];
     const chained = [];
-    const crateBreaks = [];
     for (const key of set) {
       const [r, c] = key.split(',').map(Number);
       if (!inBounds(this.grid, r, c)) continue;
       const p = this.grid[r][c];
       if (!p) continue;
-      if (p.kind === KIND.CRATE) {
-        crateBreaks.push({ r, c, piece: p });
-        this.cratesBroken++;
-        this.grid[r][c] = null;
-        continue;
-      }
+      // 特殊棋子被直接命中：直接消除（包括公主以外的障碍）
+      if (p.kind === KIND.PRINCESS) continue; // 公主不被火箭/炸弹消除
       cells.push({ r, c, piece: p });
       if (p.special) chained.push({ r, c, special: p.special, color: p.color });
       this.grid[r][c] = null;
+      // 直接命中的木箱也算 1 次
+      if (p.kind === KIND.CRATE) this.cratesBroken++;
     }
-    this.score += cells.length * (80 + this.comboLevel * 10) + crateBreaks.length * 120;
-    cells.forEach(({ piece }) => {
-      if (piece.kind === KIND.PIECE) this.collected[piece.color] = (this.collected[piece.color] || 0) + 1;
-    });
-    this.emit('explode', { cells, reason: meta.reason, origin: meta.origin, special: meta.special, crateBreaks });
-    this.emit('scoreChanged', this.score);
-    this.emit('collectChanged', this.collected);
-    await sleep(220);
+    await this._commitClear({ clearedCells: cells, reason: meta.reason || 'explode', origin: meta.origin, special: meta.special });
     for (const sp of chained) {
       const next = specialTargets(this.grid, sp.r, sp.c, sp.special, sp.color);
       if (next.size) await this.triggerSet(next, { reason: 'chain', origin: [sp.r, sp.c], special: sp.special });

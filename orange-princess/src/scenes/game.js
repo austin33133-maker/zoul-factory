@@ -193,7 +193,7 @@ export class GameScene {
         if (invalid) { Audio.invalid(); this.say('换不了…', 'worried', 900); }
         else Audio.swap();
       },
-      clear: ({ cells, specialCreations, crateBreaks, crateDamages }) => {
+      clear: ({ cells, specialCreations, crateBreaks, crateDamages, giftBreaks, unfrozen, tileBreaks }) => {
         Audio.pop(0);
         const g = geom();
         cells.forEach(({ r, c, piece }) => this.burstAt(g.padX + c * g.cell + g.cell/2, g.top + r * g.cell + g.cell/2, piece.color));
@@ -203,10 +203,23 @@ export class GameScene {
           this.sprites.delete(piece.id);
           this.shake(3, 0.18);
         });
-        // 受伤的木箱：抖一下（保留 sprite）
         if (crateDamages) crateDamages.forEach(({ piece }) => {
           const s = this.sprites.get(piece.id);
           if (s) { s.scale = 1.18; s.tscale = 1; }
+        });
+        if (giftBreaks) giftBreaks.forEach(({ r, c, piece }) => {
+          const x = g.padX + c * g.cell + g.cell/2, y = g.top + r * g.cell + g.cell/2;
+          for (let i = 0; i < 16; i++) this.burstAt(x, y, choice(COLOR_IDS), 1);
+          this.sprites.delete(piece.id);
+          this.floatScore('🎁', x, y - 24, '#ffd84d');
+        });
+        if (unfrozen) unfrozen.forEach(({ r, c, piece }) => {
+          const x = g.padX + c * g.cell + g.cell/2, y = g.top + r * g.cell + g.cell/2;
+          for (let i = 0; i < 6; i++) this.burstAt(x, y, 'blue', 1);
+        });
+        if (tileBreaks) tileBreaks.forEach(({ r, c }) => {
+          const x = g.padX + c * g.cell + g.cell/2, y = g.top + r * g.cell + g.cell/2;
+          this.burstAt(x, y, 'yellow', 8);
         });
         specialCreations.forEach(sc => {
           const [r, c] = sc.pos;
@@ -218,7 +231,7 @@ export class GameScene {
         });
         this.cleanupOrphanSprites();
       },
-      explode: ({ cells, reason, origin, special, crateBreaks }) => {
+      explode: ({ cells, reason, origin, special, crateBreaks, giftBreaks, unfrozen, tileBreaks }) => {
         const g = geom();
         // 火箭尾迹
         if (origin && (special === SPECIAL.ROCKET_H || special === SPECIAL.ROCKET_V)) {
@@ -233,12 +246,26 @@ export class GameScene {
         if (special === SPECIAL.LIGHTBALL || reason === 'lightball' || reason === 'combo') this.flashAlpha = 0.8;
         cells.forEach(({ r, c, piece }) => {
           const x = g.padX + c * g.cell + g.cell/2, y = g.top + r * g.cell + g.cell/2;
-          this.burstAt(x, y, piece.color, 16);
+          this.burstAt(x, y, piece.color || 'orange', 16);
           this.sprites.delete(piece.id);
         });
         if (crateBreaks) crateBreaks.forEach(({ r, c, piece }) => {
           this.burstAt(g.padX + c * g.cell + g.cell/2, g.top + r * g.cell + g.cell/2, 'orange', 18);
           this.sprites.delete(piece.id);
+        });
+        if (giftBreaks) giftBreaks.forEach(({ r, c, piece }) => {
+          const x = g.padX + c * g.cell + g.cell/2, y = g.top + r * g.cell + g.cell/2;
+          for (let i = 0; i < 16; i++) this.burstAt(x, y, choice(COLOR_IDS), 1);
+          this.sprites.delete(piece.id);
+          this.floatScore('🎁', x, y - 24, '#ffd84d');
+        });
+        if (unfrozen) unfrozen.forEach(({ r, c }) => {
+          const x = g.padX + c * g.cell + g.cell/2, y = g.top + r * g.cell + g.cell/2;
+          for (let i = 0; i < 6; i++) this.burstAt(x, y, 'blue', 1);
+        });
+        if (tileBreaks) tileBreaks.forEach(({ r, c }) => {
+          const x = g.padX + c * g.cell + g.cell/2, y = g.top + r * g.cell + g.cell/2;
+          this.burstAt(x, y, 'yellow', 8);
         });
         if (reason === 'combo' || reason === 'lightball') { Audio.lightball(); this.shake(10, 0.5); this.say('哇！', 'wow', 800); }
         else if (reason === 'booster') { Audio.bomb(); this.shake(7, 0.35); }
@@ -282,6 +309,23 @@ export class GameScene {
       },
       reshuffle: () => { showToast('棋盘重排'); this.shake(10, 0.5); },
       boardReset: () => { this.sprites.clear(); this.initSprites(); },
+      princessRescued: ({ rescued }) => {
+        const g = geom();
+        rescued.forEach(({ r, c, piece }) => {
+          const x = g.padX + c * g.cell + g.cell / 2, y = g.top + r * g.cell + g.cell / 2;
+          for (let i = 0; i < 24; i++) this.burstAt(x, y, choice(COLOR_IDS), 1);
+          this.sprites.delete(piece.id);
+          this.floatScore('+500', x, y - 30, '#ffd84d');
+        });
+        Audio.unlock(); this.flashAlpha = 0.5;
+        this.say('救出公主！', 'cheer', 1600);
+      },
+      giftReward: ({ type }) => {
+        Save.giveBooster(type, 1);
+        const labels = { hammer: '🔨锤子', bomb: '💣炸弹', swap: '🔀换位' };
+        showToast(`礼物盒掉落 ${labels[type] || type}！`);
+        Audio.coin();
+      },
       win: async ({ score, stars }) => { await this.onWin(score, stars); },
       lose: async ({ score }) => { await this.onLose(score); }
     };
@@ -391,7 +435,7 @@ export class GameScene {
     });
     if (v === 'next') {
       const next = lv.id + 1;
-      if (next > 15) { showToast('已是最后一关，期待续作 🍊'); this.sm.switchTo('map'); }
+      if (next > 20) { showToast('已是最后一关，期待续作 🍊'); this.sm.switchTo('map'); }
       else {
         if (Save.get().lives <= 0) { showToast('生命不足'); this.sm.switchTo('map'); return; }
         Save.consumeLife();
@@ -533,6 +577,29 @@ export class GameScene {
       ctx.fillStyle = (r + c) % 2 ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)';
       ctx.fillRect(g.padX + c * g.cell, g.top + r * g.cell, g.cell, g.cell);
     }
+    // 果冻地块（铺在格子上、棋子下）
+    const tiles = this.engine.tiles;
+    if (tiles) for (let r = 0; r < CONFIG.ROWS; r++) for (let c = 0; c < CONFIG.COLS; c++) {
+      const tl = tiles[r][c]; if (!tl) continue;
+      const x = g.padX + c * g.cell, y = g.top + r * g.cell;
+      if (tl.type === 'jelly') {
+        const pct = tl.hp / tl.maxHp;
+        const grad = ctx.createLinearGradient(x, y, x, y + g.cell);
+        grad.addColorStop(0, `rgba(255,216,77,${0.65 * pct + 0.2})`);
+        grad.addColorStop(1, `rgba(255,139,61,${0.6 * pct + 0.2})`);
+        ctx.fillStyle = grad;
+        ctx.fillRect(x + 2, y + 2, g.cell - 4, g.cell - 4);
+        // 高光
+        ctx.fillStyle = `rgba(255,255,255,${0.18 + 0.18 * pct})`;
+        ctx.fillRect(x + 4, y + 4, g.cell - 8, (g.cell - 8) * 0.3);
+        // 多层标记
+        if (tl.maxHp > 1) {
+          ctx.fillStyle = '#7c3a14'; ctx.font = '600 12px sans-serif';
+          ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+          ctx.fillText(`x${tl.hp}`, x + 4, y + 4);
+        }
+      }
+    }
 
     // 棋子
     for (const s of this.sprites.values()) {
@@ -612,6 +679,8 @@ export class GameScene {
 
   drawPiece(ctx, piece, s, g) {
     if (piece.kind === KIND.CRATE) { this.drawCrate(ctx, piece, s, g); return; }
+    if (piece.kind === KIND.GIFT) { this.drawGift(ctx, piece, s, g); return; }
+    if (piece.kind === KIND.PRINCESS) { this.drawPrincessPiece(ctx, piece, s, g); return; }
     const col = CONFIG.COLORS.find(c => c.id === piece.color) || CONFIG.COLORS[0];
     const r = g.cell * 0.42;
     const x = s.x, y = s.y;
@@ -672,8 +741,79 @@ export class GameScene {
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(col.label, 0, r * 0.06);
     }
+    // 冰冻覆盖层
+    if (piece.frozen) {
+      const ice = ctx.createRadialGradient(0, -r * 0.3, r * 0.1, 0, 0, r * 1.1);
+      ice.addColorStop(0, 'rgba(220,240,255,0.5)');
+      ice.addColorStop(0.7, 'rgba(120,200,255,0.55)');
+      ice.addColorStop(1, 'rgba(80,150,220,0.7)');
+      ctx.fillStyle = ice;
+      drawRoundedRect(ctx, -r * 1.05, -r * 1.05, r * 2.1, r * 2.1, 10);
+      ctx.fill();
+      // 冰裂纹
+      ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(-r * 0.7, -r * 0.4); ctx.lineTo(0, 0); ctx.lineTo(r * 0.4, -r * 0.5);
+      ctx.moveTo(0, 0); ctx.lineTo(-r * 0.2, r * 0.7);
+      ctx.stroke();
+    }
     ctx.restore();
   }
+
+  drawGift(ctx, piece, s, g) {
+    const sz = g.cell * 0.78;
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.scale(s.scale, s.scale);
+    // 摆动
+    const wob = Math.sin(this.t / 280) * 0.06;
+    ctx.rotate(wob);
+    // 阴影
+    ctx.save();
+    ctx.translate(0, sz * 0.45);
+    ctx.scale(1, 0.3);
+    fillCircle(ctx, 0, 0, sz * 0.45, 'rgba(0,0,0,0.4)');
+    ctx.restore();
+    // 礼物主体
+    const grad = ctx.createLinearGradient(0, -sz/2, 0, sz/2);
+    grad.addColorStop(0, '#ff8b3d');
+    grad.addColorStop(1, '#ff5e3a');
+    drawRoundedRect(ctx, -sz/2, -sz/2, sz, sz, 8);
+    ctx.fillStyle = grad; ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+    // 丝带
+    ctx.fillStyle = '#ffd84d';
+    ctx.fillRect(-sz/2, -sz * 0.08, sz, sz * 0.16);
+    ctx.fillRect(-sz * 0.08, -sz/2, sz * 0.16, sz);
+    // 蝴蝶结
+    ctx.fillStyle = '#ffe666';
+    fillCircle(ctx, -sz * 0.15, -sz/2 + 4, sz * 0.12);
+    fillCircle(ctx,  sz * 0.15, -sz/2 + 4, sz * 0.12);
+    fillCircle(ctx, 0, -sz/2 + 4, sz * 0.08, '#ffd84d');
+    ctx.restore();
+  }
+
+  drawPrincessPiece(ctx, piece, s, g) {
+    const sz = g.cell * 0.92;
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.scale(s.scale, s.scale);
+    // 光环
+    const pulse = (Math.sin(this.t / 240) + 1) / 2;
+    fillCircle(ctx, 0, 0, sz / 2 + 4 + pulse * 4, 'rgba(255,216,77,0.35)');
+    // 阴影
+    ctx.save();
+    ctx.translate(0, sz * 0.42);
+    ctx.scale(1, 0.3);
+    fillCircle(ctx, 0, 0, sz * 0.42, 'rgba(0,0,0,0.4)');
+    ctx.restore();
+    // 用 princess mascot 缩小版
+    drawPrincess(ctx, 0, sz * 0.04, sz / 220, 'cheer', this.t);
+    ctx.restore();
+  }
+
+  drawHUD_marker_dummy() {}
 
   drawCrate(ctx, piece, s, g) {
     const sz = g.cell * 0.78;
@@ -761,6 +901,10 @@ export class GameScene {
       ctx.fillText(`${Math.min(score, o.amount)}/${o.amount}`, w - 20, 138);
     } else if (o.type === 'crates') {
       ctx.fillText(`📦 ${this.engine.cratesBroken}/${o.amount}`, w - 20, 138);
+    } else if (o.type === 'jelly') {
+      ctx.fillText(`🟡 ${this.engine.jellyBroken}/${o.amount}`, w - 20, 138);
+    } else if (o.type === 'savePrincess') {
+      ctx.fillText(`👸 ${this.engine.princessesSaved}/${o.amount}`, w - 20, 138);
     } else if (o.type === 'multiColor') {
       ctx.font = '600 18px sans-serif';
       const parts = o.items.map(it => {
@@ -821,6 +965,8 @@ function objectiveText(level) {
   }
   if (o.type === 'score') return `得分 ${o.amount}`;
   if (o.type === 'crates') return `砸开 📦 ×${o.amount}`;
+  if (o.type === 'jelly') return `清除果冻 🟡 ×${o.amount}`;
+  if (o.type === 'savePrincess') return `救出公主 👸 ×${o.amount}`;
   if (o.type === 'multiColor') {
     return o.items.map(it => {
       const fr = (CONFIG.COLORS.find(c => c.id === it.color) || {}).label || '';
