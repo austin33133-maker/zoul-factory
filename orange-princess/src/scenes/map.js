@@ -44,6 +44,8 @@ export class MapScene {
     const target = this.nodes.find(n => n.id === s.level) || this.nodes[0];
     this.targetScroll = Math.max(0, target.y - CONFIG.CANVAS_H * 0.55);
     this.scroll = this.targetScroll;
+    // 自动启动 BGM (用户首次交互后 AudioContext 解锁才会真正响)
+    if (s.bgm) Audio.bgmStart();
   }
 
   onPointerDown(x, y) {
@@ -184,9 +186,10 @@ export class MapScene {
     Audio.click();
     const v = await modal({
       title: '设置',
-      html: `<p>音效：${Save.get().audio ? '🔊 开' : '🔇 关'}</p>`,
+      html: `<p>音效：${Save.get().audio ? '🔊 开' : '🔇 关'}　背景音乐：${Save.get().bgm ? '🎵 开' : '🔕 关'}</p>`,
       buttons: [
         { label: '切换音效', value: 'audio' },
+        { label: '切换 BGM', value: 'bgm' },
         { label: '导出存档', value: 'export' },
         { label: '导入存档', value: 'import' },
         { label: '重置存档', value: 'reset', style: 'danger' },
@@ -194,6 +197,10 @@ export class MapScene {
       ]
     });
     if (v === 'audio') Save.toggleAudio();
+    if (v === 'bgm') {
+      const on = Save.toggleBgm();
+      if (on) Audio.bgmStart(); else Audio.bgmStop();
+    }
     if (v === 'export') {
       const code = Save.exportSave();
       const html = `

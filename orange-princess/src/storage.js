@@ -28,6 +28,7 @@ const DEFAULT_STATE = {
   // 新手引导是否看过
   tutorial: { swap: false },
   audio: true,
+  bgm: true,
   firstRun: true
 };
 
@@ -115,6 +116,7 @@ export const Save = {
   },
 
   toggleAudio() { state.audio = !state.audio; save(); return state.audio; },
+  toggleBgm() { state.bgm = !state.bgm; save(); return state.bgm; },
 
   // ----- decoration -----
   unlockDecoration(key, starCost) {

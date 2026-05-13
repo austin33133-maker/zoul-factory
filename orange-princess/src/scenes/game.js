@@ -489,7 +489,7 @@ export class GameScene {
     });
     if (v === 'next') {
       const next = lv.id + 1;
-      if (next > 23) { showToast('已是最后一关，期待续作 🍊'); this.sm.switchTo('map'); }
+      if (next > 30) { showToast('🎊 你通关了！期待续作 🍊'); this.sm.switchTo('map'); }
       else {
         if (Save.get().lives <= 0) { showToast('生命不足'); this.sm.switchTo('map'); return; }
         Save.consumeLife();

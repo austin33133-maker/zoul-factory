@@ -13,7 +13,9 @@ export const CHAPTERS = [
   { id: 5, name: '皇家秘室',   range: [19, 20], theme: '#b06bff', emoji: '👑',
     intro: '终极考验：礼物盒派对与救出最后的公主。' },
   { id: 6, name: '奇境彩园',   range: [21, 23], theme: '#5bc6ff', emoji: '🌀',
-    intro: '橙子公主的奇境之旅：传送门、藤蔓、彩条节日，三个全新挑战！' }
+    intro: '橙子公主的奇境之旅：传送门、藤蔓、彩条节日，三个全新挑战！' },
+  { id: 7, name: '终极王座',   range: [24, 30], theme: '#b06bff', emoji: '👑',
+    intro: '所有挑战都汇聚于此。带橙子公主走向最后的王座！' }
 ];
 
 export function chapterOf(levelId) {
@@ -266,6 +268,113 @@ export const LEVELS = [
     objective: { type: 'stripes', amount: 5 },
     starThresholds: [6000, 10000, 15000],
     palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple']
+  },
+  // 第 7 章 终极王座 (L24-30)
+  {
+    id: 24,
+    name: '迷宫之心',
+    story: '王座前的迷宫，多对传送门交织而立。',
+    moves: 28,
+    objective: { type: 'collectColor', color: 'purple', amount: 32 },
+    starThresholds: [5500, 9500, 14000],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple'],
+    tiles: {
+      portals: [
+        { from: [2, 1], to: [2, 7] },
+        { from: [6, 7], to: [6, 1] },
+        { from: [4, 3], to: [4, 5] }
+      ]
+    }
+  },
+  {
+    id: 25,
+    name: '深夜藤林',
+    story: '夜幕下的藤蔓更顽固，每步会蔓延 2 株！',
+    moves: 32,
+    objective: { type: 'vineClear', amount: 28 },
+    starThresholds: [5000, 9000, 13000],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple'],
+    vineSpreadRate: 2,
+    tiles: { vine: [[3, 3], [3, 4], [3, 5], [4, 3], [4, 4], [4, 5], [5, 3], [5, 4], [5, 5]] }
+  },
+  {
+    id: 26,
+    name: '冰山果汁',
+    story: '冰山深处的礼物盒等着公主——别忘了砸开补给道具！',
+    moves: 28,
+    objective: { type: 'multiColor', items: [
+      { color: 'blue', amount: 16 },
+      { color: 'orange', amount: 16 }
+    ]},
+    starThresholds: [6000, 10000, 14500],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple'],
+    obstacles: {
+      ice: [[2, 2], [2, 6], [3, 4], [5, 4], [6, 2], [6, 6]],
+      gifts: [[1, 4], [4, 0], [4, 8], [7, 4]]
+    }
+  },
+  {
+    id: 27,
+    name: '黏腻王座',
+    story: '王座覆满三层果冻——一层不够、两层不够、要三次！',
+    moves: 30,
+    objective: { type: 'jelly', amount: 15 },
+    starThresholds: [6500, 11000, 15500],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple'],
+    tiles: { jelly: [
+      [3, 3, 3], [3, 4, 3], [3, 5, 3],
+      [4, 3, 3], [4, 4, 3], [4, 5, 3],
+      [5, 3, 3], [5, 4, 3], [5, 5, 3],
+      [2, 4, 2], [6, 4, 2], [4, 2, 2], [4, 6, 2],
+      [4, 0, 1], [4, 8, 1]
+    ]}
+  },
+  {
+    id: 28,
+    name: '公主迷阵',
+    story: '5 位小公主散落在迷阵里——传送门会帮她们一程！',
+    moves: 30,
+    objective: { type: 'savePrincess', amount: 5 },
+    starThresholds: [5500, 9500, 14000],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple'],
+    obstacles: { princesses: [[0, 4], [0, 0], [0, 8]] },
+    tiles: {
+      portals: [
+        { from: [4, 0], to: [4, 4] },
+        { from: [4, 8], to: [4, 4] }
+      ]
+    }
+  },
+  {
+    id: 29,
+    name: '皇家彩条',
+    story: '加冕大典彩条遍地！7 条火箭才能配得上皇家排场。',
+    moves: 24,
+    objective: { type: 'stripes', amount: 7 },
+    starThresholds: [8000, 12000, 18000],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple']
+  },
+  {
+    id: 30,
+    name: '终极王座',
+    story: '橙子公主的加冕之战！破障 + 木箱 + 救公主，一次到位！',
+    moves: 36,
+    objective: { type: 'multiColor', items: [
+      { color: 'orange', amount: 18 },
+      { color: 'red', amount: 12 },
+      { color: 'purple', amount: 12 }
+    ]},
+    starThresholds: [10000, 16000, 24000],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple'],
+    obstacles: {
+      crates: [[2, 0, 1], [2, 8, 1], [6, 0, 1], [6, 8, 1], [4, 4, 2]],
+      princesses: [[0, 2], [0, 6]],
+      gifts: [[4, 0], [4, 8]]
+    },
+    tiles: {
+      jelly: [[3, 3, 1], [3, 5, 1], [5, 3, 1], [5, 5, 1]],
+      portals: [{ from: [4, 1], to: [4, 7] }]
+    }
   }
 ];
 

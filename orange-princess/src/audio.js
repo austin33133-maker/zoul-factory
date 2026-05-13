@@ -52,6 +52,49 @@ function noise(dur = 0.1, volume = 0.3, lowpass = 1200) {
   src.start(); src.stop(c.currentTime + dur);
 }
 
+// 原创 BGM: A 小调 4 和弦循环 (Am - F - C - G)，每和弦 4 秒、3 音叠加 sine pad
+// 用最基本的和声三度叠加，不引用任何旋律
+const BGM_CHORDS = [
+  [220.00, 261.63, 329.63],  // Am: A C E
+  [174.61, 220.00, 261.63],  // F:  F A C
+  [261.63, 329.63, 392.00],  // C:  C E G
+  [196.00, 246.94, 293.66]   // G:  G B D
+];
+const BGM_DUR = 4;             // 每和弦时长(秒)
+let bgmInterval = null;
+let bgmChordIdx = 0;
+let bgmActiveOscs = [];
+
+function bgmPlayChord(chord) {
+  const c = ensure(); if (!c) return;
+  // 清理旧节点（防内存泄漏）
+  bgmActiveOscs = bgmActiveOscs.filter(o => { try { o.stop(); } catch (e) {} return false; });
+  for (let i = 0; i < chord.length; i++) {
+    const osc = c.createOscillator();
+    const g = c.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = chord[i];
+    const vol = 0.04 * (1 - i * 0.15); // 高音稍弱
+    g.gain.setValueAtTime(0, c.currentTime);
+    g.gain.linearRampToValueAtTime(vol, c.currentTime + 0.6);
+    g.gain.setValueAtTime(vol, c.currentTime + BGM_DUR - 0.8);
+    g.gain.linearRampToValueAtTime(0.0001, c.currentTime + BGM_DUR);
+    osc.connect(g); g.connect(masterGain);
+    osc.start();
+    osc.stop(c.currentTime + BGM_DUR + 0.05);
+    bgmActiveOscs.push(osc);
+  }
+  // 高音铃 (和弦变化点)
+  const bell = chord[2] * 2;
+  const o = c.createOscillator(); const og = c.createGain();
+  o.type = 'triangle'; o.frequency.value = bell;
+  og.gain.setValueAtTime(0, c.currentTime);
+  og.gain.linearRampToValueAtTime(0.03, c.currentTime + 0.02);
+  og.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.8);
+  o.connect(og); og.connect(masterGain);
+  o.start(); o.stop(c.currentTime + 0.9);
+}
+
 export const Audio = {
   unlock() { ensure(); },
   pop(n = 0) { envTone(440 + n * 80, 0.08, 'triangle', 0.5, 880 + n * 60); },
@@ -91,5 +134,23 @@ export const Audio = {
     [0, 0.08, 0.18].forEach((t, i) =>
       setTimeout(() => envTone([784, 988, 1175][i], 0.14, 'triangle', 0.4), t * 1000)
     );
-  }
+  },
+  bgmStart() {
+    if (bgmInterval) return;
+    if (!ensure()) return;
+    const tick = () => {
+      if (!Save.get().audio || !Save.get().bgm) return;
+      bgmPlayChord(BGM_CHORDS[bgmChordIdx % BGM_CHORDS.length]);
+      bgmChordIdx++;
+    };
+    tick();
+    bgmInterval = setInterval(tick, BGM_DUR * 1000);
+  },
+  bgmStop() {
+    if (bgmInterval) clearInterval(bgmInterval);
+    bgmInterval = null;
+    bgmActiveOscs.forEach(o => { try { o.stop(); } catch (e) {} });
+    bgmActiveOscs = [];
+  },
+  bgmRunning() { return !!bgmInterval; }
 };
