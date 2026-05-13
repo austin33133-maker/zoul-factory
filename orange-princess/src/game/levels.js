@@ -1,8 +1,22 @@
-// 关卡设计。橙子公主世界观：每关救出一只被囚禁的小公主，目标围绕"橙子"展开。
-// objective.type:
-//   'collectColor' - 收集 N 个指定颜色
-//   'score'        - 达到目标分数
-//   'crates'       - 清掉 N 个木箱（占位：以 cracked 出现在棋盘）
+// 关卡设计 + 章节
+// objective.type: collectColor / score / crates / jelly / savePrincess / multiColor
+
+export const CHAPTERS = [
+  { id: 1, name: '橙园序章',   range: [1, 5],   theme: '#ff8b3d', emoji: '🍊',
+    intro: '橙子公主从橙园醒来。这是一切的开始……' },
+  { id: 2, name: '贵族果园',   range: [6, 10],  theme: '#7be36b', emoji: '🍏',
+    intro: '贵族果园里藏着五位小公主，去救她们！' },
+  { id: 3, name: '木箱地牢',   range: [11, 15], theme: '#7c4a1e', emoji: '📦',
+    intro: '邪恶贵族把所有果实锁进木箱。我们要砸开它们！' },
+  { id: 4, name: '果冻王国',   range: [16, 18], theme: '#ffd84d', emoji: '🟡',
+    intro: '黏糊糊的果冻铺满整个王国，消除它们！' },
+  { id: 5, name: '皇家秘室',   range: [19, 20], theme: '#b06bff', emoji: '👑',
+    intro: '终极考验：礼物盒派对与救出最后的公主。' }
+];
+
+export function chapterOf(levelId) {
+  return CHAPTERS.find(c => levelId >= c.range[0] && levelId <= c.range[1]) || CHAPTERS[0];
+}
 
 export const LEVELS = [
   {

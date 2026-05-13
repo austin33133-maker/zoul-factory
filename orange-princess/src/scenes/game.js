@@ -228,7 +228,10 @@ export class GameScene {
           const x = g.padX + c * g.cell + g.cell/2, y = g.top + r * g.cell + g.cell/2;
           this.sprites.set(p.id, { piece: p, x, y, tx: x, ty: y, scale: 0.4, tscale: 1, alpha: 1, talpha: 1, rot: 0, trot: 0, wob: 0 });
           this.floatScore('特殊!', x, y - 30, '#ffd84d');
+          Save.tickTask('specialMade', 1);
         });
+        if (cells) Save.tickTask('piecesCollected', cells.length);
+        if (crateBreaks?.length) Save.tickTask('crateBroken', crateBreaks.length);
         this.cleanupOrphanSprites();
       },
       explode: ({ cells, reason, origin, special, crateBreaks, giftBreaks, unfrozen, tileBreaks }) => {
@@ -306,6 +309,7 @@ export class GameScene {
         const name = names[Math.min(lv, names.length - 1)];
         this.bigCallout = { text: name, life: 0, max: 1.2, color: colors[Math.min(lv, colors.length - 1)] };
         this.floatScore(name, CONFIG.CANVAS_W / 2, CONFIG.HUD_H + 40, colors[Math.min(lv, colors.length - 1)]);
+        Save.tickTask('combo', 1);
       },
       reshuffle: () => { showToast('棋盘重排'); this.shake(10, 0.5); },
       boardReset: () => { this.sprites.clear(); this.initSprites(); },
@@ -412,6 +416,11 @@ export class GameScene {
     const lv = this.level;
     Save.completeLevel(lv.id, score, stars);
     Save.addCoins(50 + stars * 20);
+    // 每日任务 + 战令 XP
+    Save.tickTask('levelWin', 1);
+    Save.tickTask('starsEarned', stars);
+    Save.tickTask('score', score);
+    Save.addBattleXp(50 + stars * 15);
     // 燃放烟花
     for (let i = 0; i < 24; i++) {
       setTimeout(() => {

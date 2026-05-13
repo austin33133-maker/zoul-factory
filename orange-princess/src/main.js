@@ -1,9 +1,12 @@
 import { CONFIG } from './config.js';
 import { Audio } from './audio.js';
+import { Assets } from './assets/loader.js';
 import { MapScene } from './scenes/map.js';
 import { GameScene } from './scenes/game.js';
 import { ShopScene } from './scenes/shop.js';
 import { DecorationScene } from './scenes/decoration.js';
+import { WheelScene } from './scenes/wheel.js';
+import { BattlePassScene } from './scenes/battlepass.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -18,7 +21,9 @@ class SceneManager {
       map: new MapScene(this),
       game: new GameScene(this),
       shop: new ShopScene(this),
-      decoration: new DecorationScene(this)
+      decoration: new DecorationScene(this),
+      wheel: new WheelScene(this),
+      battlepass: new BattlePassScene(this)
     };
     this.current = null;
     this.switchTo('map');
@@ -36,6 +41,8 @@ class SceneManager {
   }
 }
 
+// 异步预加载 sprite sheet（如果存在）后再启动场景。无资源也能跑（回退 emoji）。
+Assets.load().catch(() => {});
 const sm = new SceneManager();
 
 // ---- 输入：把 client 坐标转换为 canvas 坐标 ----
