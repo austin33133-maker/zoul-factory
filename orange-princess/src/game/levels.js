@@ -94,6 +94,59 @@ export const LEVELS = [
     objective: { type: 'collectColor', color: 'orange', amount: 40 },
     starThresholds: [6000, 10000, 15000],
     palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple']
+  },
+  {
+    id: 11,
+    name: '木箱关：果园仓库',
+    story: '邪恶贵族把果实锁在木箱里！砸开 8 个木箱。',
+    moves: 22,
+    objective: { type: 'crates', amount: 8 },
+    starThresholds: [3000, 6000, 9000],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple'],
+    obstacles: { crates: [[3,2,1],[3,3,1],[3,5,1],[3,6,1],[5,2,1],[5,3,1],[5,5,1],[5,6,1]] }
+  },
+  {
+    id: 12,
+    name: '木箱关：双层壁垒',
+    story: '坚固木箱挡道（需要打 2 下）。',
+    moves: 24,
+    objective: { type: 'crates', amount: 10 },
+    starThresholds: [4000, 7000, 10000],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple'],
+    obstacles: { crates: [[2,3,2],[2,4,2],[2,5,2],[4,3,1],[4,4,1],[4,5,1],[6,3,2],[6,4,2],[6,5,2],[7,4,1]] }
+  },
+  {
+    id: 13,
+    name: '风暴中的橙子塔',
+    story: '快速积分守住塔楼，并清除木箱。',
+    moves: 22,
+    objective: { type: 'crates', amount: 12 },
+    starThresholds: [5000, 8500, 13000],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple'],
+    obstacles: { crates: [[1,0,1],[1,1,1],[1,2,1],[1,6,1],[1,7,1],[1,8,1],[7,0,1],[7,1,1],[7,2,1],[7,6,1],[7,7,1],[7,8,1]] }
+  },
+  {
+    id: 14,
+    name: '彩色钥匙',
+    story: '同时收集多色钥匙才能开门。',
+    moves: 28,
+    objective: { type: 'multiColor', items: [
+      { color: 'red', amount: 15 },
+      { color: 'blue', amount: 15 },
+      { color: 'yellow', amount: 15 }
+    ]},
+    starThresholds: [5500, 9000, 13000],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple']
+  },
+  {
+    id: 15,
+    name: '王座大厅',
+    story: '终极一战！破障+收集双目标。',
+    moves: 30,
+    objective: { type: 'crates', amount: 14 },
+    starThresholds: [7000, 12000, 18000],
+    palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple'],
+    obstacles: { crates: [[2,2,1],[2,3,1],[2,5,1],[2,6,1],[3,4,2],[4,2,2],[4,6,2],[5,4,2],[6,2,1],[6,3,1],[6,5,1],[6,6,1],[7,3,1],[7,5,1]] }
   }
 ];
 

@@ -1,6 +1,6 @@
 import { CONFIG, COLOR_IDS } from '../config.js';
 import { GameEngine, Phase } from '../game/engine.js';
-import { SPECIAL } from '../game/board.js';
+import { SPECIAL, KIND } from '../game/board.js';
 import { getLevel } from '../game/levels.js';
 import { Save } from '../storage.js';
 import { Audio } from '../audio.js';
@@ -33,29 +33,125 @@ export class GameScene {
     this.shakeT = 0;
     this.shakeMag = 0;
     this.engine = null;
+    this.beams = []; // 火箭尾迹特效
+    this.flashAlpha = 0; // 全屏白闪
+    this.outOfMovesShown = false;
   }
 
   async enter(params) {
     const level = getLevel(params.levelId);
     this.level = level;
-    this.engine = new GameEngine(level, this.bindListeners());
+    // 战前道具选卡
+    const picks = await this.preGamePicker(level);
+    if (picks === null) { this.sm.switchTo('map'); return; }
+    const levelWithBoosters = { ...level, extraMoves: picks.extraMoves || 0 };
+    this.engine = new GameEngine(levelWithBoosters, this.bindListeners());
+    // 起始特殊棋子
+    if (picks.startRocket || picks.startBomb) this.injectStarters(picks);
     this.initSprites();
-    // 战前道具选择
-    const choices = await modal({
-      title: '战前道具',
-      html: `
-        <p style="color:#7c3a14">${level.story}</p>
-        <p style="margin-top:12px;color:#7c3a14">关卡 ${level.id} · ${level.name}</p>
-        <p style="margin-top:8px;color:#7c3a14">目标：${objectiveText(level)}</p>
-        <p style="margin-top:8px;color:#7c3a14">现有道具 🔨×${Save.get().boosters.hammer}　💣×${Save.get().boosters.bomb}　🔀×${Save.get().boosters.swap}</p>
-      `,
-      buttons: [
-        { label: '返回地图', value: 'back', style: 'ghost' },
-        { label: '开始！', value: 'start' }
-      ]
-    });
-    if (choices === 'back') { this.sm.switchTo('map'); return; }
     this.say('一起加油！🍊', 'cheer', 1800);
+  }
+
+  injectStarters(picks) {
+    const grid = this.engine.grid;
+    const candidates = [];
+    for (let r = 0; r < CONFIG.ROWS; r++) for (let c = 0; c < CONFIG.COLS; c++) {
+      const p = grid[r][c];
+      if (p && p.kind === KIND.PIECE && !p.special) candidates.push([r, c]);
+    }
+    const pick = () => candidates.splice(Math.floor(Math.random() * candidates.length), 1)[0];
+    if (picks.startRocket && candidates.length) {
+      const [r, c] = pick();
+      grid[r][c] = { ...grid[r][c], special: Math.random() < 0.5 ? SPECIAL.ROCKET_H : SPECIAL.ROCKET_V };
+    }
+    if (picks.startBomb && candidates.length) {
+      const [r, c] = pick();
+      grid[r][c] = { ...grid[r][c], special: SPECIAL.BOMB };
+    }
+  }
+
+  async preGamePicker(level) {
+    const s = Save.get();
+    // 三选项卡片：+5 步 / 战前 1 火箭 / 战前 1 彩球。各需金币
+    const html = `
+      <p style="color:#7c3a14;font-size:15px">关卡 ${level.id} · <b>${level.name}</b></p>
+      <p style="color:#7c3a14;font-size:14px;margin-top:6px">${level.story}</p>
+      <p style="color:#7c3a14;margin-top:10px"><b>目标：</b>${objectiveText(level)}　<b>步数：</b>${level.moves}</p>
+      <p style="color:#7c3a14;font-size:13px;margin-top:12px">勾选战前道具（消耗金币）</p>
+      <div id="picker-cards" style="display:flex;gap:10px;justify-content:center;margin:8px 0 4px">
+        <div data-key="extraMoves" data-cost="200" class="picker-card">
+          <div style="font-size:32px">⏱️</div>
+          <div style="font-size:14px;margin-top:4px">+5 步</div>
+          <div style="font-size:11px;color:#5a2810;margin-top:2px">🪙 200</div>
+        </div>
+        <div data-key="startRocket" data-cost="150" class="picker-card">
+          <div style="font-size:32px">🚀</div>
+          <div style="font-size:14px;margin-top:4px">起始火箭 ×1</div>
+          <div style="font-size:11px;color:#5a2810;margin-top:2px">🪙 150</div>
+        </div>
+        <div data-key="startBomb" data-cost="180" class="picker-card">
+          <div style="font-size:32px">💣</div>
+          <div style="font-size:14px;margin-top:4px">起始炸弹 ×1</div>
+          <div style="font-size:11px;color:#5a2810;margin-top:2px">🪙 180</div>
+        </div>
+      </div>
+      <p style="color:#7c3a14;font-size:13px;margin-top:8px">余额 🪙 ${s.coins}</p>
+    `;
+    // 注入样式 (只注入一次)
+    if (!document.getElementById('picker-style')) {
+      const st = document.createElement('style');
+      st.id = 'picker-style';
+      st.textContent = `
+        .picker-card{width:96px;padding:10px 6px;background:#fff7e3;border:3px solid #ffb066;border-radius:14px;cursor:pointer;text-align:center;transition:transform .1s}
+        .picker-card.on{background:#ffd84d;border-color:#ff5e3a;transform:translateY(-4px)}
+        .picker-card.disabled{opacity:.4;cursor:not-allowed}
+      `;
+      document.head.appendChild(st);
+    }
+    const picks = {};
+    let cost = 0;
+    const result = await new Promise(resolve => {
+      const overlay = document.getElementById('dom-overlay');
+      const bd = document.createElement('div');
+      bd.className = 'modal-backdrop';
+      const m = document.createElement('div');
+      m.className = 'modal';
+      m.innerHTML = `<h2>战前准备</h2><div class="body">${html}</div>
+        <div class="row" style="margin-top:14px">
+          <button class="btn ghost" data-act="back">返回</button>
+          <button class="btn" data-act="go">开始</button>
+        </div>`;
+      bd.appendChild(m);
+      overlay.appendChild(bd);
+      const cards = m.querySelectorAll('.picker-card');
+      cards.forEach(card => {
+        const c = +card.dataset.cost;
+        card.onclick = () => {
+          const key = card.dataset.key;
+          const isOn = card.classList.toggle('on');
+          if (isOn) { picks[key] = true; cost += c; }
+          else { delete picks[key]; cost -= c; }
+          if (cost > Save.get().coins) {
+            card.classList.remove('on'); delete picks[key]; cost -= c;
+            showToast('金币不足');
+          }
+        };
+      });
+      m.querySelectorAll('button[data-act]').forEach(btn => {
+        btn.onclick = () => { bd.remove(); resolve(btn.dataset.act === 'go' ? { picks, cost } : null); };
+      });
+    });
+    if (result === null) return null;
+    if (!Save.spendCoins(result.cost)) { showToast('金币不足'); return null; }
+    Audio.coin();
+    // 将选中道具转译为引擎可识别的预置
+    const out = {};
+    if (result.picks.extraMoves) out.extraMoves = 5;
+    if (result.picks.startRocket) out.startRocket = true;
+    if (result.picks.startBomb) out.startBomb = true;
+    // 起始特殊棋子：在 sprite 初始化后注入
+    this._pendingStarters = out;
+    return out;
   }
 
   initSprites() {
@@ -97,11 +193,21 @@ export class GameScene {
         if (invalid) { Audio.invalid(); this.say('换不了…', 'worried', 900); }
         else Audio.swap();
       },
-      clear: ({ cells, specialCreations }) => {
+      clear: ({ cells, specialCreations, crateBreaks, crateDamages }) => {
         Audio.pop(0);
         const g = geom();
         cells.forEach(({ r, c, piece }) => this.burstAt(g.padX + c * g.cell + g.cell/2, g.top + r * g.cell + g.cell/2, piece.color));
         cells.forEach(({ piece }) => this.sprites.delete(piece.id));
+        if (crateBreaks) crateBreaks.forEach(({ r, c, piece }) => {
+          this.burstAt(g.padX + c * g.cell + g.cell/2, g.top + r * g.cell + g.cell/2, 'orange', 14);
+          this.sprites.delete(piece.id);
+          this.shake(3, 0.18);
+        });
+        // 受伤的木箱：抖一下（保留 sprite）
+        if (crateDamages) crateDamages.forEach(({ piece }) => {
+          const s = this.sprites.get(piece.id);
+          if (s) { s.scale = 1.18; s.tscale = 1; }
+        });
         specialCreations.forEach(sc => {
           const [r, c] = sc.pos;
           const p = this.engine.grid[r][c];
@@ -112,15 +218,32 @@ export class GameScene {
         });
         this.cleanupOrphanSprites();
       },
-      explode: ({ cells, reason }) => {
+      explode: ({ cells, reason, origin, special, crateBreaks }) => {
         const g = geom();
+        // 火箭尾迹
+        if (origin && (special === SPECIAL.ROCKET_H || special === SPECIAL.ROCKET_V)) {
+          const cx = g.padX + origin[1] * g.cell + g.cell / 2;
+          const cy = g.top + origin[0] * g.cell + g.cell / 2;
+          this.beams.push({
+            x: cx, y: cy, dir: special === SPECIAL.ROCKET_H ? 'h' : 'v',
+            life: 0, max: 0.5
+          });
+        }
+        // 彩球闪光
+        if (special === SPECIAL.LIGHTBALL || reason === 'lightball' || reason === 'combo') this.flashAlpha = 0.8;
         cells.forEach(({ r, c, piece }) => {
           const x = g.padX + c * g.cell + g.cell/2, y = g.top + r * g.cell + g.cell/2;
           this.burstAt(x, y, piece.color, 16);
           this.sprites.delete(piece.id);
         });
-        if (reason === 'combo' || reason === 'lightball') { Audio.lightball(); this.shake(8, 0.4); this.say('哇！', 'wow', 800); }
-        else if (reason === 'booster') { Audio.bomb(); this.shake(6, 0.3); }
+        if (crateBreaks) crateBreaks.forEach(({ r, c, piece }) => {
+          this.burstAt(g.padX + c * g.cell + g.cell/2, g.top + r * g.cell + g.cell/2, 'orange', 18);
+          this.sprites.delete(piece.id);
+        });
+        if (reason === 'combo' || reason === 'lightball') { Audio.lightball(); this.shake(10, 0.5); this.say('哇！', 'wow', 800); }
+        else if (reason === 'booster') { Audio.bomb(); this.shake(7, 0.35); }
+        else if (special === SPECIAL.BOMB) { Audio.bomb(); this.shake(6, 0.3); }
+        else if (special === SPECIAL.ROCKET_H || special === SPECIAL.ROCKET_V) { Audio.rocket(); this.shake(5, 0.25); }
         else { Audio.bomb(); this.shake(4, 0.25); }
         this.cleanupOrphanSprites();
       },
@@ -149,7 +272,14 @@ export class GameScene {
           }
         }
       },
-      combo: lv => { Audio.combo(Math.min(4, lv)); this.floatScore(`Combo x${lv + 1}!`, CONFIG.CANVAS_W / 2, CONFIG.HUD_H + 40, '#ffd84d'); },
+      combo: lv => {
+        Audio.combo(Math.min(4, lv)); Audio.callout(lv);
+        const names = ['Sweet!', 'Tasty!', 'Awesome!', 'Incredible!', 'Insane!'];
+        const colors = ['#ffd84d', '#ff8b3d', '#ff5e3a', '#b06bff', '#5bc6ff'];
+        const name = names[Math.min(lv, names.length - 1)];
+        this.bigCallout = { text: name, life: 0, max: 1.2, color: colors[Math.min(lv, colors.length - 1)] };
+        this.floatScore(name, CONFIG.CANVAS_W / 2, CONFIG.HUD_H + 40, colors[Math.min(lv, colors.length - 1)]);
+      },
       reshuffle: () => { showToast('棋盘重排'); this.shake(10, 0.5); },
       boardReset: () => { this.sprites.clear(); this.initSprites(); },
       win: async ({ score, stars }) => { await this.onWin(score, stars); },
@@ -261,7 +391,7 @@ export class GameScene {
     });
     if (v === 'next') {
       const next = lv.id + 1;
-      if (next > 10) { showToast('已是最后一关，期待续作 🍊'); this.sm.switchTo('map'); }
+      if (next > 15) { showToast('已是最后一关，期待续作 🍊'); this.sm.switchTo('map'); }
       else {
         if (Save.get().lives <= 0) { showToast('生命不足'); this.sm.switchTo('map'); return; }
         Save.consumeLife();
@@ -274,10 +404,34 @@ export class GameScene {
   async onLose(score) {
     Audio.lose();
     this.say('再试一次吧…', 'sad', 2000);
-    await sleep(700);
+    await sleep(500);
+
+    // 第一次：先给购买 +5 步的机会（Royal Match 经典挽留弹窗）
+    if (!this.outOfMovesShown) {
+      this.outOfMovesShown = true;
+      const cost = 200;
+      const v = await modal({
+        title: '步数差一点点！',
+        html: `<p>本次得分 <b>${score}</b></p><p>用 🪙 ${cost} 继续游戏（+5 步）？</p><p style="font-size:13px;color:#7c3a14">余额 🪙 ${Save.get().coins}</p>`,
+        buttons: [
+          { label: '放弃', value: 'no', style: 'ghost' },
+          { label: `+5 步 (🪙 ${cost})`, value: 'buy' }
+        ]
+      });
+      if (v === 'buy') {
+        if (Save.spendCoins(cost)) {
+          Audio.coin();
+          this.engine.addMoves(5);
+          this.engine.phase = Phase.IDLE;
+          this.say('谢谢你！', 'cheer', 2000);
+          return;
+        } else { showToast('金币不足'); }
+      }
+    }
+
     const v = await modal({
-      title: '步数用完啦',
-      html: `<p>本次得分 <b>${score}</b></p><p>继续游玩需要 1 ❤️</p>`,
+      title: '挑战失败',
+      html: `<p>本次得分 <b>${score}</b></p><p>再试一次需要 1 ❤️</p>`,
       buttons: [
         { label: '返回地图', value: 'map', style: 'ghost' },
         { label: '再试一次', value: 'retry' }
@@ -344,6 +498,12 @@ export class GameScene {
       return f.life < f.max;
     });
     if (this.shakeT > 0) this.shakeT -= dts;
+    if (this.flashAlpha > 0) this.flashAlpha = Math.max(0, this.flashAlpha - dts * 2.5);
+    this.beams = this.beams.filter(b => { b.life += dts; return b.life < b.max; });
+    if (this.bigCallout) {
+      this.bigCallout.life += dts;
+      if (this.bigCallout.life >= this.bigCallout.max) this.bigCallout = null;
+    }
   }
 
   draw(ctx) {
@@ -379,6 +539,30 @@ export class GameScene {
       if (s.piece) this.drawPiece(ctx, s.piece, s, g);
     }
 
+    // 火箭尾迹
+    for (const b of this.beams) {
+      const k = b.life / b.max;
+      const alpha = (1 - k) * 0.85;
+      ctx.globalAlpha = alpha;
+      const grad = ctx.createLinearGradient(0, 0, b.dir === 'h' ? CONFIG.CANVAS_W : 0, b.dir === 'h' ? 0 : CONFIG.CANVAS_H);
+      grad.addColorStop(0, 'rgba(255,255,255,0)');
+      grad.addColorStop(0.5, '#ffd84d');
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = grad;
+      const len = Math.max(g.cell * 0.8, g.cell * 2 * k * 3);
+      if (b.dir === 'h') {
+        ctx.fillRect(g.padX, b.y - 8, g.boardW, 16);
+        // 火球
+        fillCircle(ctx, b.x + g.boardW * k * 0.5, b.y, 12, '#fff');
+        fillCircle(ctx, b.x - g.boardW * k * 0.5, b.y, 12, '#fff');
+      } else {
+        ctx.fillRect(b.x - 8, g.top, 16, g.boardH);
+        fillCircle(ctx, b.x, b.y + g.boardH * k * 0.5, 12, '#fff');
+        fillCircle(ctx, b.x, b.y - g.boardH * k * 0.5, 12, '#fff');
+      }
+      ctx.globalAlpha = 1;
+    }
+
     // 粒子
     for (const p of this.particles) {
       ctx.globalAlpha = clamp(p.life / p.max, 0, 1);
@@ -399,10 +583,35 @@ export class GameScene {
     // 公主 + 底部 booster
     this.drawFooter(ctx);
 
+    // 大型 Combo 喊话
+    if (this.bigCallout) {
+      const k = this.bigCallout.life / this.bigCallout.max;
+      const scale = k < 0.3 ? easeOutBack(k / 0.3) : 1 + Math.sin((k - 0.3) * 6) * 0.05;
+      const alpha = k < 0.8 ? 1 : (1 - (k - 0.8) / 0.2);
+      ctx.save();
+      ctx.translate(CONFIG.CANVAS_W / 2, CONFIG.CANVAS_H / 2 - 100);
+      ctx.scale(scale, scale);
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = this.bigCallout.color;
+      ctx.font = '900 80px -apple-system, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.lineWidth = 6; ctx.strokeStyle = '#fff';
+      ctx.strokeText(this.bigCallout.text, 0, 0);
+      ctx.fillText(this.bigCallout.text, 0, 0);
+      ctx.restore();
+    }
+
+    // 全屏闪光
+    if (this.flashAlpha > 0) {
+      ctx.fillStyle = `rgba(255,255,255,${this.flashAlpha})`;
+      ctx.fillRect(0, 0, w, h);
+    }
+
     ctx.restore();
   }
 
   drawPiece(ctx, piece, s, g) {
+    if (piece.kind === KIND.CRATE) { this.drawCrate(ctx, piece, s, g); return; }
     const col = CONFIG.COLORS.find(c => c.id === piece.color) || CONFIG.COLORS[0];
     const r = g.cell * 0.42;
     const x = s.x, y = s.y;
@@ -466,6 +675,52 @@ export class GameScene {
     ctx.restore();
   }
 
+  drawCrate(ctx, piece, s, g) {
+    const sz = g.cell * 0.78;
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.scale(s.scale, s.scale);
+    // 阴影
+    ctx.save();
+    ctx.translate(0, sz * 0.45);
+    ctx.scale(1, 0.3);
+    fillCircle(ctx, 0, 0, sz * 0.45, 'rgba(0,0,0,0.4)');
+    ctx.restore();
+    // 木箱主体
+    const grad = ctx.createLinearGradient(0, -sz/2, 0, sz/2);
+    grad.addColorStop(0, '#c8884a');
+    grad.addColorStop(1, '#7c4a1e');
+    drawRoundedRect(ctx, -sz/2, -sz/2, sz, sz, 6);
+    ctx.fillStyle = grad; ctx.fill();
+    ctx.strokeStyle = '#4a2810'; ctx.lineWidth = 2.5; ctx.stroke();
+    // 木纹
+    ctx.strokeStyle = 'rgba(74,40,16,0.55)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(-sz/2 + 6, -sz/6); ctx.lineTo(sz/2 - 6, -sz/6);
+    ctx.moveTo(-sz/2 + 6,  sz/6); ctx.lineTo(sz/2 - 6,  sz/6);
+    ctx.stroke();
+    // 钉子
+    for (const [dx, dy] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
+      fillCircle(ctx, dx * (sz/2 - 6), dy * (sz/2 - 6), 2.4, '#5a2810');
+    }
+    // 血量 (hp > 1 时显示 cracks 减少)
+    if (piece.hp < piece.maxHp) {
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(-sz * 0.2, -sz * 0.2); ctx.lineTo(sz * 0.1, 0); ctx.lineTo(-sz * 0.05, sz * 0.2);
+      ctx.stroke();
+    }
+    if (piece.maxHp > 1) {
+      // HP 标记
+      ctx.fillStyle = '#fff';
+      ctx.font = '700 14px sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(`x${piece.hp}`, 0, 2);
+    }
+    ctx.restore();
+  }
+
   drawHUD(ctx) {
     const w = CONFIG.CANVAS_W;
     // 步数环 / 分数 / 目标
@@ -493,20 +748,28 @@ export class GameScene {
     ctx.fillText('得分', 20, 110);
     ctx.font = '700 28px sans-serif'; ctx.fillText(score, 20, 138);
 
-    // 右侧目标
+    // 右侧目标（支持多类型）
     const o = this.level.objective;
     ctx.textAlign = 'right';
     ctx.font = '700 22px sans-serif'; ctx.fillText('目标', w - 20, 110);
-    ctx.font = '700 26px sans-serif';
-    let oTxt = '';
+    ctx.font = '700 24px sans-serif';
     if (o.type === 'collectColor') {
       const got = this.engine.collected[o.color] || 0;
       const fruit = (CONFIG.COLORS.find(c => c.id === o.color) || {}).label || '';
-      oTxt = `${fruit} ${got}/${o.amount}`;
+      ctx.fillText(`${fruit} ${got}/${o.amount}`, w - 20, 138);
     } else if (o.type === 'score') {
-      oTxt = `${Math.min(score, o.amount)}/${o.amount}`;
+      ctx.fillText(`${Math.min(score, o.amount)}/${o.amount}`, w - 20, 138);
+    } else if (o.type === 'crates') {
+      ctx.fillText(`📦 ${this.engine.cratesBroken}/${o.amount}`, w - 20, 138);
+    } else if (o.type === 'multiColor') {
+      ctx.font = '600 18px sans-serif';
+      const parts = o.items.map(it => {
+        const got = this.engine.collected[it.color] || 0;
+        const fruit = (CONFIG.COLORS.find(c => c.id === it.color) || {}).label || '';
+        return `${fruit}${got}/${it.amount}`;
+      });
+      ctx.fillText(parts.join('  '), w - 20, 138);
     }
-    ctx.fillText(oTxt, w - 20, 138);
     // 右上 setting
     drawRoundedRect(ctx, w - 80, 16, 64, 64, 32);
     ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fill();
@@ -557,6 +820,13 @@ function objectiveText(level) {
     return `收集 ${fr} ×${o.amount}`;
   }
   if (o.type === 'score') return `得分 ${o.amount}`;
+  if (o.type === 'crates') return `砸开 📦 ×${o.amount}`;
+  if (o.type === 'multiColor') {
+    return o.items.map(it => {
+      const fr = (CONFIG.COLORS.find(c => c.id === it.color) || {}).label || '';
+      return `${fr}×${it.amount}`;
+    }).join(' ');
+  }
   return '完成关卡';
 }
 

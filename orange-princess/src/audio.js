@@ -73,6 +73,14 @@ export const Audio = {
       setTimeout(() => envTone([523, 659, 784, 1047][i], 0.18, 'triangle', 0.5), t * 1000)
     );
   },
+  callout(level) {
+    // Royal Match 风格的 sweet/tasty/awesome 调
+    const base = [523, 587, 659, 784, 880][Math.min(level, 4)];
+    envTone(base, 0.12, 'triangle', 0.6, base * 1.4);
+    setTimeout(() => envTone(base * 1.25, 0.14, 'sine', 0.5, base * 1.6), 80);
+  },
+  coin() { envTone(880, 0.05, 'square', 0.3, 1320); setTimeout(() => envTone(1320, 0.05, 'square', 0.3), 60); },
+  unlock() { [0,0.08,0.16].forEach((t,i) => setTimeout(() => envTone([523, 659, 880][i], 0.15, 'triangle', 0.5), t * 1000)); },
   lose() {
     [0, 0.18, 0.36].forEach((t, i) =>
       setTimeout(() => envTone([392, 311, 247][i], 0.25, 'sine', 0.4), t * 1000)

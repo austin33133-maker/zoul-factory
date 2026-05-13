@@ -2,6 +2,8 @@ import { CONFIG } from './config.js';
 import { Audio } from './audio.js';
 import { MapScene } from './scenes/map.js';
 import { GameScene } from './scenes/game.js';
+import { ShopScene } from './scenes/shop.js';
+import { DecorationScene } from './scenes/decoration.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -14,7 +16,9 @@ class SceneManager {
   constructor() {
     this.scenes = {
       map: new MapScene(this),
-      game: new GameScene(this)
+      game: new GameScene(this),
+      shop: new ShopScene(this),
+      decoration: new DecorationScene(this)
     };
     this.current = null;
     this.switchTo('map');
@@ -23,12 +27,11 @@ class SceneManager {
     document.querySelectorAll('.modal-backdrop, .toast').forEach(n => n.remove());
     const prev = this.current;
     if (prev && prev.exit) prev.exit();
-    this.current = this.scenes[name];
     if (name === 'game') {
       // 重新实例化 game 以保证 enter 异步流不冲突
       this.scenes.game = new GameScene(this);
-      this.current = this.scenes.game;
     }
+    this.current = this.scenes[name];
     if (this.current.enter) this.current.enter(params || {});
   }
 }

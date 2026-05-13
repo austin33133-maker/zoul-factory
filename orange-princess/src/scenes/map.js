@@ -62,6 +62,12 @@ export class MapScene {
     }
     // 头部右上角设置按钮检测
     if (this.tapX > CONFIG.CANVAS_W - 100 && this.tapY < 100) this.openSettings();
+    // 底部入口（商店 / 装修）
+    const fy = CONFIG.CANVAS_H - 96;
+    if (this.tapY > fy && this.tapY < fy + 80) {
+      if (this.tapX > 30 && this.tapX < 30 + 110) { Audio.click(); this.sm.switchTo('shop'); return; }
+      if (this.tapX > CONFIG.CANVAS_W - 140 && this.tapX < CONFIG.CANVAS_W - 30) { Audio.click(); this.sm.switchTo('decoration'); return; }
+    }
   }
 
   async tapNode(n) {
@@ -167,7 +173,40 @@ export class MapScene {
     const headerY = 130;
     drawPrincess(ctx, w / 2, headerY, 0.9, 'cheer', this.t);
     drawSpeech(ctx, w / 2, headerY + 130, '一起出发吧！🍊');
+
+    // 底部入口按钮（商店 / 装修）
+    drawBottomEntries(ctx, w, h);
   }
+}
+
+function drawBottomEntries(ctx, w, h) {
+  const fy = h - 96;
+  // 商店
+  drawRoundedRect(ctx, 30, fy, 110, 80, 22);
+  ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.font = '34px sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('🏪', 30 + 55, fy + 32);
+  ctx.font = '700 14px sans-serif'; ctx.fillText('商店', 30 + 55, fy + 60);
+
+  // 装修
+  drawRoundedRect(ctx, w - 140, fy, 110, 80, 22);
+  ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.font = '34px sans-serif';
+  ctx.fillText('🏰', w - 85, fy + 32);
+  ctx.font = '700 14px sans-serif'; ctx.fillText('橙园别墅', w - 85, fy + 60);
+
+  // 红点提示（如果可用星星 > 0）
+  if (Save.starsAvailable() > 0) {
+    ctx.fillStyle = '#ff5e3a';
+    fillCircle(ctx, w - 36, fy + 8, 12);
+    ctx.fillStyle = '#fff'; ctx.font = '700 14px sans-serif';
+    ctx.fillText(`${Save.starsAvailable()}`, w - 36, fy + 10);
+  }
+
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
 }
 
 function drawTopHUD(ctx, w) {

@@ -1,7 +1,8 @@
 // GameEngine: 状态机，驱动一关游戏。不直接绘制，由 GameScene 监听事件来做动画。
 import {
   createBoard, findMatches, applyClear, applyGravity, refill,
-  specialTargets, comboTargets, cloneGrid, findValidMoves, SPECIAL, inBounds
+  specialTargets, comboTargets, cloneGrid, findValidMoves, SPECIAL, inBounds,
+  injectObstacles, isMovable, KIND
 } from './board.js';
 import { CONFIG } from '../config.js';
 
@@ -18,12 +19,14 @@ export class GameEngine {
     this.level = level;
     this.listeners = listeners;
     this.grid = createBoard(CONFIG.COLS, CONFIG.ROWS, level.palette);
-    this.movesLeft = level.moves;
+    injectObstacles(this.grid, level.obstacles);
+    this.movesLeft = level.moves + (level.extraMoves || 0);
     this.score = 0;
-    this.collected = {}; // color -> count
-    this.cratesLeft = level.objective.type === 'crates' ? level.objective.amount : 0;
+    this.collected = {};
+    this.cratesBroken = 0;
     this.phase = Phase.IDLE;
     this.comboLevel = 0;
+    this.appliedBoosters = level.preBoosters || {}; // 战前道具
   }
 
   emit(name, payload) {
@@ -35,8 +38,14 @@ export class GameEngine {
     const o = this.level.objective;
     if (o.type === 'collectColor') return (this.collected[o.color] || 0) >= o.amount;
     if (o.type === 'score') return this.score >= o.amount;
-    if (o.type === 'crates') return this.cratesLeft <= 0;
+    if (o.type === 'crates') return this.cratesBroken >= o.amount;
+    if (o.type === 'multiColor') return o.items.every(it => (this.collected[it.color] || 0) >= it.amount);
     return false;
+  }
+
+  addMoves(n) {
+    this.movesLeft += n;
+    this.emit('movesChanged', this.movesLeft);
   }
 
   starsEarned() {
@@ -53,7 +62,7 @@ export class GameEngine {
     if (this.movesLeft <= 0) return false;
     if (!inBounds(this.grid, r1, c1) || !inBounds(this.grid, r2, c2)) return false;
     const a = this.grid[r1][c1], b = this.grid[r2][c2];
-    if (!a || !b) return false;
+    if (!isMovable(a) || !isMovable(b)) return false;
 
     // 相邻校验
     if (Math.abs(r1 - r2) + Math.abs(c1 - c2) !== 1) return false;
@@ -200,20 +209,21 @@ export class GameEngine {
   // 普通匹配解析（含创建特殊棋子）
   async resolveMatches(matches) {
     const { toClear, specialCreations } = matches;
-    const { clearedCells, specialsToTrigger } = applyClear(this.grid, toClear, specialCreations);
+    const { clearedCells, specialsToTrigger, crateBreaks, crateDamages } = applyClear(this.grid, toClear, specialCreations);
     this.score += clearedCells.length * (60 + this.comboLevel * 10);
     clearedCells.forEach(({ piece }) => {
-      this.collected[piece.color] = (this.collected[piece.color] || 0) + 1;
+      if (piece.kind === KIND.PIECE) this.collected[piece.color] = (this.collected[piece.color] || 0) + 1;
     });
-    this.emit('clear', { cells: clearedCells, specialCreations });
+    this.cratesBroken += crateBreaks.length;
+    this.score += crateBreaks.length * 120;
+    this.emit('clear', { cells: clearedCells, specialCreations, crateBreaks, crateDamages });
     this.emit('scoreChanged', this.score);
     this.emit('collectChanged', this.collected);
     await sleep(260);
-    // 链式触发被波及的特殊棋子
     for (const sp of specialsToTrigger) {
       const set = specialTargets(this.grid, sp.r, sp.c, sp.special, sp.color);
       set.add(sp.r + ',' + sp.c);
-      await this.triggerSet(set, { reason: 'chain' });
+      await this.triggerSet(set, { reason: 'chain', origin: [sp.r, sp.c], special: sp.special });
     }
   }
 
@@ -221,25 +231,33 @@ export class GameEngine {
   async triggerSet(set, meta = {}) {
     const cells = [];
     const chained = [];
+    const crateBreaks = [];
     for (const key of set) {
       const [r, c] = key.split(',').map(Number);
       if (!inBounds(this.grid, r, c)) continue;
       const p = this.grid[r][c];
       if (!p) continue;
+      if (p.kind === KIND.CRATE) {
+        crateBreaks.push({ r, c, piece: p });
+        this.cratesBroken++;
+        this.grid[r][c] = null;
+        continue;
+      }
       cells.push({ r, c, piece: p });
       if (p.special) chained.push({ r, c, special: p.special, color: p.color });
       this.grid[r][c] = null;
     }
-    this.score += cells.length * (80 + this.comboLevel * 10);
-    cells.forEach(({ piece }) => { this.collected[piece.color] = (this.collected[piece.color] || 0) + 1; });
-    this.emit('explode', { cells, reason: meta.reason });
+    this.score += cells.length * (80 + this.comboLevel * 10) + crateBreaks.length * 120;
+    cells.forEach(({ piece }) => {
+      if (piece.kind === KIND.PIECE) this.collected[piece.color] = (this.collected[piece.color] || 0) + 1;
+    });
+    this.emit('explode', { cells, reason: meta.reason, origin: meta.origin, special: meta.special, crateBreaks });
     this.emit('scoreChanged', this.score);
     this.emit('collectChanged', this.collected);
-    await sleep(260);
-    // 递归触发被波及的特殊棋子（去重以防同一波内已被清除）
+    await sleep(220);
     for (const sp of chained) {
       const next = specialTargets(this.grid, sp.r, sp.c, sp.special, sp.color);
-      if (next.size) await this.triggerSet(next, { reason: 'chain' });
+      if (next.size) await this.triggerSet(next, { reason: 'chain', origin: [sp.r, sp.c], special: sp.special });
     }
   }
 }

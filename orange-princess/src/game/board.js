@@ -9,9 +9,23 @@ export const SPECIAL = {
   LIGHTBALL: 'lightball'
 };
 
+export const KIND = {
+  PIECE: 'piece',
+  CRATE: 'crate'   // 障碍：不参与匹配；相邻消除时受伤
+};
+
 let idSeq = 1;
 function newPiece(color, special = null) {
-  return { id: idSeq++, color, special };
+  return { id: idSeq++, color, special, kind: KIND.PIECE };
+}
+export function newCrate(hp = 1) {
+  return { id: idSeq++, color: null, special: null, kind: KIND.CRATE, hp, maxHp: hp };
+}
+
+function pieceColor(p) {
+  if (!p) return null;
+  if (p.kind === KIND.CRATE) return null;
+  return p.color;
 }
 
 export function createBoard(cols = CONFIG.COLS, rows = CONFIG.ROWS, palette = COLOR_IDS) {
@@ -41,8 +55,6 @@ export function neighbors(r, c) {
     [r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]
   ];
 }
-
-function pieceColor(p) { return p ? p.color : null; }
 
 // 找出当前棋盘上所有 3+ 连匹配，返回 { lines: [...], pieces: Set('r,c'), specialCreations: [...] }
 export function findMatches(grid) {
@@ -154,35 +166,59 @@ function decideSpecial(group) {
   return null;
 }
 
-// 应用消除：返回 { cleared, specialsActivated, board }；不做重力，调用方拆步动画
+// 应用消除：返回 { clearedCells, specialsToTrigger, crateBreaks, crateDamages }
 export function applyClear(grid, toClear, specialCreations = [], triggeredBy = null) {
   const rows = grid.length, cols = grid[0].length;
-  const clearedCells = []; // [{r,c, piece}]
-  const specialsToTrigger = []; // 因连锁触发的其他特殊棋子
-
-  // 先标记被清除的格子，但跳过将变成特殊棋子的位置
+  const clearedCells = [];
+  const specialsToTrigger = [];
   const becomeSpecialKeys = new Set(specialCreations.map(s => s.pos[0] + ',' + s.pos[1]));
 
   for (const key of toClear) {
     const [r, c] = key.split(',').map(Number);
     if (becomeSpecialKeys.has(key)) continue;
     const p = grid[r][c];
-    if (p) {
-      clearedCells.push({ r, c, piece: p });
-      // 如果被清除的格子上是特殊棋子（且不是触发源），加入下一波激活
-      if (p.special && !(triggeredBy && triggeredBy.r === r && triggeredBy.c === c)) {
-        specialsToTrigger.push({ r, c, special: p.special, color: p.color });
-      }
-      grid[r][c] = null;
+    if (!p) continue;
+    if (p.kind === KIND.CRATE) continue; // 木箱不直接被普通匹配清除（除非被特殊棋子/邻接打击）
+    clearedCells.push({ r, c, piece: p });
+    if (p.special && !(triggeredBy && triggeredBy.r === r && triggeredBy.c === c)) {
+      specialsToTrigger.push({ r, c, special: p.special, color: p.color });
     }
+    grid[r][c] = null;
   }
-  // 在创建位置放上新特殊棋子
   for (const sc of specialCreations) {
     const [r, c] = sc.pos;
-    grid[r][c] = { id: idSeq++, color: sc.color, special: sc.special };
+    grid[r][c] = { id: idSeq++, color: sc.color, special: sc.special, kind: KIND.PIECE };
   }
 
-  return { clearedCells, specialsToTrigger };
+  // 相邻木箱受到伤害
+  const damaged = new Map();
+  for (const { r, c } of clearedCells) {
+    for (const [nr, nc] of neighbors(r, c)) {
+      if (!inBoundsRC(grid, nr, nc)) continue;
+      const np = grid[nr][nc];
+      if (np && np.kind === KIND.CRATE) {
+        const key = nr + ',' + nc;
+        damaged.set(key, np);
+      }
+    }
+  }
+  const crateBreaks = [], crateDamages = [];
+  for (const [key, crate] of damaged) {
+    crate.hp -= 1;
+    const [r, c] = key.split(',').map(Number);
+    if (crate.hp <= 0) {
+      grid[r][c] = null;
+      crateBreaks.push({ r, c, piece: crate });
+    } else {
+      crateDamages.push({ r, c, piece: crate });
+    }
+  }
+
+  return { clearedCells, specialsToTrigger, crateBreaks, crateDamages };
+}
+
+function inBoundsRC(grid, r, c) {
+  return r >= 0 && r < grid.length && c >= 0 && c < grid[0].length;
 }
 
 // 计算激活某个特殊棋子要清除的所有格子（不真正消除）
@@ -313,7 +349,9 @@ export function refill(grid, palette = COLOR_IDS) {
 export function findValidMoves(grid) {
   const rows = grid.length, cols = grid[0].length;
   const moves = [];
+  const isMovable = p => p && p.kind === KIND.PIECE;
   const trySwap = (r1, c1, r2, c2) => {
+    if (!isMovable(grid[r1][c1]) || !isMovable(grid[r2][c2])) return false;
     [grid[r1][c1], grid[r2][c2]] = [grid[r2][c2], grid[r1][c1]];
     const has = findMatches(grid).groups.length > 0
       || (grid[r1][c1] && grid[r1][c1].special) || (grid[r2][c2] && grid[r2][c2].special);
@@ -325,6 +363,18 @@ export function findValidMoves(grid) {
     if (r + 1 < rows && trySwap(r, c, r + 1, c)) moves.push([[r, c], [r + 1, c]]);
   }
   return moves;
+}
+
+export function isMovable(p) { return !!p && p.kind !== KIND.CRATE; }
+
+// 把 obstacles 配置注入到棋盘上（替换该格）
+export function injectObstacles(grid, obstacles) {
+  if (!obstacles) return;
+  if (obstacles.crates) {
+    for (const [r, c, hp] of obstacles.crates) {
+      if (inBoundsRC(grid, r, c)) grid[r][c] = newCrate(hp || 1);
+    }
+  }
 }
 
 export function cloneGrid(grid) {

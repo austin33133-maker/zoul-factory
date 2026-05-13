@@ -11,6 +11,12 @@ const DEFAULT_STATE = {
   stars: {},           // { '1': 3, '2': 2 ... }
   bestScore: {},       // { '1': 12345 }
   boosters: { hammer: 3, bomb: 2, swap: 2 },
+  // 装修元玩法（橙园别墅）
+  decoration: {
+    room: 0,           // 当前正在装修的房间索引
+    items: {},         // 已解锁的物品 { 'garden:fountain': true }
+    starsSpent: 0
+  },
   audio: true,
   firstRun: true
 };
@@ -99,6 +105,20 @@ export const Save = {
   },
 
   toggleAudio() { state.audio = !state.audio; save(); return state.audio; },
+
+  // ----- decoration -----
+  unlockDecoration(key, starCost) {
+    if (this.starsAvailable() < starCost) return false;
+    state.decoration.items[key] = true;
+    state.decoration.starsSpent += starCost;
+    save();
+    return true;
+  },
+  starsAvailable() {
+    let total = 0;
+    for (const k in state.stars) total += state.stars[k];
+    return total - (state.decoration?.starsSpent || 0);
+  },
 
   reset() { state = { ...DEFAULT_STATE }; save(); }
 };
