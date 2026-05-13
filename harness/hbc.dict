@@ -1,0 +1,17 @@
+# libFuzzer dictionary for HBC bytecode fuzzing.
+# Header magic for Hermes Bytecode (little-endian on disk).
+"\xc6\x1f\xbc\x03"
+# Common version bytes observed in shipping Hermes.
+"\x4a\x00\x00\x00"
+"\x5c\x00\x00\x00"
+"\x60\x00\x00\x00"
+"\x62\x00\x00\x00"
+# Source-hash placeholder length (20 bytes of SHA-1).
+"\x14\x00\x00\x00"
+# Table header sentinels.
+"\xff\xff\xff\xff"
+"\x00\x00\x00\x00"
+"\x80\x00\x00\x00"
+# Common UTF-16 string-table tags.
+"\x00\x00"
+"\xff\x7f"
