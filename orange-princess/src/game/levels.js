@@ -261,13 +261,34 @@ export const LEVELS = [
   {
     id: 23,
     name: '彩条节日',
-    story: '为公主举办彩条游行！制造 8 条彩条火箭（4 连消除）。',
+    story: '为公主举办彩条游行！制造 5 条彩条火箭（4 连消除）。',
     moves: 26,
-    objective: { type: 'stripes', amount: 8 },
+    objective: { type: 'stripes', amount: 5 },
     starThresholds: [6000, 10000, 15000],
     palette: ['orange', 'red', 'yellow', 'green', 'blue', 'purple']
   }
 ];
+
+// 数值调优：导出一个审计函数，可在控制台跑 `audit()` 查看每关密度
+// 经验值：collectColor 目标量/步数 ≈ 1.2-1.5 较合理；score 类 ≈ 500-700/步；
+// stripes（火箭）通常 0.2-0.3/步（需要 4 连，受运气影响）
+export function auditLevels() {
+  const rows = [];
+  for (const lv of LEVELS) {
+    const o = lv.objective;
+    let density = '-', kind = o.type;
+    if (o.type === 'collectColor') density = (o.amount / lv.moves).toFixed(2);
+    else if (o.type === 'score') density = (o.amount / lv.moves).toFixed(0);
+    else if (o.type === 'crates') density = (o.amount / lv.moves).toFixed(2);
+    else if (o.type === 'jelly') density = (o.amount / lv.moves).toFixed(2);
+    else if (o.type === 'stripes') density = (o.amount / lv.moves).toFixed(2);
+    else if (o.type === 'savePrincess') density = o.amount + '个';
+    else if (o.type === 'vineClear') density = (o.amount / lv.moves).toFixed(2);
+    rows.push({ id: lv.id, name: lv.name, kind, moves: lv.moves, target: o.amount || '-', density });
+  }
+  console.table(rows);
+  return rows;
+}
 
 export function getLevel(id) {
   return LEVELS.find(l => l.id === id) || LEVELS[0];

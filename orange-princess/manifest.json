@@ -1,0 +1,21 @@
+{
+  "name": "橙子公主 Orange Princess",
+  "short_name": "橙子公主",
+  "description": "对标 Royal Match 风格的三消休闲游戏（橙子公主原创世界观）",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#1a0e2e",
+  "theme_color": "#ff8b3d",
+  "icons": [
+    {
+      "src": "./assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "entertainment"]
+}

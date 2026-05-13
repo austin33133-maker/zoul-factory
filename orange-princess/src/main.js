@@ -43,6 +43,14 @@ class SceneManager {
 
 // 异步预加载 sprite sheet（如果存在）后再启动场景。无资源也能跑（回退 emoji）。
 Assets.load().catch(() => {});
+
+// 注册 Service Worker（PWA 可安装、离线可用）
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
 const sm = new SceneManager();
 
 // ---- 输入：把 client 坐标转换为 canvas 坐标 ----

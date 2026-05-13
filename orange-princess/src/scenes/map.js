@@ -187,11 +187,52 @@ export class MapScene {
       html: `<p>音效：${Save.get().audio ? '🔊 开' : '🔇 关'}</p>`,
       buttons: [
         { label: '切换音效', value: 'audio' },
+        { label: '导出存档', value: 'export' },
+        { label: '导入存档', value: 'import' },
         { label: '重置存档', value: 'reset', style: 'danger' },
         { label: '关闭', value: 'close', style: 'ghost' }
       ]
     });
     if (v === 'audio') Save.toggleAudio();
+    if (v === 'export') {
+      const code = Save.exportSave();
+      const html = `
+        <p style="color:#7c3a14">复制下面的代码，妥善保管：</p>
+        <textarea readonly style="width:100%;height:120px;border-radius:8px;border:2px solid #ffb066;padding:8px;font-family:monospace;font-size:11px">${code || ''}</textarea>
+        <p style="color:#7c3a14;font-size:12px;margin-top:8px">代码包含所有进度、星星、金币、道具、装修、战令 XP</p>
+      `;
+      await modal({ title: '📤 导出存档', html, buttons: [{ label: '复制', value: 'copy' }, { label: '关闭', value: 'close', style: 'ghost' }] }).then(r => {
+        if (r === 'copy' && navigator.clipboard) navigator.clipboard.writeText(code).then(() => showToast('已复制'));
+      });
+    }
+    if (v === 'import') {
+      const overlay = document.getElementById('dom-overlay');
+      const bd = document.createElement('div');
+      bd.className = 'modal-backdrop';
+      const m = document.createElement('div');
+      m.className = 'modal';
+      m.innerHTML = `
+        <h2>📥 导入存档</h2>
+        <div class="body">
+          <p style="color:#7c3a14">粘贴存档代码（覆盖现有进度）</p>
+          <textarea id="imp-text" style="width:100%;height:120px;border-radius:8px;border:2px solid #ffb066;padding:8px;font-family:monospace;font-size:11px"></textarea>
+        </div>
+        <div class="row" style="margin-top:14px">
+          <button class="btn ghost" data-act="cancel">取消</button>
+          <button class="btn" data-act="apply">确认导入</button>
+        </div>`;
+      bd.appendChild(m);
+      overlay.appendChild(bd);
+      await new Promise(resolve => {
+        m.querySelector('[data-act="cancel"]').onclick = () => { bd.remove(); resolve(); };
+        m.querySelector('[data-act="apply"]').onclick = () => {
+          const txt = m.querySelector('#imp-text').value;
+          if (Save.importSave(txt)) { showToast('已导入'); Audio.win(); }
+          else { showToast('代码格式错误'); Audio.invalid(); }
+          bd.remove(); resolve();
+        };
+      });
+    }
     if (v === 'reset') {
       const c = await modal({ title: '确认重置？', html: '<p>所有进度将丢失</p>', buttons: [{ label: '取消', value: 'no', style: 'ghost' }, { label: '确定', value: 'yes', style: 'danger' }] });
       if (c === 'yes') Save.reset();

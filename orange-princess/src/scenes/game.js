@@ -1,6 +1,6 @@
 import { CONFIG, COLOR_IDS } from '../config.js';
 import { GameEngine, Phase } from '../game/engine.js';
-import { SPECIAL, KIND } from '../game/board.js';
+import { SPECIAL, KIND, findValidMoves } from '../game/board.js';
 import { getLevel } from '../game/levels.js';
 import { Save } from '../storage.js';
 import { Audio } from '../audio.js';
@@ -28,6 +28,9 @@ export class GameScene {
     this.particles = [];
     this.floats = []; // +score popups
     this.dragging = null;
+    this.idleTime = 0;
+    this.hint = null;           // { from:[r,c], to:[r,c], pulse:0 }
+    this.tutorial = null;       // { from:[r,c], to:[r,c], t:0 }
     this.princessMood = 'happy';
     this.princessSay = '';
     this.princessSayTimer = 0;
@@ -52,6 +55,19 @@ export class GameScene {
     if (picks.startRocket || picks.startBomb) this.injectStarters(picks);
     this.initSprites();
     this.say('一起加油！🍊', 'cheer', 1800);
+    // L1 新手引导：第一次进入演示一次划动
+    if (level.id === 1 && !Save.get().tutorial?.swap) {
+      setTimeout(() => this.startTutorial(), 1200);
+    }
+  }
+
+  startTutorial() {
+    if (!this.engine || this.engine.phase !== Phase.IDLE) return;
+    const moves = findValidMoves(this.engine.grid);
+    if (!moves.length) return;
+    const [from, to] = moves[0];
+    this.tutorial = { from, to, t: 0 };
+    this.say('试试拖动两颗水果，让 3 颗连成一线 🍊', 'cheer', 3000);
   }
 
   injectStarters(picks) {
@@ -186,6 +202,11 @@ export class GameScene {
   bindListeners() {
     return {
       swap: ({ from, to, invalid }) => {
+        this.resetIdle();
+        if (!invalid && this.tutorial) {
+          this.tutorial = null;
+          Save.patch({ tutorial: { ...Save.get().tutorial, swap: true } });
+        }
         const g = geom();
         const a = this.engine.grid[to[0]] && this.engine.grid[to[0]][to[1]];
         const b = this.engine.grid[from[0]] && this.engine.grid[from[0]][from[1]];
@@ -386,7 +407,12 @@ export class GameScene {
     this.dragging.fired = true;
     this.engine.trySwap(r, c, r + dir[0], c + dir[1]);
   }
-  onPointerUp() { this.dragging = null; }
+  onPointerUp() { this.dragging = null; this.resetIdle(); }
+
+  resetIdle() {
+    this.idleTime = 0;
+    this.hint = null;
+  }
 
   tryTapBooster(x, y) {
     const w = CONFIG.CANVAS_W, h = CONFIG.CANVAS_H;
@@ -572,6 +598,22 @@ export class GameScene {
     if (this.shakeT > 0) this.shakeT -= dts;
     if (this.flashAlpha > 0) this.flashAlpha = Math.max(0, this.flashAlpha - dts * 2.5);
     this.beams = this.beams.filter(b => { b.life += dts; return b.life < b.max; });
+    // 提示系统: 闲置 5s 自动提示
+    if (this.engine && this.engine.phase === Phase.IDLE && !this.tutorial) {
+      this.idleTime += dt;
+      if (this.idleTime > 5000 && !this.hint) {
+        const moves = findValidMoves(this.engine.grid);
+        if (moves.length) {
+          const [from, to] = moves[Math.floor(Math.random() * moves.length)];
+          this.hint = { from, to, pulse: 0 };
+        }
+      }
+    } else {
+      this.idleTime = 0;
+    }
+    if (this.hint) this.hint.pulse += dt;
+    // 新手引导动画推进
+    if (this.tutorial) this.tutorial.t += dt;
     if (this.bigCallout) {
       this.bigCallout.life += dts;
       if (this.bigCallout.life >= this.bigCallout.max) this.bigCallout = null;
@@ -663,6 +705,7 @@ export class GameScene {
     ctx.globalAlpha = 1; ctx.textAlign = 'left';
 
     // 公主 + 底部 booster
+    this.drawHintAndTutorial(ctx, g);
     this.drawFooter(ctx);
 
     // 大型 Combo 喊话
@@ -831,6 +874,59 @@ export class GameScene {
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
   }
 
+  drawHintAndTutorial(ctx, g) {
+    // 提示：闲置后高亮一对可换的格子
+    if (this.hint) {
+      const pulse = (Math.sin(this.hint.pulse / 180) + 1) / 2;
+      const drawCell = (r, c) => {
+        const x = g.padX + c * g.cell, y = g.top + r * g.cell;
+        ctx.strokeStyle = `rgba(255,216,77,${0.55 + 0.4 * pulse})`;
+        ctx.lineWidth = 4 + pulse * 2;
+        drawRoundedRect(ctx, x + 4, y + 4, g.cell - 8, g.cell - 8, 8);
+        ctx.stroke();
+      };
+      drawCell(this.hint.from[0], this.hint.from[1]);
+      drawCell(this.hint.to[0], this.hint.to[1]);
+      // 中点小箭头
+      const cx = (g.padX + this.hint.from[1] * g.cell + g.padX + this.hint.to[1] * g.cell) / 2 + g.cell / 2;
+      const cy = (g.top + this.hint.from[0] * g.cell + g.top + this.hint.to[0] * g.cell) / 2 + g.cell / 2;
+      ctx.fillStyle = `rgba(255,216,77,${0.7 + 0.3 * pulse})`;
+      ctx.font = '700 24px sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('↔', cx, cy);
+      ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    }
+    // 教学手指：在 from/to 之间滑动
+    if (this.tutorial) {
+      const t = this.tutorial;
+      const cycle = 1800;
+      const k = (t.t % cycle) / cycle;     // 0..1
+      const ease = k < 0.7 ? (k / 0.7) : 1; // 前 70% 滑动，后 30% 停
+      const ax = g.padX + t.from[1] * g.cell + g.cell / 2;
+      const ay = g.top + t.from[0] * g.cell + g.cell / 2;
+      const bx = g.padX + t.to[1] * g.cell + g.cell / 2;
+      const by = g.top + t.to[0] * g.cell + g.cell / 2;
+      const x = ax + (bx - ax) * ease, y = ay + (by - ay) * ease;
+      // 轨迹
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.lineWidth = 4; ctx.setLineDash([8, 6]);
+      ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
+      ctx.setLineDash([]);
+      // 起止高亮
+      const drawCell = (r, c, alpha) => {
+        const cx = g.padX + c * g.cell, cy = g.top + r * g.cell;
+        ctx.strokeStyle = `rgba(255,216,77,${alpha})`;
+        ctx.lineWidth = 4;
+        drawRoundedRect(ctx, cx + 4, cy + 4, g.cell - 8, g.cell - 8, 8);
+        ctx.stroke();
+      };
+      drawCell(t.from[0], t.from[1], 0.9);
+      drawCell(t.to[0], t.to[1], 0.6 + Math.sin(t.t / 220) * 0.3);
+      // 手形指针
+      drawFinger(ctx, x, y, t.t);
+    }
+  }
+
   drawFooter(ctx) {
     const w = CONFIG.CANVAS_W, h = CONFIG.CANVAS_H;
     const footerY = h - CONFIG.FOOTER_H;
@@ -899,3 +995,32 @@ function hexToRgb(hex) {
   return { r: parseInt(h.substr(0,2),16), g: parseInt(h.substr(2,2),16), b: parseInt(h.substr(4,2),16) };
 }
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function drawFinger(ctx, x, y, t) {
+  ctx.save();
+  ctx.translate(x, y + 4);
+  // 阴影
+  ctx.save();
+  ctx.translate(0, 22);
+  ctx.scale(1, 0.3);
+  fillCircle(ctx, 0, 0, 16, 'rgba(0,0,0,0.4)');
+  ctx.restore();
+  // 手指（食指向上）
+  const press = Math.max(0, Math.sin(t / 220)) * 3;
+  ctx.translate(0, press);
+  // 手掌
+  ctx.fillStyle = '#ffd9a8';
+  ctx.strokeStyle = '#a86b1c'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(-14, 4, 28, 30, 12) : ctx.rect(-14, 4, 28, 30);
+  ctx.fill(); ctx.stroke();
+  // 食指
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(-7, -18, 14, 26, 6) : ctx.rect(-7, -18, 14, 26);
+  ctx.fill(); ctx.stroke();
+  // 高光
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.beginPath();
+  ctx.ellipse(-3, -10, 3, 5, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}

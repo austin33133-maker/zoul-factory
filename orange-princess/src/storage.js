@@ -25,6 +25,8 @@ const DEFAULT_STATE = {
   daily: { date: 0, tasks: [], claimed: [] },
   // 战令 XP & 已领奖励
   battle: { xp: 0, claimedTiers: [] },
+  // 新手引导是否看过
+  tutorial: { swap: false },
   audio: true,
   firstRun: true
 };
@@ -196,6 +198,21 @@ export const Save = {
     if (reward.booster) state.boosters[reward.booster] = (state.boosters[reward.booster] || 0) + (reward.boosterN || 1);
     save();
     return true;
+  },
+
+  // ----- 导入/导出存档 -----
+  exportSave() {
+    try { return btoa(unescape(encodeURIComponent(JSON.stringify(state)))); }
+    catch (e) { return null; }
+  },
+  importSave(text) {
+    try {
+      const obj = JSON.parse(decodeURIComponent(escape(atob(text.trim()))));
+      if (!obj || typeof obj !== 'object') return false;
+      state = { ...DEFAULT_STATE, ...obj, boosters: { ...DEFAULT_STATE.boosters, ...(obj.boosters || {}) } };
+      save();
+      return true;
+    } catch (e) { return false; }
   },
 
   reset() { state = { ...DEFAULT_STATE }; save(); }

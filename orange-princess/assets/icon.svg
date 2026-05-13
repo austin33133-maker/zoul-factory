@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- 背景圆 -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffce5b"/>
+      <stop offset="60%" stop-color="#ff8b3d"/>
+      <stop offset="100%" stop-color="#c14a14"/>
+    </radialGradient>
+    <radialGradient id="face" cx="40%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#fff5d8"/>
+      <stop offset="100%" stop-color="#ffd9a0"/>
+    </radialGradient>
+  </defs>
+  <rect x="0" y="0" width="512" height="512" rx="80" fill="url(#bg)"/>
+  <!-- 王冠 -->
+  <g transform="translate(256 180)">
+    <path d="M -80 20 L -80 -30 L -40 0 L 0 -50 L 40 0 L 80 -30 L 80 20 Z" fill="#ffd84d" stroke="#5a2810" stroke-width="6"/>
+    <circle cx="0" cy="-18" r="14" fill="#ff5e3a"/>
+    <circle cx="-4" cy="-22" r="4" fill="#fff7"/>
+  </g>
+  <!-- 脸 -->
+  <circle cx="256" cy="276" r="120" fill="url(#face)" stroke="#5a2810" stroke-width="6"/>
+  <!-- 头发两侧 -->
+  <ellipse cx="160" cy="248" rx="48" ry="70" fill="#3a1d0e"/>
+  <ellipse cx="352" cy="248" rx="48" ry="70" fill="#3a1d0e"/>
+  <!-- 眼睛 -->
+  <circle cx="216" cy="266" r="18" fill="#fff" stroke="#5a2810" stroke-width="3"/>
+  <circle cx="296" cy="266" r="18" fill="#fff" stroke="#5a2810" stroke-width="3"/>
+  <circle cx="218" cy="270" r="9" fill="#1a0e2e"/>
+  <circle cx="298" cy="270" r="9" fill="#1a0e2e"/>
+  <circle cx="214" cy="266" r="3" fill="#fff"/>
+  <circle cx="294" cy="266" r="3" fill="#fff"/>
+  <!-- 嘴 -->
+  <path d="M 226 320 Q 256 350 286 320" stroke="#5a2810" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <!-- 腮红 -->
+  <ellipse cx="190" cy="304" rx="14" ry="9" fill="#ff5e3a" opacity="0.45"/>
+  <ellipse cx="322" cy="304" rx="14" ry="9" fill="#ff5e3a" opacity="0.45"/>
+</svg>
