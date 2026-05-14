@@ -39,16 +39,17 @@ BUILD="$ROOT/build_asan"
 rm -rf "$BUILD"
 mkdir -p "$BUILD"
 
-# ASAN + UBSAN + Debug. Disable LTO so stack traces stay readable.
+# ASAN + Debug. UBSan's vptr check needs RTTI; Hermes builds with
+# -fno-rtti, so enabling UBSan as well breaks the link of the `hermes`
+# executable (undefined typeinfo for HadesGC etc).
 cmake -S hermes -B "$BUILD" -G Ninja \
   -DCMAKE_BUILD_TYPE=Debug \
   -DCMAKE_C_COMPILER=clang \
   -DCMAKE_CXX_COMPILER=clang++ \
-  -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g" \
-  -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g" \
-  -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined" \
+  -DCMAKE_C_FLAGS="-fsanitize=address -fno-omit-frame-pointer -g" \
+  -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer -g" \
+  -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address" \
   -DHERMES_ENABLE_DEBUGGER=ON \
-  -DHERMES_ENABLE_TEST_SUITE=ON \
   -DHERMES_ENABLE_INTL=OFF
 
 cmake --build "$BUILD" -j "$JOBS" --target hermes hermesc hbcdump hbc-diff

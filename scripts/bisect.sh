@@ -26,9 +26,9 @@ set -e
 cmake -S "$HERMES_SRC" -B "$BUILD_DIR" -G Ninja \
   -DCMAKE_BUILD_TYPE=Debug \
   -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
-  -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g" \
-  -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g" \
-  -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined" \
+  -DCMAKE_C_FLAGS="-fsanitize=address -fno-omit-frame-pointer -g" \
+  -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer -g" \
+  -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address" \
   -DHERMES_ENABLE_INTL=OFF >/dev/null
 cmake --build "$BUILD_DIR" -j \$(nproc) --target hermes >/dev/null
 OUT=\$("$BUILD_DIR/bin/hermes" - < "$POC" 2>&1 || true)
