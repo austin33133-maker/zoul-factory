@@ -1,0 +1,38 @@
+1
+00:00:00,200 --> 00:00:03,000
+Spartifexon
+
+2
+00:00:03,000 --> 00:00:07,000
+重新定义的力量。
+Power, redesigned.
+
+3
+00:00:07,000 --> 00:00:11,000
+一个接口，45 瓦特满速。
+One port. 45 watts.
+
+4
+00:00:11,000 --> 00:00:15,000
+氮化镓核芯，更小、更冷、更智能。
+GaN inside. Cooler. Smaller. Smarter.
+
+5
+00:00:15,000 --> 00:00:19,000
+小到随手放下，强到值得依赖。
+Small enough to forget. Strong enough to count on.
+
+6
+00:00:19,000 --> 00:00:23,000
+智能温控 · 过流保护 · 出行就绪。
+Smart temp. Over-current shield. Travel-ready.
+
+7
+00:00:23,000 --> 00:00:27,000
+稳定的电力，从容的快充。
+Stable power. Confident charging.
+
+8
+00:00:27,000 --> 00:00:30,000
+Spartifexon · 45W GaN 快充
+Spartifexon · 45W GaN Charger
