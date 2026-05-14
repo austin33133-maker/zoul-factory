@@ -3,6 +3,56 @@
 // 所有图形原创，零外部资源依赖。
 
 import { fillCircle } from '../utils.js';
+import { Save } from '../storage.js';
+
+// 色盲友好：角落画一个白色形状徽章，让 6 种水果除了颜色还有形状区分
+function drawShapeBadge(ctx, r, shape) {
+  if (!Save.get().colorblind) return;
+  const bx = r * 0.55, by = r * 0.55;
+  const sz = r * 0.32;
+  // 白底圆
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  fillCircle(ctx, bx, by, sz + 2);
+  ctx.strokeStyle = '#222'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.arc(bx, by, sz + 2, 0, Math.PI * 2); ctx.stroke();
+  // 形状
+  ctx.fillStyle = '#222';
+  ctx.save();
+  ctx.translate(bx, by);
+  if (shape === 'circle') {
+    fillCircle(ctx, 0, 0, sz * 0.7, '#222');
+  } else if (shape === 'heart') {
+    ctx.beginPath();
+    ctx.moveTo(0, -sz * 0.2);
+    ctx.bezierCurveTo(sz, -sz, sz, sz * 0.4, 0, sz * 0.8);
+    ctx.bezierCurveTo(-sz, sz * 0.4, -sz, -sz, 0, -sz * 0.2);
+    ctx.fill();
+  } else if (shape === 'oval') {
+    ctx.beginPath();
+    ctx.ellipse(0, 0, sz * 0.9, sz * 0.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (shape === 'apple') {
+    ctx.beginPath();
+    ctx.moveTo(0, -sz * 0.5);
+    ctx.bezierCurveTo(-sz, -sz * 0.6, -sz * 0.9, sz * 0.8, 0, sz * 0.7);
+    ctx.bezierCurveTo(sz * 0.9, sz * 0.8, sz, -sz * 0.6, 0, -sz * 0.5);
+    ctx.fill();
+  } else if (shape === 'star') {
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + i * Math.PI / 5;
+      const rr = i % 2 === 0 ? sz * 0.85 : sz * 0.4;
+      ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+    }
+    ctx.closePath();
+    ctx.fill();
+  } else if (shape === 'cluster') {
+    fillCircle(ctx, -sz * 0.3, -sz * 0.2, sz * 0.35, '#222');
+    fillCircle(ctx,  sz * 0.3, -sz * 0.2, sz * 0.35, '#222');
+    fillCircle(ctx,  0, sz * 0.3, sz * 0.4, '#222');
+  }
+  ctx.restore();
+}
 
 function shadow(ctx, r) {
   ctx.save();
@@ -306,6 +356,15 @@ export function drawFruit(ctx, colorId, x, y, r, t = 0) {
   ctx.save();
   ctx.translate(x, y);
   fn(ctx, r, t);
+  // 色盲徽章（颜色之外的形状识别）
+  const cfg = (typeof window !== 'undefined') ? null : null;
+  const shape = SHAPE_MAP[colorId];
+  if (shape) drawShapeBadge(ctx, r, shape);
   ctx.restore();
   return true;
 }
+
+const SHAPE_MAP = {
+  orange: 'circle', red: 'heart', yellow: 'oval',
+  green: 'apple', blue: 'star', purple: 'cluster'
+};

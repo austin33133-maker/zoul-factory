@@ -29,6 +29,7 @@ const DEFAULT_STATE = {
   tutorial: { swap: false },
   audio: true,
   bgm: true,
+  colorblind: false,
   firstRun: true
 };
 
@@ -117,6 +118,7 @@ export const Save = {
 
   toggleAudio() { state.audio = !state.audio; save(); return state.audio; },
   toggleBgm() { state.bgm = !state.bgm; save(); return state.bgm; },
+  toggleColorblind() { state.colorblind = !state.colorblind; save(); return state.colorblind; },
 
   // ----- decoration -----
   unlockDecoration(key, starCost) {

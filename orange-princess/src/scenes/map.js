@@ -186,10 +186,11 @@ export class MapScene {
     Audio.click();
     const v = await modal({
       title: '设置',
-      html: `<p>音效：${Save.get().audio ? '🔊 开' : '🔇 关'}　背景音乐：${Save.get().bgm ? '🎵 开' : '🔕 关'}</p>`,
+      html: `<p>音效：${Save.get().audio ? '🔊 开' : '🔇 关'}　BGM：${Save.get().bgm ? '🎵 开' : '🔕 关'}　色盲：${Save.get().colorblind ? '◉ 开' : '○ 关'}</p>`,
       buttons: [
         { label: '切换音效', value: 'audio' },
         { label: '切换 BGM', value: 'bgm' },
+        { label: '色盲模式', value: 'colorblind' },
         { label: '导出存档', value: 'export' },
         { label: '导入存档', value: 'import' },
         { label: '重置存档', value: 'reset', style: 'danger' },
@@ -200,6 +201,10 @@ export class MapScene {
     if (v === 'bgm') {
       const on = Save.toggleBgm();
       if (on) Audio.bgmStart(); else Audio.bgmStop();
+    }
+    if (v === 'colorblind') {
+      const on = Save.toggleColorblind();
+      showToast(on ? '色盲模式：开' : '色盲模式：关');
     }
     if (v === 'export') {
       const code = Save.exportSave();

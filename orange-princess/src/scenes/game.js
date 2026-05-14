@@ -9,6 +9,7 @@ import { drawFruit } from '../ui/fruits.js';
 import { drawCrate as drawDetailedCrate, drawGiftBox, drawBombOverlay, drawRocketOverlay, drawLightballOverlay, drawIceOverlay, drawJellyTile, drawVineTile, drawPortalTile } from '../ui/items.js';
 import { drawRoundedRect, fillCircle, easeOutCubic, easeOutBack, clamp, lerp, rand, randInt, choice, showToast } from '../utils.js';
 import { modal } from '../ui/modal.js';
+import { generateShareCard, shareOrDownload } from '../ui/share.js';
 
 // 棋盘几何
 function geom() {
@@ -484,9 +485,19 @@ export class GameScene {
       html,
       buttons: [
         { label: '返回地图', value: 'map', style: 'ghost' },
+        { label: '📷 分享', value: 'share' },
         { label: '下一关', value: 'next' }
       ]
     });
+    if (v === 'share') {
+      try {
+        const url = generateShareCard(lv.id, score, stars);
+        const r = await shareOrDownload(url, lv.id);
+        showToast(r === 'shared' ? '已分享' : '已保存到下载');
+      } catch (e) { showToast('生成失败'); }
+      // 分享完回弹原模态
+      return this.onWin(score, stars);
+    }
     if (v === 'next') {
       const next = lv.id + 1;
       if (next > 30) { showToast('🎊 你通关了！期待续作 🍊'); this.sm.switchTo('map'); }

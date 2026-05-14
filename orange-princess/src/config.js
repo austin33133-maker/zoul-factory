@@ -10,12 +10,12 @@ export const CONFIG = {
   BOARD_PAD: 24,
 
   COLORS: [
-    { id: 'orange', hex: '#ff8b3d', label: '🍊' },
-    { id: 'red',    hex: '#ff5470', label: '🍓' },
-    { id: 'yellow', hex: '#ffd84d', label: '🍋' },
-    { id: 'green',  hex: '#7be36b', label: '🍏' },
-    { id: 'blue',   hex: '#5bc6ff', label: '🫐' },
-    { id: 'purple', hex: '#b06bff', label: '🍇' }
+    { id: 'orange', hex: '#ff8b3d', label: '🍊', shape: 'circle' },
+    { id: 'red',    hex: '#ff5470', label: '🍓', shape: 'heart'  },
+    { id: 'yellow', hex: '#ffd84d', label: '🍋', shape: 'oval'   },
+    { id: 'green',  hex: '#7be36b', label: '🍏', shape: 'apple'  },
+    { id: 'blue',   hex: '#5bc6ff', label: '🫐', shape: 'star'   },
+    { id: 'purple', hex: '#b06bff', label: '🍇', shape: 'cluster' }
   ],
 
   LIFE_MAX: 5,
