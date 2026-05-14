@@ -1,0 +1,66 @@
+================================================================
+40W DYNAMIC FAST CHARGER · 30s VIDEO AD · ENGLISH VOICEOVER
+================================================================
+
+DURATION: 30 seconds
+WORD COUNT: 64 words
+SUGGESTED PACE: 130-140 wpm (calm, confident, Apple-style)
+SUGGESTED VOICE: Natural American English, male 30-35 or female 25-30
+RECOMMENDED AI TOOL: ElevenLabs (Adam / Bella / Rachel voices)
+
+================================================================
+FULL SCRIPT (read continuously, 28-29 seconds total)
+================================================================
+
+[0:00 - 0:03] HOOK
+"Tired of waiting forever to charge?"
+
+[PAUSE 0.3s]
+
+[0:03 - 0:09] PRODUCT INTRO
+"Meet the new 40W Dynamic Fast Charger.
+Smart current. Steady output. PD three point oh."
+
+[PAUSE 0.3s]
+
+[0:09 - 0:15] COMPATIBILITY
+"One adapter for everything you own —
+iPhone, iPad, AirPods, and every Type-C device."
+
+[PAUSE 0.3s]
+
+[0:15 - 0:21] PORT QUALITY
+"A premium Type-C port —
+engineered for stable, high-speed charging."
+
+[PAUSE 0.3s]
+
+[0:21 - 0:27] KIT REVEAL
+"Charger plus braided cable.
+Everything you need — in one box."
+
+[PAUSE 0.3s]
+
+[0:27 - 0:30] CTA
+"40W. Today only. Shop now."
+
+================================================================
+DIRECTING NOTES FOR VOICE TALENT
+================================================================
+
+* Emphasize numbers: "FORTY watts", "PD three point oh"
+* Soft confidence — not pushy, not salesy
+* Slight pause before "Shop now." for impact
+* Apple keynote vibe: precise, minimal, premium
+* Avoid upspeak; end statements with downward inflection
+
+================================================================
+ELEVENLABS GENERATION SETTINGS (RECOMMENDED)
+================================================================
+
+Voice:        Rachel / Adam / Bella
+Stability:    50%
+Similarity:   75%
+Style:        20%
+Speaker Boost: ON
+Model:        Eleven Multilingual v2
