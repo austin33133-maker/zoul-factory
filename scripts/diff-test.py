@@ -19,6 +19,7 @@ import os
 import random
 import subprocess
 import sys
+import tempfile
 import textwrap
 from pathlib import Path
 
@@ -41,6 +42,27 @@ def run(cmd: list[str], stdin: str = "") -> tuple[int, str, str, bool]:
         return -1, "", "TIMEOUT", True
 
 
+def run_hermes(js: str) -> tuple[int, str, str, bool]:
+    # Hermes expects a path argument, not `-`. Write to a temp file.
+    with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False) as f:
+        f.write(js)
+        path = f.name
+    try:
+        return run([HERMES_BIN, path])
+    finally:
+        try:
+            os.unlink(path)
+        except OSError:
+            pass
+
+
+NODE_SHIM = "var print=(...a)=>console.log(...a.map(x=>String(x)));"
+
+
+def run_node(js: str) -> tuple[int, str, str, bool]:
+    return run([NODE_BIN, "-e", NODE_SHIM + "\n" + js])
+
+
 def normalize(stdout: str, stderr: str, rc: int) -> str:
     # We don't care about exact error messages, only the success-vs-error
     # shape and the normal output. Hermes and V8 phrase errors differently.
@@ -55,8 +77,8 @@ def normalize(stdout: str, stderr: str, rc: int) -> str:
 
 
 def test_one(js: str, label: str) -> tuple[bool, str]:
-    h_rc, h_out, h_err, h_to = run([HERMES_BIN, "-"], stdin=js)
-    v_rc, v_out, v_err, v_to = run([NODE_BIN, "-e", js])
+    h_rc, h_out, h_err, h_to = run_hermes(js)
+    v_rc, v_out, v_err, v_to = run_node(js)
 
     # Sanitizer reports = always interesting.
     asan = "AddressSanitizer" in h_err or "runtime error" in h_err

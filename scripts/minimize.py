@@ -17,7 +17,7 @@ Usage:
   HERMES_BIN=/path/to/hermes ./minimize.py --check asan input.js
 """
 from __future__ import annotations
-import argparse, os, subprocess, sys, time
+import argparse, os, subprocess, sys, tempfile, time
 from pathlib import Path
 
 HERMES_BIN = os.environ.get("HERMES_BIN", "hermes")
@@ -30,7 +30,16 @@ def run(bin_: str, src: str) -> tuple[int, str, str]:
         if bin_ == NODE_BIN:
             p = subprocess.run([bin_, "-e", src], capture_output=True, text=True, timeout=TIMEOUT)
         else:
-            p = subprocess.run([bin_, "-"], input=src, capture_output=True, text=True, timeout=TIMEOUT)
+            with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False) as f:
+                f.write(src)
+                path = f.name
+            try:
+                p = subprocess.run([bin_, path], capture_output=True, text=True, timeout=TIMEOUT)
+            finally:
+                try:
+                    os.unlink(path)
+                except OSError:
+                    pass
         return p.returncode, p.stdout, p.stderr
     except subprocess.TimeoutExpired:
         return -1, "", "TIMEOUT"
