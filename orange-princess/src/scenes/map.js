@@ -49,6 +49,7 @@ export class MapScene {
   }
 
   onPointerDown(x, y) {
+    if (this.cinematic) { this.skipCinematic(); return; }
     this.dragStart = y;
     this.dragScrollAt = this.scroll;
     this.dragMoved = false;
@@ -128,16 +129,28 @@ export class MapScene {
   }
 
   async showChapterIntro(ch) {
-    Audio.unlock();
-    await modal({
-      title: `${ch.emoji} 第 ${ch.id} 章`,
-      html: `
-        <p style="font-size:22px;color:#7c3a14;font-weight:700">${ch.name}</p>
-        <p style="color:#7c3a14;margin-top:12px;line-height:1.5">${ch.intro}</p>
-        <p style="color:#7c3a14;margin-top:12px;font-size:13px">本章关卡 ${ch.range[0]}–${ch.range[1]}</p>
-      `,
-      buttons: [{ label: '通过城门 →', value: 'go' }]
+    Audio.unlock(); Audio.princess();
+    // Canvas 过场动画 (2.6s)：黑幕拉开 → 城门光束 + 章节字幕 + 公主走过 → 黑幕收回
+    await new Promise(resolve => {
+      this.cinematic = { ch, t: 0, dur: 2600, resolve, sparkles: [] };
+      // 预生成一些飘动星点
+      for (let i = 0; i < 30; i++) {
+        this.cinematic.sparkles.push({
+          x: Math.random() * CONFIG.CANVAS_W,
+          y: Math.random() * CONFIG.CANVAS_H,
+          r: 1 + Math.random() * 2,
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.6 + Math.random() * 0.6
+        });
+      }
     });
+    this.cinematic = null;
+  }
+  // 跳过过场（点屏幕任何位置）
+  skipCinematic() {
+    if (this.cinematic) {
+      this.cinematic.t = this.cinematic.dur;
+    }
   }
 
   async showDailyTasks() {
@@ -254,6 +267,14 @@ export class MapScene {
   update(dt) {
     this.t += dt;
     this.scroll += (this.targetScroll - this.scroll) * 0.18;
+    if (this.cinematic) {
+      this.cinematic.t += dt;
+      if (this.cinematic.t >= this.cinematic.dur && this.cinematic.resolve) {
+        const r = this.cinematic.resolve;
+        this.cinematic.resolve = null;
+        r();
+      }
+    }
   }
 
   draw(ctx) {
@@ -316,6 +337,9 @@ export class MapScene {
 
     // 底部入口
     drawBottomEntries(ctx, w, h);
+
+    // 章节过场动画 (覆盖全屏)
+    if (this.cinematic) drawCinematic(ctx, this.cinematic, w, h);
   }
 }
 
@@ -502,3 +526,122 @@ function drawStar(ctx, x, y, r, filled) {
 }
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+// 章节过场动画：黑幕→城门光柱+章节字幕+公主走过+星点→黑幕收回
+function drawCinematic(ctx, cin, w, h) {
+  const t = cin.t, dur = cin.dur, ch = cin.ch;
+  const p = t / dur; // 0..1
+  // 黑幕高度（双向，从顶/底各覆盖 50%）
+  let curtain;
+  if (p < 0.18) curtain = (p / 0.18);              // 拉幕
+  else if (p > 0.82) curtain = (1 - p) / 0.18;     // 收幕
+  else curtain = 1;
+  curtain = Math.max(0, Math.min(1, curtain));
+  const curtainH = h * 0.55 * curtain;
+  // 顶幕
+  const gTop = ctx.createLinearGradient(0, 0, 0, curtainH);
+  gTop.addColorStop(0, '#1a0e2e'); gTop.addColorStop(1, '#0a0518');
+  ctx.fillStyle = gTop; ctx.fillRect(0, 0, w, curtainH);
+  // 底幕
+  const gBot = ctx.createLinearGradient(0, h - curtainH, 0, h);
+  gBot.addColorStop(0, '#0a0518'); gBot.addColorStop(1, '#1a0e2e');
+  ctx.fillStyle = gBot; ctx.fillRect(0, h - curtainH, w, curtainH);
+
+  // 中段内容：当帘子拉满时显示
+  if (p > 0.18 && p < 0.85) {
+    const innerP = (p - 0.18) / 0.67; // 0..1
+    const fadeIn = Math.min(1, innerP / 0.18);
+    const fadeOut = Math.min(1, (1 - innerP) / 0.18);
+    const alpha = Math.min(fadeIn, fadeOut);
+
+    // 中段背景：章节主题色光带
+    const bandH = h - 2 * curtainH;
+    if (bandH > 0) {
+      const bandY = curtainH;
+      const bg = ctx.createLinearGradient(0, bandY, 0, bandY + bandH);
+      bg.addColorStop(0, '#1a0e2e');
+      bg.addColorStop(0.5, ch.theme);
+      bg.addColorStop(1, '#1a0e2e');
+      ctx.fillStyle = bg; ctx.fillRect(0, bandY, w, bandH);
+    }
+
+    // 飘动星点
+    ctx.globalAlpha = alpha;
+    for (const s of cin.sparkles) {
+      const ph = s.phase + t / 300;
+      const yPos = (s.y + t * 0.05 * s.speed) % h;
+      const op = (Math.sin(ph) + 1) / 2;
+      ctx.fillStyle = `rgba(255,255,255,${0.3 + op * 0.6})`;
+      fillCircle(ctx, s.x, yPos, s.r);
+    }
+
+    // 城门：左右两根光柱，向中间收
+    const gateProg = Math.min(1, innerP / 0.3);
+    const gateY = h * 0.5;
+    const gateW = w * 0.7 * gateProg;
+    const gateGrad = ctx.createLinearGradient(0, gateY - 200, 0, gateY + 200);
+    gateGrad.addColorStop(0, 'rgba(255,255,255,0.0)');
+    gateGrad.addColorStop(0.5, `${ch.theme}`);
+    gateGrad.addColorStop(1, 'rgba(255,255,255,0.0)');
+    ctx.fillStyle = gateGrad;
+    ctx.fillRect(w / 2 - gateW / 2, gateY - 200, gateW, 400);
+
+    // 章节大字
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const titleScale = 0.7 + 0.3 * Math.min(1, innerP * 2);
+    ctx.save();
+    ctx.translate(w / 2, h * 0.4);
+    ctx.scale(titleScale, titleScale);
+    // emoji 大图
+    ctx.font = '120px sans-serif';
+    ctx.fillText(ch.emoji, 0, -10);
+    // 章节号
+    ctx.fillStyle = '#fff'; ctx.font = '500 22px sans-serif';
+    ctx.fillText(`第 ${ch.id} 章`, 0, 80);
+    // 章节名
+    ctx.fillStyle = '#fff'; ctx.font = '900 56px sans-serif';
+    ctx.fillText(ch.name, 0, 130);
+    // 介绍
+    ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.font = '500 18px sans-serif';
+    wrapText(ctx, ch.intro, 0, 180, w * 0.75, 26);
+    ctx.restore();
+
+    // 公主从左向右走过
+    const walkP = innerP;
+    const px = -120 + (w + 240) * walkP;
+    const bob = Math.sin(t / 100) * 4;
+    drawPrincess(ctx, px, h * 0.72 + bob, 0.95, 'cheer', t);
+
+    // 顶部 / 底部金色装饰条
+    const decoG = ctx.createLinearGradient(0, 0, w, 0);
+    decoG.addColorStop(0, 'transparent');
+    decoG.addColorStop(0.5, '#ffd84d');
+    decoG.addColorStop(1, 'transparent');
+    ctx.fillStyle = decoG;
+    ctx.fillRect(0, curtainH - 4, w, 4);
+    ctx.fillRect(0, h - curtainH, w, 4);
+
+    ctx.globalAlpha = 1;
+  }
+
+  // 底部跳过提示
+  if (p > 0.3 && p < 0.85) {
+    ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = '500 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('点击跳过 →', w / 2, h - curtainH - 20);
+  }
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+}
+
+function wrapText(ctx, text, x, y, maxW, lineH) {
+  const chars = text.split('');
+  let line = '', lines = [];
+  for (const ch of chars) {
+    const test = line + ch;
+    if (ctx.measureText(test).width > maxW && line) {
+      lines.push(line); line = ch;
+    } else line = test;
+  }
+  if (line) lines.push(line);
+  for (let i = 0; i < lines.length; i++) ctx.fillText(lines[i], x, y + i * lineH);
+}

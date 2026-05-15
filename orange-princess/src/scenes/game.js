@@ -42,6 +42,9 @@ export class GameScene {
     this.beams = []; // 火箭尾迹特效
     this.flashAlpha = 0; // 全屏白闪
     this.outOfMovesShown = false;
+    this.comboMeter = 0;       // 0..100，combo 时充能、随时间衰减
+    this.comboPeak = 0;        // 本关最高 combo 链长
+    this.rageTime = 0;         // 满档时进入 5s "狂热" 模式
   }
 
   async enter(params) {
@@ -351,6 +354,15 @@ export class GameScene {
         this.bigCallout = { text: name, life: 0, max: 1.2, color: colors[Math.min(lv, colors.length - 1)] };
         this.floatScore(name, CONFIG.CANVAS_W / 2, CONFIG.HUD_H + 40, colors[Math.min(lv, colors.length - 1)]);
         Save.tickTask('combo', 1);
+        // Combo Meter 充能
+        this.comboMeter = Math.min(100, this.comboMeter + 18 + lv * 6);
+        this.comboPeak = Math.max(this.comboPeak, lv + 1);
+        if (this.comboMeter >= 100 && this.rageTime <= 0) {
+          this.rageTime = 5;
+          this.flashAlpha = 0.6;
+          Audio.lightball();
+          this.say('狂热模式！分数 ×2', 'wow', 2200);
+        }
       },
       reshuffle: () => { showToast('棋盘重排'); this.shake(10, 0.5); },
       boardReset: () => { this.sprites.clear(); this.initSprites(); },
@@ -625,6 +637,19 @@ export class GameScene {
     if (this.hint) this.hint.pulse += dt;
     // 新手引导动画推进
     if (this.tutorial) this.tutorial.t += dt;
+    // Combo Meter 衰减 + rage 计时
+    if (this.comboMeter > 0 && this.engine && this.engine.phase === Phase.IDLE && this.rageTime <= 0) {
+      this.comboMeter = Math.max(0, this.comboMeter - dt / 60); // 6s 从 100 降到 0
+    }
+    if (this.rageTime > 0) {
+      this.rageTime -= dts;
+      if (this.rageTime <= 0) {
+        this.comboMeter = 0;
+        Save.addCoins(80);
+        this.floatScore('狂热奖励 +80 🪙', CONFIG.CANVAS_W / 2, CONFIG.HUD_H + 80, '#ffd84d');
+        Audio.coin();
+      }
+    }
     if (this.bigCallout) {
       this.bigCallout.life += dts;
       if (this.bigCallout.life >= this.bigCallout.max) this.bigCallout = null;
@@ -649,6 +674,7 @@ export class GameScene {
 
     // 顶部 HUD
     this.drawHUD(ctx);
+    this.drawComboMeter(ctx, g);
 
     // 棋盘背景
     drawRoundedRect(ctx, g.padX - 8, g.top - 8, g.boardW + 16, g.boardH + 16, 18);
@@ -818,6 +844,50 @@ export class GameScene {
     ctx.restore();
   }
 
+
+  drawComboMeter(ctx, g) {
+    // 右侧垂直条，从棋盘顶到棋盘底
+    const x = g.padX + g.boardW + 12;
+    if (x + 20 > CONFIG.CANVAS_W - 8) return; // 屏幕窄就不画
+    const y = g.top, h = g.boardH;
+    const w = 18;
+    // 背景槽
+    drawRoundedRect(ctx, x, y, w, h, 9);
+    ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1.5; ctx.stroke();
+    // 充能填充（从底向上）
+    const fillH = (h - 4) * (this.comboMeter / 100);
+    if (fillH > 0) {
+      const grad = ctx.createLinearGradient(0, y + h - fillH, 0, y + h);
+      if (this.rageTime > 0) {
+        // 狂热模式：彩虹流动
+        const t = this.t / 200;
+        grad.addColorStop(0,    `hsl(${(t * 80) % 360}, 90%, 60%)`);
+        grad.addColorStop(0.5,  `hsl(${(t * 80 + 120) % 360}, 90%, 60%)`);
+        grad.addColorStop(1,    `hsl(${(t * 80 + 240) % 360}, 90%, 60%)`);
+      } else {
+        grad.addColorStop(0, '#ffd84d'); grad.addColorStop(1, '#ff5e3a');
+      }
+      ctx.fillStyle = grad;
+      drawRoundedRect(ctx, x + 2, y + h - fillH - 2, w - 4, fillH, 7);
+      ctx.fill();
+    }
+    // 顶部图标
+    ctx.fillStyle = '#fff'; ctx.font = '600 13px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('⚡', x + w / 2, y - 10);
+    // Combo 峰值小数字
+    if (this.comboPeak > 0) {
+      ctx.fillStyle = '#fff'; ctx.font = '700 11px sans-serif';
+      ctx.fillText(`x${this.comboPeak}`, x + w / 2, y + h + 12);
+    }
+    // 狂热倒计时
+    if (this.rageTime > 0) {
+      ctx.fillStyle = '#ffd84d'; ctx.font = '700 14px sans-serif';
+      ctx.fillText(this.rageTime.toFixed(1), x + w / 2, y + h / 2);
+    }
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  }
 
   drawHUD(ctx) {
     const w = CONFIG.CANVAS_W;
