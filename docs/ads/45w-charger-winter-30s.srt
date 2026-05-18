@@ -1,0 +1,38 @@
+1
+00:00:00,300 --> 00:00:03,000
+Spartifexon
+
+2
+00:00:03,000 --> 00:00:07,000
+极寒之地，依然满速。
+Power, even in the cold.
+
+3
+00:00:07,000 --> 00:00:11,000
+−20°C 极寒测试通过。
+Full speed. Tested at minus 20.
+
+4
+00:00:11,000 --> 00:00:15,000
+氮化镓核芯：更小、更冷、更智能。
+GaN inside. Cooler. Smaller. Smarter.
+
+5
+00:00:15,000 --> 00:00:19,000
+出行随身，大功率可靠。
+Built for travel. Tested for power.
+
+6
+00:00:19,000 --> 00:00:23,000
+全球通用电压，出行无忧。
+Wide-voltage. Wherever you land.
+
+7
+00:00:23,000 --> 00:00:27,000
+稳定电力，从容快充。
+Stable power. Confident charging.
+
+8
+00:00:27,000 --> 00:00:30,000
+Spartifexon · 45W 氮化镓 · 冬季系列
+Spartifexon · 45W GaN · Winter Series
