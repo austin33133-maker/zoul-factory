@@ -1,0 +1,1757 @@
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>地狱全图 · 自殁至投胎</title>
+<style>
+  :root {
+    --ground: #DDD3BF;
+    --ground-2: #E7DFCE;
+    --ground-3: #D3C7B0;
+    --ink: #1B1512;
+    --ink-2: #4A3E33;
+    --muted: #7C6B55;
+    --rule: #B8A88C;
+    --rule-soft: #C9BCA3;
+    --cinnabar: #A32A1C;
+    --cinnabar-soft: #C4543F;
+    --gold: #8A6A24;
+    --spirit: #2C6157;
+    --shadow: rgba(27, 21, 18, .13);
+    --seal-ink: #F2EADA;
+    --void: #B4A68A;
+    --void-deep: #57493A;
+    --glass: rgba(231, 223, 206, .82);
+
+    --serif: "Songti SC", "Song Ti SC", STSong, "SimSun", "Noto Serif CJK SC",
+             "Source Han Serif SC", "Noto Serif SC", Georgia, serif;
+    --sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+            "Noto Sans CJK SC", "Noto Sans SC", system-ui, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+    --measure: 34rem;
+    --wide: 68rem;
+
+    --yaw: 0deg;
+    --pitch: 62deg;
+    --dist: -2400px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0C0A09;
+      --ground-2: #15110E;
+      --ground-3: #1E1813;
+      --ink: #E9DFCC;
+      --ink-2: #C0B29B;
+      --muted: #8E7C66;
+      --rule: #3A2F26;
+      --rule-soft: #2B231C;
+      --cinnabar: #D8442F;
+      --cinnabar-soft: #A8301F;
+      --gold: #C39A44;
+      --spirit: #57A08D;
+      --shadow: rgba(0, 0, 0, .55);
+      --seal-ink: #F4EBD9;
+      --void: #0A0807;
+      --void-deep: #000000;
+      --glass: rgba(12, 10, 9, .74);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0C0A09;
+    --ground-2: #15110E;
+    --ground-3: #1E1813;
+    --ink: #E9DFCC;
+    --ink-2: #C0B29B;
+    --muted: #8E7C66;
+    --rule: #3A2F26;
+    --rule-soft: #2B231C;
+    --cinnabar: #D8442F;
+    --cinnabar-soft: #A8301F;
+    --gold: #C39A44;
+    --spirit: #57A08D;
+    --shadow: rgba(0, 0, 0, .55);
+    --seal-ink: #F4EBD9;
+    --void: #0A0807;
+    --void-deep: #000000;
+    --glass: rgba(12, 10, 9, .74);
+  }
+
+  :root[data-theme="light"] {
+    --ground: #DDD3BF;
+    --ground-2: #E7DFCE;
+    --ground-3: #D3C7B0;
+    --ink: #1B1512;
+    --ink-2: #4A3E33;
+    --muted: #7C6B55;
+    --rule: #B8A88C;
+    --rule-soft: #C9BCA3;
+    --cinnabar: #A32A1C;
+    --cinnabar-soft: #C4543F;
+    --gold: #8A6A24;
+    --spirit: #2C6157;
+    --shadow: rgba(27, 21, 18, .13);
+    --seal-ink: #F2EADA;
+    --void: #B4A68A;
+    --void-deep: #57493A;
+    --glass: rgba(231, 223, 206, .82);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.9;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============ 三维竖井 ============ */
+
+  .scene {
+    position: relative;
+    height: min(100svh, 60rem);
+    min-height: 34rem;
+    overflow: hidden;
+    background:
+      radial-gradient(120% 80% at 50% 6%, var(--ground-3) 0%, var(--void) 46%, var(--void-deep) 100%);
+    border-bottom: 1px solid var(--rule);
+    perspective: 2600px;
+    perspective-origin: 50% 40%;
+    touch-action: none;
+    cursor: grab;
+  }
+
+  .scene.dragging { cursor: grabbing; }
+
+  #ash {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: .55;
+  }
+
+  .world {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transform:
+      translateZ(var(--dist))
+      rotateX(var(--pitch))
+      rotateY(var(--yaw))
+      translate3d(0, calc(-1 * var(--camY, 0px)), 0);
+    will-change: transform;
+  }
+
+  /* 每一层：水平圆环 */
+  .ring {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    border-radius: 50%;
+    border: 1px solid var(--rule);
+    transform-style: flat;
+    pointer-events: none;
+  }
+
+  .ring.court {
+    border-color: var(--cinnabar-soft);
+    box-shadow: 0 0 14px -6px var(--cinnabar-soft) inset, 0 0 12px -6px var(--cinnabar-soft);
+  }
+
+  .ring.pit { border-color: var(--cinnabar); border-style: solid; }
+
+  .ring.gate {
+    border-width: 2px;
+    border-color: var(--gold);
+    box-shadow: 0 0 18px -8px var(--gold) inset, 0 0 16px -8px var(--gold);
+  }
+
+  .ring.border-plane {
+    border-style: dashed;
+    border-color: var(--rule);
+    opacity: .85;
+  }
+
+  .ring.living {
+    border-color: var(--gold);
+    border-width: 2px;
+    background: radial-gradient(closest-side, rgba(195, 154, 68, .16), transparent 72%);
+  }
+
+  .ring.wheel {
+    border: 2px solid var(--gold);
+    background:
+      conic-gradient(from -90deg,
+        var(--ground-3) 0deg 60deg,
+        var(--ground-2) 60deg 120deg,
+        var(--void) 120deg 180deg,
+        var(--void-deep) 180deg 240deg,
+        var(--void) 240deg 300deg,
+        var(--ground-2) 300deg 360deg);
+    box-shadow: 0 0 80px -20px var(--cinnabar);
+  }
+
+  .ring.wheel-hub {
+    border: 1px solid var(--cinnabar);
+    background: radial-gradient(closest-side, var(--cinnabar) 0%, transparent 80%);
+  }
+
+  .spoke {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: .45;
+    pointer-events: none;
+  }
+
+  /* 井壁支柱与引魂线 */
+  .strut {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    width: 1px;
+    background: linear-gradient(var(--rule), transparent);
+    opacity: .3;
+    pointer-events: none;
+  }
+
+  .thread {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    width: 1px;
+    background: linear-gradient(180deg, var(--gold), var(--cinnabar) 22%, var(--cinnabar) 88%, transparent);
+    opacity: .55;
+    pointer-events: none;
+  }
+
+  .soul {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    width: 12px;
+    height: 12px;
+    margin: -6px 0 0 -6px;
+    border-radius: 50%;
+    background: var(--seal-ink);
+    box-shadow: 0 0 26px 6px var(--cinnabar), 0 0 60px 14px rgba(216, 68, 47, .35);
+    pointer-events: none;
+  }
+
+  /* 悬于层上的名牌，永远正对镜头 */
+  .plate {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    display: grid;
+    gap: 1px;
+    white-space: nowrap;
+    text-align: left;
+    background: none;
+    border: 0;
+    padding: 0;
+    font-family: var(--serif);
+    color: var(--ink);
+    cursor: pointer;
+    transition: opacity .35s ease;
+  }
+
+  .plate b {
+    font-size: 17px;
+    letter-spacing: .14em;
+    font-weight: 700;
+    line-height: 1.3;
+    border-bottom: 1px solid transparent;
+  }
+
+  .plate i {
+    font-style: normal;
+    font-family: var(--sans);
+    font-size: 10.5px;
+    letter-spacing: .14em;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* 牵线：自层缘引至名牌 */
+  .plate::after {
+    content: "";
+    position: absolute;
+    top: 11px;
+    right: 100%;
+    width: 18px;
+    height: 1px;
+    background: var(--rule);
+  }
+
+  .plate.flip::after { right: auto; left: 100%; }
+
+  .plate.key b { color: var(--ink); }
+  .plate.key::before {
+    content: "";
+    position: absolute;
+    right: calc(100% + 18px);
+    top: 8px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--cinnabar);
+  }
+
+  .plate.key.flip::before { right: auto; left: calc(100% + 18px); }
+  .plate.key::after { background: var(--cinnabar); }
+
+  .plate.minor b { font-size: 13px; font-weight: 400; letter-spacing: .1em; color: var(--ink-2); }
+  .plate.minor::after { width: 12px; opacity: .6; }
+  .plate.realm b { font-size: 17px; color: var(--gold); }
+  .plate.realm::after { display: none; }
+  .plate.flip { text-align: right; }
+
+  .plate:hover b, .plate:focus-visible b {
+    color: var(--cinnabar);
+    border-bottom-color: var(--cinnabar);
+  }
+
+  .plate:focus-visible { outline: none; }
+
+  /* 迷雾 */
+  .fog {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(180deg, var(--ground) 0%, transparent 16%),
+      linear-gradient(0deg, var(--void-deep) 0%, transparent 26%),
+      radial-gradient(140% 100% at 50% 40%, transparent 40%, var(--void-deep) 100%);
+    opacity: .9;
+  }
+
+  /* ============ 覆于场面之上的界面 ============ */
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: clamp(1.1rem, 3vw, 2.25rem);
+    gap: 1rem;
+  }
+
+  .overlay > * { pointer-events: auto; }
+
+  .title-block { display: grid; gap: .5rem; align-content: start; }
+
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: .66rem;
+    letter-spacing: .34em;
+    color: var(--cinnabar);
+    margin: 0;
+  }
+
+  .scene h1 {
+    margin: 0;
+    font-size: clamp(2.1rem, 6.5vw, 4.2rem);
+    line-height: 1;
+    letter-spacing: .14em;
+    font-weight: 700;
+    text-shadow: 0 2px 30px var(--void-deep);
+  }
+
+  .scene h1 span {
+    display: block;
+    font-size: clamp(.72rem, 1.9vw, .95rem);
+    letter-spacing: .48em;
+    font-weight: 400;
+    color: var(--muted);
+    margin-top: .7rem;
+  }
+
+  .hud {
+    align-self: end;
+    justify-self: start;
+    display: grid;
+    gap: .55rem;
+    max-width: 22rem;
+    background: var(--glass);
+    border: 1px solid var(--rule);
+    padding: .85rem 1rem .95rem;
+    backdrop-filter: blur(6px);
+  }
+
+  .hud-top {
+    display: flex;
+    align-items: baseline;
+    gap: .6rem;
+    font-family: var(--sans);
+    font-size: .64rem;
+    letter-spacing: .24em;
+    color: var(--muted);
+  }
+
+  .hud-top b { color: var(--cinnabar); font-weight: 400; font-variant-numeric: tabular-nums; }
+
+  .hud h2 { margin: 0; font-size: 1.35rem; letter-spacing: .14em; font-weight: 700; }
+
+  .hud p {
+    margin: 0;
+    font-family: var(--sans);
+    font-size: .78rem;
+    line-height: 1.75;
+    color: var(--ink-2);
+  }
+
+  .depth-bar { height: 2px; background: var(--rule-soft); position: relative; }
+  .depth-bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--cinnabar); display: block; width: 0; }
+
+  .controls {
+    align-self: end;
+    justify-self: end;
+    display: grid;
+    gap: .5rem;
+    justify-items: end;
+  }
+
+  .btn {
+    font-family: var(--sans);
+    font-size: .68rem;
+    letter-spacing: .22em;
+    color: var(--ink);
+    background: var(--glass);
+    border: 1px solid var(--rule);
+    padding: .55rem .95rem;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+  }
+
+  .btn:hover { border-color: var(--cinnabar); color: var(--cinnabar); }
+  .btn:focus-visible { outline: 2px solid var(--cinnabar); outline-offset: 2px; }
+  .btn[aria-pressed="true"] { background: var(--cinnabar); color: var(--seal-ink); border-color: var(--cinnabar); }
+
+  .hint {
+    font-family: var(--sans);
+    font-size: .62rem;
+    letter-spacing: .16em;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1.9;
+  }
+
+  .rail {
+    position: absolute;
+    right: clamp(1.1rem, 3vw, 2.25rem);
+    top: 50%;
+    transform: translateY(-50%);
+    display: grid;
+    gap: 1px;
+    pointer-events: auto;
+  }
+
+  .rail button {
+    font-family: var(--sans);
+    font-size: .64rem;
+    letter-spacing: .18em;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    border-right: 2px solid var(--rule-soft);
+    padding: .28rem .8rem .28rem 0;
+    text-align: right;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .rail button:hover { color: var(--ink); border-right-color: var(--cinnabar); }
+  .rail button[aria-current="true"] { color: var(--cinnabar); border-right-color: var(--cinnabar); }
+  .rail button:focus-visible { outline: 1px solid var(--cinnabar); outline-offset: 2px; }
+
+  @media (max-width: 60rem) {
+    .rail { display: none; }
+    .controls { justify-self: end; align-self: end; }
+  }
+
+  @media (max-width: 40rem) {
+    /* 窄屏把镜头拉远，整口井与名牌才收得进画面 */
+    :root { --dist: -4600px; }
+    .plate b { font-size: 15px; }
+    .hud { max-width: none; }
+    .overlay { grid-template-rows: auto 1fr auto auto; }
+    .controls { justify-self: start; }
+    .hint { text-align: left; }
+  }
+
+  /* ============ 图说 ============ */
+
+  .band {
+    border-bottom: 1px solid var(--rule);
+    background: var(--ground-2);
+    padding: clamp(2.5rem, 5vw, 3.5rem) 1.5rem;
+  }
+
+  .band-inner { max-width: var(--wide); margin: 0 auto; display: grid; gap: 1.75rem; }
+
+  .band h2 { margin: 0; font-size: 1.05rem; letter-spacing: .3em; font-weight: 700; }
+
+  .rites {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    border-left: 1px solid var(--rule-soft);
+    overflow-x: auto;
+  }
+
+  .rite {
+    border-right: 1px solid var(--rule-soft);
+    padding: 1rem 1.1rem 1.15rem;
+    display: grid;
+    gap: .4rem;
+    align-content: start;
+  }
+
+  .rite time {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .08em;
+    color: var(--cinnabar);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rite strong { font-size: 1.05rem; letter-spacing: .1em; font-weight: 700; }
+  .rite span { font-family: var(--sans); font-size: .78rem; color: var(--muted); line-height: 1.7; }
+
+  .stages {
+    max-width: var(--wide);
+    margin: 0 auto;
+    padding: clamp(3rem, 7vw, 5.5rem) 1.5rem;
+    display: grid;
+    gap: clamp(3.5rem, 8vw, 6rem);
+  }
+
+  .stage { display: grid; grid-template-columns: 1fr; gap: 1.5rem; scroll-margin-top: 2rem; }
+
+  @media (min-width: 52rem) {
+    .stage { grid-template-columns: 4.5rem minmax(0, 1fr); gap: 2.5rem; }
+  }
+
+  .stage-mark {
+    display: none;
+    width: 1em;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    letter-spacing: 0;
+    word-break: break-all;
+    text-align: center;
+    color: var(--cinnabar);
+    border-right: 1px solid var(--rule);
+    padding-right: 1.1rem;
+    box-sizing: content-box;
+    justify-self: end;
+    height: 100%;
+  }
+
+  @media (min-width: 52rem) { .stage-mark { display: block; } }
+
+  .stage-body { display: grid; gap: 1.15rem; align-content: start; }
+
+  .stage-body h2 {
+    margin: 0;
+    font-size: clamp(1.85rem, 4.5vw, 2.6rem);
+    letter-spacing: .14em;
+    font-weight: 700;
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+
+  .stage-body h2 em {
+    font-style: normal;
+    display: block;
+    font-family: var(--sans);
+    font-size: .68rem;
+    letter-spacing: .3em;
+    color: var(--muted);
+    margin-bottom: .8rem;
+    font-weight: 400;
+  }
+
+  .stage-body p { margin: 0; max-width: var(--measure); color: var(--ink-2); }
+  .stage-body p.plain { color: var(--ink); }
+  .stage-body strong { color: var(--ink); font-weight: 700; }
+
+  .roles {
+    display: grid;
+    gap: 1px;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    background: var(--rule-soft);
+    border: 1px solid var(--rule-soft);
+  }
+
+  .role { background: var(--ground); padding: 1rem 1.15rem; display: grid; gap: .35rem; align-content: start; }
+  .role b { font-size: 1.02rem; letter-spacing: .1em; }
+  .role span { font-family: var(--sans); font-size: .78rem; color: var(--muted); line-height: 1.7; }
+
+  .verdicts { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+
+  .verdict {
+    border: 1px solid var(--rule);
+    border-top: 3px solid var(--cinnabar);
+    background: var(--ground-2);
+    padding: 1.1rem 1.2rem;
+    display: grid;
+    gap: .45rem;
+    align-content: start;
+  }
+
+  .verdict.good { border-top-color: var(--spirit); }
+  .verdict.mid { border-top-color: var(--gold); }
+  .verdict b { font-size: 1.05rem; letter-spacing: .1em; }
+  .verdict span { font-family: var(--sans); font-size: .8rem; color: var(--muted); line-height: 1.75; }
+
+  .courts {
+    display: grid;
+    gap: 1px;
+    grid-template-columns: repeat(auto-fill, minmax(16.5rem, 1fr));
+    background: var(--rule-soft);
+    border: 1px solid var(--rule-soft);
+  }
+
+  .court {
+    background: var(--ground);
+    padding: 1.15rem 1.25rem 1.35rem;
+    display: grid;
+    grid-template-columns: 2.4rem minmax(0, 1fr);
+    gap: 0 1.1rem;
+    align-items: start;
+  }
+
+  .court-seal {
+    background: var(--cinnabar);
+    color: var(--seal-ink);
+    width: 1em;
+    font-size: .8rem;
+    line-height: 1.55;
+    word-break: break-all;
+    padding: .5rem .45rem;
+    text-align: center;
+    justify-self: start;
+    font-weight: 700;
+    box-sizing: content-box;
+  }
+
+  .court-text { display: grid; gap: .55rem; }
+  .court-text h3 { margin: 0; font-size: 1.28rem; letter-spacing: .12em; font-weight: 700; }
+
+  .court-text h3 i {
+    font-style: normal;
+    font-family: var(--sans);
+    font-size: .66rem;
+    letter-spacing: .18em;
+    color: var(--muted);
+    margin-left: .5rem;
+    white-space: nowrap;
+  }
+
+  .court-rows { display: grid; gap: .3rem; }
+
+  .court-rows div {
+    display: grid;
+    grid-template-columns: 3.2rem minmax(0, 1fr);
+    gap: .7rem;
+    font-family: var(--sans);
+    font-size: .79rem;
+    line-height: 1.7;
+    color: var(--ink-2);
+  }
+
+  .court-rows b { color: var(--cinnabar); font-weight: 400; letter-spacing: .14em; font-size: .7rem; }
+
+  .pits { display: grid; gap: 1px; background: var(--rule-soft); border: 1px solid var(--rule-soft); }
+
+  .pit-row {
+    background: var(--ground);
+    display: grid;
+    grid-template-columns: 2.6rem minmax(6.5rem, auto) minmax(0, 1fr) 4.5rem;
+    gap: .5rem 1rem;
+    align-items: center;
+    padding: .7rem 1.1rem;
+  }
+
+  @media (max-width: 46rem) {
+    .pit-row { grid-template-columns: 2.4rem minmax(0, 1fr); }
+    .pit-row .pit-why { grid-column: 2; }
+    .pit-row .pit-depth { display: none; }
+  }
+
+  .pit-n { font-family: var(--mono); font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .pit-name { letter-spacing: .12em; font-weight: 700; font-size: .96rem; }
+  .pit-why { font-family: var(--sans); font-size: .8rem; color: var(--muted); line-height: 1.65; }
+  .pit-depth { height: 3px; background: var(--rule-soft); position: relative; }
+  .pit-depth i { position: absolute; inset: 0 auto 0 0; background: var(--cinnabar); display: block; }
+
+  .asides { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+
+  .aside-card {
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--gold);
+    padding: 1.1rem 1.25rem;
+    display: grid;
+    gap: .45rem;
+    align-content: start;
+    background: var(--ground-2);
+  }
+
+  .aside-card b { font-size: 1.06rem; letter-spacing: .12em; }
+  .aside-card span { font-family: var(--sans); font-size: .8rem; color: var(--muted); line-height: 1.75; }
+
+  .bridges { display: grid; gap: 1px; background: var(--rule-soft); border: 1px solid var(--rule-soft); }
+
+  .bridge {
+    background: var(--ground);
+    display: grid;
+    grid-template-columns: minmax(5.5rem, auto) minmax(0, 1fr);
+    gap: .3rem 1.2rem;
+    padding: .75rem 1.1rem;
+    align-items: baseline;
+  }
+
+  .bridge b { letter-spacing: .14em; font-size: 1rem; }
+  .bridge span { font-family: var(--sans); font-size: .8rem; color: var(--muted); line-height: 1.7; }
+
+  .realms { display: grid; gap: 1px; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); background: var(--rule-soft); border: 1px solid var(--rule-soft); }
+
+  .realm { background: var(--ground); padding: 1.1rem 1.2rem 1.3rem; display: grid; gap: .5rem; align-content: start; }
+  .realm .tag { font-family: var(--sans); font-size: .64rem; letter-spacing: .22em; color: var(--cinnabar); }
+  .realm.bad .tag { color: var(--muted); }
+  .realm h3 { margin: 0; font-size: 1.3rem; letter-spacing: .14em; font-weight: 700; }
+  .realm p { margin: 0; font-family: var(--sans); font-size: .8rem; line-height: 1.8; color: var(--ink-2); }
+
+  .exit { border: 1px solid var(--spirit); background: var(--ground-2); padding: clamp(1.5rem, 4vw, 2.25rem); display: grid; gap: .9rem; }
+  .exit h3 { margin: 0; font-size: 1.45rem; letter-spacing: .16em; font-weight: 700; color: var(--spirit); }
+  .exit p { margin: 0; max-width: var(--measure); color: var(--ink-2); }
+
+  .loop-back {
+    justify-self: start;
+    font-family: var(--sans);
+    font-size: .72rem;
+    letter-spacing: .24em;
+    color: var(--cinnabar);
+    background: none;
+    border: 0;
+    border-bottom: 1px solid var(--cinnabar);
+    padding: 0 0 .2rem;
+    margin-top: .5rem;
+    cursor: pointer;
+  }
+
+  .loop-back:hover { color: var(--ink); border-color: var(--ink); }
+  .loop-back:focus-visible { outline: 2px solid var(--cinnabar); outline-offset: 4px; }
+
+  .colophon { border-top: 1px solid var(--rule); background: var(--ground-2); padding: clamp(2.5rem, 6vw, 4rem) 1.5rem clamp(3rem, 7vw, 5rem); }
+  .colophon-inner { max-width: var(--wide); margin: 0 auto; display: grid; gap: 1.25rem; }
+  .colophon h2 { margin: 0; font-size: 1rem; letter-spacing: .3em; font-weight: 700; }
+  .colophon p { margin: 0; max-width: 46rem; font-family: var(--sans); font-size: .83rem; line-height: 1.95; color: var(--muted); }
+
+  .sources { display: flex; flex-wrap: wrap; gap: .45rem .6rem; font-family: var(--sans); font-size: .7rem; letter-spacing: .14em; color: var(--ink-2); }
+  .sources i { font-style: normal; border: 1px solid var(--rule); padding: .3rem .7rem; }
+
+  .stage.flash .stage-body h2 { color: var(--cinnabar); }
+
+  .reveal { opacity: 0; transform: translateY(14px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    #ash { display: none; }
+  }
+</style>
+
+<section class="scene" id="scene" aria-label="地狱竖井：可拖动旋转、滚动下行的三维全图">
+  <canvas id="ash" aria-hidden="true"></canvas>
+
+  <div class="world" id="world" aria-hidden="true"></div>
+
+  <div class="fog"></div>
+
+  <div class="overlay">
+    <div class="title-block">
+      <p class="eyebrow">阴律 · 竖井全图</p>
+      <h1>地狱全图<span>自殁至投胎</span></h1>
+    </div>
+
+    <div></div>
+
+    <div class="hud">
+      <div class="hud-top"><span id="hudIdx">第一站 · 十</span><b id="hudDepth">阴深 1 里</b></div>
+      <h2 id="hudName">殁</h2>
+      <p id="hudText">气断之时，三魂七魄离散。初死之魂多不自知，仍绕家中、唤旧名。</p>
+      <div class="depth-bar"><i id="hudBar"></i></div>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="travel" aria-pressed="false">随魂下行</button>
+      <p class="hint">拖动旋转 · 滚轮升降 · 点名牌可跳<br />下滑离开此图，见下方图说</p>
+    </div>
+
+    <nav class="rail" id="rail" aria-label="十站"></nav>
+  </div>
+</section>
+
+<section class="band" aria-label="阳间祭日与阴间行程的对应">
+  <div class="band-inner">
+    <h2>时序 · 阳间做七，阴间过殿</h2>
+    <div class="rites">
+      <div class="rite">
+        <time>第 1—7 日</time>
+        <strong>头七</strong>
+        <span>魂始知己死，得返家一望。阳间设灵、报庙，城隍申报文书至阴司。</span>
+      </div>
+      <div class="rite">
+        <time>第 8—42 日</time>
+        <strong>二七至六七</strong>
+        <span>每七日过一殿，逐殿勘问。阳间七日一祭，诵经追荐，功德可折冥罪。</span>
+      </div>
+      <div class="rite">
+        <time>第 49 日</time>
+        <strong>七七 · 断七</strong>
+        <span>中阴身尽，判决落定，去处已明。此日祭最重，过此则阳间难再更改。</span>
+      </div>
+      <div class="rite">
+        <time>第 100 日</time>
+        <strong>百日</strong>
+        <span>受报中者，家人再荐；轻罪者或于此时提前发遣投生。</span>
+      </div>
+      <div class="rite">
+        <time>周年 · 三年</time>
+        <strong>小祥 · 大祥</strong>
+        <span>孝期终，灵位入祠为祖先。阴间刑期未满者，仍在狱中。</span>
+      </div>
+      <div class="rite">
+        <time>七月十五</time>
+        <strong>中元 · 鬼门开</strong>
+        <span>一岁一放，无主孤魂出关得食。有主者归家受祭，期满仍返。</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="stages">
+
+  <article class="stage reveal" id="s1">
+    <div class="stage-mark">第一站</div>
+    <div class="stage-body">
+      <h2><em>Station 01 · 阳寿尽</em>殁</h2>
+      <p class="plain">
+        寿数载于生死簿，日期不由人。气断之时，三魂七魄离散：魂属阳而升，魄属阴而沉。
+        初死之魂多不自知，仍绕家中、坐旧席、唤旧名，谓之<strong>「未醒」</strong>。
+      </p>
+      <p>
+        此刻阴司并非无所知。境内<strong>城隍</strong>与<strong>土地</strong>为一方之吏，人死即造册申报；
+        <strong>日游神、夜游神</strong>录其生前所为，昼夜不阙。文书到齐，才发牌勾提 ——
+        阴间办事，先有文书，后有拘拿。
+      </p>
+    </div>
+  </article>
+
+  <article class="stage reveal" id="s2">
+    <div class="stage-mark">第二站</div>
+    <div class="stage-body">
+      <h2><em>Station 02 · 拘提</em>勾魂</h2>
+      <p class="plain">持牌来取者，是阴司的差役。他们不问贫富，只核名姓与寿数，勾之即行，不容辞。</p>
+      <div class="roles">
+        <div class="role">
+          <b>黑白无常</b>
+          <span>白曰谢必安，黑曰范无救。一持哭丧棒，一持锁链与牌票。名字即断语：谢之则安，犯之无救。</span>
+        </div>
+        <div class="role">
+          <b>牛头马面</b>
+          <span>狱中差役，力大不知疲。押解、行刑、驱众，一路不许回顾。</span>
+        </div>
+        <div class="role">
+          <b>日夜游神</b>
+          <span>不拘魂，只录事。人在世一言一动皆有簿可对，故孽镜台上无可辩。</span>
+        </div>
+        <div class="role">
+          <b>崔判官</b>
+          <span>掌生死簿，笔可增删寿数 —— 然增删须有据，非人所能求。判官四人，随殿勘问。</span>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <article class="stage reveal" id="s3">
+    <div class="stage-mark">第三站</div>
+    <div class="stage-body">
+      <h2><em>Station 03 · 在途</em>黄泉路</h2>
+      <p class="plain">出阳世即入黄泉路。路上不见日月，两旁开<strong>彼岸花</strong>，色赤如血，唯此一物有色。</p>
+      <p>
+        路上有一忌：<strong>身后有人唤名，不可回头，不可应答</strong>。一应则被留，或为孤魂野鬼，再入不了关口。
+        故民间送葬不呼死者之名，恐其闻声返顾。同行者甚众，各不相识，也不能相扶 —— 此路一人一走。
+      </p>
+    </div>
+  </article>
+
+  <article class="stage reveal" id="s4">
+    <div class="stage-mark">第四站</div>
+    <div class="stage-body">
+      <h2><em>Station 04 · 关口</em>鬼门关</h2>
+      <p class="plain">
+        阴阳之界，一关而已。关上有鬼卒查验，所验者为<strong>路引</strong> ——
+        阳间为亡人焚化的通行文书，载其姓名、籍贯、生卒，如同过所。
+      </p>
+      <p>
+        有引者入关，编入队伍，赴第一殿听审。无引、或死于他乡而文书不到者，滞于关外，不得入亦不得返，是为<strong>孤魂</strong>。
+        一岁之中，唯七月中元鬼门大开，得出关一食。此即阳间烧纸、写包、做超度的由来：不是贿赂，是补文书。
+      </p>
+    </div>
+  </article>
+
+  <article class="stage reveal" id="s5">
+    <div class="stage-mark">第五站</div>
+    <div class="stage-body">
+      <h2><em>Station 05 · 初审</em>孽镜台</h2>
+      <p class="plain">
+        第一殿<strong>秦广王</strong>掌幽冥吉凶，司人间寿夭，为入阴第一审。殿右高台置一镜，名<strong>孽镜</strong>。
+        人立镜前，镜中现的不是形貌，是所行 —— 善恶自见，无从掩饰，也无从代辩。
+        生死簿在案，日夜游神之录在旁，三者相对，罪福立定。
+      </p>
+      <p>初审不问刑，只分流。一殿定的是去哪里，不是受什么。</p>
+      <div class="verdicts">
+        <div class="verdict good">
+          <b>径送超生</b>
+          <span>善多恶少者，不必过殿受审，由一殿直发往生善处，或径赴净土。此路最短。</span>
+        </div>
+        <div class="verdict mid">
+          <b>径送第十殿</b>
+          <span>功过两半者，免历诸狱，直解转轮王处，候投生。不入刑，但须待发遣。</span>
+        </div>
+        <div class="verdict">
+          <b>押赴第二殿</b>
+          <span>恶多者照镜之后，逐殿勘问，各按所犯发入本殿地狱受报，满期递解下一殿。</span>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <article class="stage reveal" id="s6">
+    <div class="stage-mark">第六站</div>
+    <div class="stage-body">
+      <h2><em>Station 06 · 审级</em>十殿逐审</h2>
+      <p class="plain">
+        阴司之制，如阳间之衙：十殿各有王、各有司职、各主一大地狱并十六小狱，
+        罪魂按所犯归殿，一殿满期，递解次殿，不得越次，也不得漏审。
+        十王各有诞辰，阳间于其日诵经，谓可减本殿之罪。
+      </p>
+      <div class="courts">
+        <div class="court">
+          <div class="court-seal">第一殿</div>
+          <div class="court-text">
+            <h3>秦广王 蒋<i>二月初一</i></h3>
+            <div class="court-rows">
+              <div><b>司职</b><span>掌幽冥吉凶，司人间寿夭，总录初审。</span></div>
+              <div><b>所设</b><span>孽镜台。不置大狱，为分流之殿。</span></div>
+              <div><b>所判</b><span>善者超生，两半者送十殿，恶者押二殿。</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="court">
+          <div class="court-seal">第二殿</div>
+          <div class="court-text">
+            <h3>楚江王 历<i>三月初一</i></h3>
+            <div class="court-rows">
+              <div><b>主狱</b><span>活大地狱（寒冰），另辖十六小狱。</span></div>
+              <div><b>所治</b><span>伤人肢体、奸盗杀生、拐骗孩童。</span></div>
+              <div><b>刑相</b><span>沉寒冰、锉体、剖膛，冻而不死，死而复苏。</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="court">
+          <div class="court-seal">第三殿</div>
+          <div class="court-text">
+            <h3>宋帝王 余<i>二月初八</i></h3>
+            <div class="court-rows">
+              <div><b>主狱</b><span>黑绳大地狱，另辖十六小狱。</span></div>
+              <div><b>所治</b><span>忘恩负义、抗欠钱粮、诈人财物、教唆兴讼。</span></div>
+              <div><b>刑相</b><span>黑绳量身而后割，抠眼、刮骨、挖心。</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="court">
+          <div class="court-seal">第四殿</div>
+          <div class="court-text">
+            <h3>五官王 吕<i>二月十八</i></h3>
+            <div class="court-rows">
+              <div><b>主狱</b><span>合大地狱（剥皮亭），另辖十六小狱。</span></div>
+              <div><b>所治</b><span>赖租欺税、交易使假、造伪药、短斤缺两。</span></div>
+              <div><b>刑相</b><span>两山相合而压，剥皮、灌药、跪铁砂。</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="court">
+          <div class="court-seal">第五殿</div>
+          <div class="court-text">
+            <h3>阎罗天子 包<i>正月初八</i></h3>
+            <div class="court-rows">
+              <div><b>主狱</b><span>叫唤大地狱，并十六诛心小狱。</span></div>
+              <div><b>所设</b><span>望乡台 —— 高而向阳，令罪魂遥见家中。</span></div>
+              <div><b>所治</b><span>诸殿解到之重犯，罪在存心而非止于行。</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="court">
+          <div class="court-seal">第六殿</div>
+          <div class="court-text">
+            <h3>卞城王 毕<i>三月初八</i></h3>
+            <div class="court-rows">
+              <div><b>主狱</b><span>大叫唤大地狱，兼管枉死城，辖十六小狱。</span></div>
+              <div><b>所治</b><span>怨天恨地、毁谤神佛、偷盗香火、秽污经卷。</span></div>
+              <div><b>刑相</b><span>锯身、锉体、火烧头面。</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="court">
+          <div class="court-seal">第七殿</div>
+          <div class="court-text">
+            <h3>泰山王 董<i>三月二十七</i></h3>
+            <div class="court-rows">
+              <div><b>主狱</b><span>热恼地狱（碓磨肉浆），辖十六小狱。</span></div>
+              <div><b>所治</b><span>取人骸骨合药、离散他人至亲、恃势凌弱。</span></div>
+              <div><b>刑相</b><span>入碓成浆，复形再入。</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="court">
+          <div class="court-seal">第八殿</div>
+          <div class="court-text">
+            <h3>都市王 黄<i>四月初一</i></h3>
+            <div class="court-rows">
+              <div><b>主狱</b><span>大热恼大地狱（恼闷锅），辖十六小狱。</span></div>
+              <div><b>所治</b><span>不孝 —— 使父母翁姑愁闷烦恼者，专入此殿。</span></div>
+              <div><b>刑相</b><span>车崩、闷锅、断肢，苦在无处可诉。</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="court">
+          <div class="court-seal">第九殿</div>
+          <div class="court-text">
+            <h3>平等王 陆<i>四月初八</i></h3>
+            <div class="court-rows">
+              <div><b>主狱</b><span>阿鼻地狱（铁网阿鼻），辖十六小狱。</span></div>
+              <div><b>所治</b><span>杀人放火、毒杀多命、堕胎溺婴之极者。</span></div>
+              <div><b>刑相</b><span>无间 —— 刑不停、命不断、期极长。此为最重。</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="court">
+          <div class="court-seal">第十殿</div>
+          <div class="court-text">
+            <h3>转轮王 薛<i>四月十七</i></h3>
+            <div class="court-rows">
+              <div><b>司职</b><span>专司各殿解到之魂，核定等级，分发投生。</span></div>
+              <div><b>所定</b><span>四大部洲何处、男女、寿夭、贵贱贫富，逐一开载。</span></div>
+              <div><b>所送</b><span>册报一殿注册，送孟婆神处，饮汤而后转生。</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <article class="stage reveal" id="s7">
+    <div class="stage-mark">第七站</div>
+    <div class="stage-body">
+      <h2><em>Station 07 · 受报</em>十八狱</h2>
+      <p class="plain">
+        「十八层」不是十八重楼阁，是<strong>十八等刑期</strong>。层次所计者为时间之长，非空间之深；
+        民间谓自第一层起，下一层刑期为上一层十倍，故愈下愈久，非愈下愈深。
+        期满出狱，仍归本殿递解，终须回到第十殿。
+      </p>
+      <div class="pits" id="pits"></div>
+      <p>
+        诸狱所治，多不在杀伐大恶，而在口舌、离间、欺瞒、糟蹋、绝情 ——
+        阴律所计，是日常处心处事之细，不专等大罪。
+      </p>
+    </div>
+  </article>
+
+  <article class="stage reveal" id="s8">
+    <div class="stage-mark">别所</div>
+    <div class="stage-body">
+      <h2><em>Off the shaft · 不在正路上的去处</em>别所</h2>
+      <p class="plain">有几处不在这条路的次序里：进去的人不是在受审，是在<strong>等</strong>。</p>
+      <div class="asides">
+        <div class="aside-card">
+          <b>枉死城</b>
+          <span>轻生自尽者、横死者，阳寿未尽而身先亡，不得投胎。须在城中住满原本该活的年岁，方许提出发遣。属第六殿卞城王管。求死者不得速生，反多耽一程。</span>
+        </div>
+        <div class="aside-card">
+          <b>血污池</b>
+          <span>产难而亡的妇人所居。民间以此为不洁之厄而非罪，故重在阳间设斋破池、诵经拔济，非在受刑。</span>
+        </div>
+        <div class="aside-card">
+          <b>望乡台</b>
+          <span>第五殿之设，不是刑具。台高向阳，罪魂遥见家中：产业已散、儿女改姓、坟前无人。所苦在悔，不在痛 —— 阴律以为此比刀锯更利。</span>
+        </div>
+        <div class="aside-card">
+          <b>酆都</b>
+          <span>阴司之都城，诸殿衙署所在，非受刑之地。人间以四川酆都为其门户，谓阴阳两界于此相通。</span>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <article class="stage reveal" id="s9">
+    <div class="stage-mark">第八站</div>
+    <div class="stage-body">
+      <h2><em>Station 08 · 渡</em>忘川 · 奈何桥</h2>
+      <p class="plain">
+        审毕、报毕，路到水边。桥下是<strong>忘川</strong>，水中皆是不肯饮汤、不愿投生的魂，在水里等一个人，一等千年。
+        桥头有<strong>三生石</strong>，上刻前生今世后世的名姓，过桥的人多不敢看。
+      </p>
+      <p>桥不止一座 —— 民间说奈何桥有四，按善恶分渡：</p>
+      <div class="bridges">
+        <div class="bridge"><b>金桥</b><span>大功德、大善之魂由此过，桥宽而稳，不濡足。</span></div>
+        <div class="bridge"><b>银桥</b><span>善多者过，亦稳。</span></div>
+        <div class="bridge"><b>玉石桥</b><span>善恶相半者过，颇窄，须小心。</span></div>
+        <div class="bridge"><b>独木桥</b><span>恶多者过，下临恶水，多有堕者，堕则再受一番，复上重过。</span></div>
+      </div>
+    </div>
+  </article>
+
+  <article class="stage reveal" id="s10">
+    <div class="stage-mark">第九站</div>
+    <div class="stage-body">
+      <h2><em>Station 09 · 忘</em>孟婆汤</h2>
+      <p class="plain">
+        第十殿转轮王处有<strong>醧忘台</strong>，台下<strong>孟婆神</strong>掌一味汤，以世间诸味调之：
+        一分甜、二分酸、三分苦、四分辣、五分咸，又取人一生的喜、怒、哀、惧、爱、恶、欲，煎作一碗。
+      </p>
+      <p>
+        饮之则前生尽忘 —— 忘姓名、忘容貌、忘恩、忘仇、忘所爱之人。此非罚，是制：
+        不忘则新生难立，旧债缠成死结，轮回不能行。汤必饮，不肯饮者，鬼卒以铜管灌入喉；仍不肯者，投忘川。
+        <strong>业不随记忆消，只随记忆隐</strong> —— 忘的是事，带走的是业。
+      </p>
+    </div>
+  </article>
+
+  <article class="stage reveal" id="s10b">
+    <div class="stage-mark">第十站</div>
+    <div class="stage-body">
+      <h2><em>Station 10 · 生</em>投胎 · 六道</h2>
+      <p class="plain">
+        转轮王核定等级，发四大部洲投生：男女、寿夭、贵贱、贫富、生于何家、遇何父母，
+        逐一开载于册，月月汇报第一殿注册。所定不由王之好恶，只按册上业数 ——
+        阴司之判，是<strong>算</strong>，不是<strong>裁</strong>。
+      </p>
+      <div class="realms">
+        <div class="realm">
+          <span class="tag">三善道</span>
+          <h3>天道</h3>
+          <p>福报最厚，寿长乐多，思衣得衣。然享福则不修，福尽仍堕，临堕之时五衰相现，苦更难当。故经中不以生天为究竟。</p>
+        </div>
+        <div class="realm">
+          <span class="tag">三善道</span>
+          <h3>人道</h3>
+          <p>苦乐相杂，寿不满百。六道之中唯此一道可闻法、可修、可自决去向，故谓之难得。</p>
+        </div>
+        <div class="realm">
+          <span class="tag">三善道</span>
+          <h3>阿修罗道</h3>
+          <p>有天之福而无天之德。多嗔好斗，终日与天争战，胜亦不安，败则重伤。福不为不厚，苦全在自己的性子。</p>
+        </div>
+        <div class="realm bad">
+          <span class="tag">三恶道</span>
+          <h3>畜生道</h3>
+          <p>愚痴无智，为人所役、所杀、所食。有身而不能自主，有苦而不能言，不闻法、不知修，故难自出。</p>
+        </div>
+        <div class="realm bad">
+          <span class="tag">三恶道</span>
+          <h3>饿鬼道</h3>
+          <p>腹大如鼓，咽细如针。见水成火，见食成灰，饥渴亿劫不得一饱。生前不肯与人一口，死后不得一口。</p>
+        </div>
+        <div class="realm bad">
+          <span class="tag">三恶道</span>
+          <h3>地狱道</h3>
+          <p>六道之最苦，寿极长而刑无间。前图诸狱即此道。然仍非永劫：期满业尽，仍出而受生，故地狱亦在轮中。</p>
+        </div>
+      </div>
+      <div class="exit">
+        <h3>唯一的出口</h3>
+        <p>
+          这口井是一个闭环：无论此生投于何道，行满之后仍回到「殁」那一点，重下一遍。
+          阴司管得了去哪一道，管不了让人出这个圈。按其教义，出轮回不在祭祀、不在刑满、不在投个好胎，
+          而在阳世那一段 —— 一生之中唯有那一段能自主造业，也唯有那一段能修。
+          故此图不为示恐，为示<strong>因果无可代偿</strong>：判词早在生前写就，阴司只是照簿宣读。
+        </p>
+        <button class="loop-back" id="loopBack" type="button">↑ 复自「殁」始 —— 再走一轮</button>
+      </div>
+    </div>
+  </article>
+
+</main>
+
+<footer class="colophon">
+  <div class="colophon-inner">
+    <h2>尾注 · 体系与异说</h2>
+    <p>
+      此图所绘为中国民间流传的佛道混合冥界体系，非任何一家教义的定本。
+      十殿名号、王姓、诞辰与所主地狱，主要依《玉历宝钞》一系的十王信仰；
+      地狱名相与六道、中阴四十九日之说出自佛典；城隍、土地、无常、判官等职司，
+      则是把阳间官府制度整套搬入阴间的结果 —— 有文书、有审级、有刑期、有递解，这是它最中国的地方。
+    </p>
+    <p>
+      各地说法出入甚多：十八层地狱的名目与次第，至少有五六种排法；奈何桥有一桥说、三桥说、四桥说；
+      孟婆有神格说、人物说；枉死城归第六殿或另属他殿，亦不一致。
+      本图各处取流传最广的一说，遇分歧则从《玉历宝钞》。凡称「民间谓」者，即为异说并存之处。
+      又：竖井之形是为便于观览而设的图解，古图多作横卷或圆轮，原无「一口井」之说。
+    </p>
+    <div class="sources">
+      <i>《玉历宝钞》</i>
+      <i>《地藏菩萨本愿经》</i>
+      <i>十王经变</i>
+      <i>地狱变相图</i>
+      <i>各地城隍庙塑绘</i>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    "use strict";
+
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var root = document.documentElement;
+    var scene = document.getElementById("scene");
+    var world = document.getElementById("world");
+
+    /* ---------------- 竖井的构造 ---------------- */
+
+    var COURTS = [
+      ["第一殿 秦广王", "初审 · 孽镜台"],
+      ["第二殿 楚江王", "活大地狱 · 寒冰"],
+      ["第三殿 宋帝王", "黑绳大地狱"],
+      ["第四殿 五官王", "合大地狱 · 剥皮"],
+      ["第五殿 阎罗天子", "叫唤大地狱 · 望乡台"],
+      ["第六殿 卞城王", "大叫唤 · 枉死城"],
+      ["第七殿 泰山王", "热恼地狱 · 碓磨"],
+      ["第八殿 都市王", "大热恼 · 恼闷锅"],
+      ["第九殿 平等王", "阿鼻地狱 · 无间"],
+      ["第十殿 转轮王", "核定等级 · 分发投生"]
+    ];
+
+    var PITS = [
+      ["拔舌", "挑拨离间、谗言诬告"],
+      ["剪刀", "破人姻缘、唆使改嫁"],
+      ["铁树", "离间骨肉、挑拨亲族"],
+      ["孽镜", "作恶侥幸脱罪者"],
+      ["蒸笼", "造谣传谤、诬陷他人"],
+      ["铜柱", "恶意纵火、烧屋灭迹"],
+      ["刀山", "亵渎神明、屠戮生灵"],
+      ["冰山", "谋害亲夫、不孝、溺婴"],
+      ["油锅", "淫恶奸邪、卖良为娼"],
+      ["牛坑", "虐杀牲畜、屠戮无度"],
+      ["石压", "弃婴溺婴、绝情不顾"],
+      ["舂臼", "浪费五谷、糟蹋粮食"],
+      ["血池", "不敬尊长、行事污秽"],
+      ["枉死", "轻生自尽，不惜此身"],
+      ["磔刑", "盗墓掘坟、辱及死者"],
+      ["火山", "贪占庙产、偷盗香火"],
+      ["石磨", "以权谋私、刻剥百姓"],
+      ["刀锯", "偷工减料、坑害人命"]
+    ];
+
+    var REALMS = ["天道", "阿修罗道", "畜生道", "饿鬼道", "地狱道", "人道"];
+
+    /* 层：{ y 深度, w 直径, cls, 名, 副名, 是否要害站 } */
+    var layers = [];
+    var stations = [];
+
+    function ring(y, w, cls) { layers.push({ y: y, w: w, cls: cls }); }
+    function plate(y, w, name, sub, kind, side, target) {
+      var p = { y: y, w: w, name: name, sub: sub, kind: kind || "minor", side: side || 1, target: target || null };
+      layers.push(p);
+      return p;
+    }
+
+    /* 阳世与阴阳界 */
+    ring(-620, 500, "living");
+    plate(-620, 500, "阳世", "一生之中，唯此段可自主造业", "realm", 1, null);
+    ring(0, 440, "border-plane");
+    plate(0, 440, "阴阳界", "一魂只跨越两次：殁时下，生时上", "key", -1, null);
+
+    /* 前五站 */
+    var pre = [
+      [200, 400, "殁", "阳寿尽 · 魂魄离散", "s1"],
+      [520, 375, "勾魂", "无常持牌 · 文书先到", "s2"],
+      [840, 355, "黄泉路", "彼岸花开 · 不可回顾", "s3"],
+      [1160, 335, "鬼门关", "验路引 · 无引者滞", "s4"],
+      [1480, 320, "孽镜台", "一殿初审 · 只分流不问刑", "s5"]
+    ];
+    pre.forEach(function (p, i) {
+      ring(p[0], p[1], "gate");
+      var pl = plate(p[0], p[1], p[2], p[3], "key", i % 2 ? -1 : 1, p[4]);
+      stations.push({ y: p[0], name: p[2], sub: p[3], target: p[4] });
+    });
+
+    /* 十殿 */
+    var courtTop = 1810, courtGap = 245;
+    COURTS.forEach(function (c, i) {
+      var y = courtTop + i * courtGap;
+      var w = 300 - i * 7;
+      ring(y, w, "court");
+      plate(y, w, c[0], c[1], "minor", i % 2 ? -1 : 1, "s6");
+    });
+    var courtMid = courtTop + 4 * courtGap;
+    stations.push({ y: courtMid, name: "十殿逐审", sub: "各殿一大狱并十六小狱，七日过一殿", target: "s6" });
+
+    /* 十八狱：收束成漏斗 */
+    var pitTop = courtTop + COURTS.length * courtGap + 240;
+    var pitGap = 180;
+    PITS.forEach(function (p, i) {
+      var y = pitTop + i * pitGap;
+      var w = 262 - i * 6;
+      ring(y, w, "pit");
+      plate(y, w, "第" + (i + 1) + "层 " + p[0] + "地狱", p[1], "minor", i % 2 ? -1 : 1, "s7");
+    });
+    var pitMid = pitTop + 8 * pitGap;
+    stations.push({ y: pitMid, name: "十八狱", sub: "层者刑期，非深浅；每下一层，期十倍", target: "s7" });
+
+    /* 忘川、孟婆、轮回盘 */
+    var afterPits = pitTop + PITS.length * pitGap;
+    var yRiver = afterPits + 280;
+    var ySoup = yRiver + 280;
+    var yWheel = ySoup + 460;
+
+    ring(yRiver, 240, "gate");
+    plate(yRiver, 240, "忘川 · 奈何桥", "四桥分渡 · 三生石", "key", 1, "s9");
+    stations.push({ y: yRiver, name: "忘川 · 奈何桥", sub: "金桥、银桥、玉石桥、独木桥，按善恶分渡", target: "s9" });
+
+    ring(ySoup, 210, "gate");
+    plate(ySoup, 210, "醧忘台 · 孟婆汤", "饮之尽忘 · 业不随忘而消", "key", -1, "s10");
+    stations.push({ y: ySoup, name: "孟婆汤", sub: "忘的是事，带走的是业。汤必饮，不饮者投忘川", target: "s10" });
+
+    ring(yWheel, 620, "wheel");
+    ring(yWheel, 96, "wheel-hub");
+    for (var k = 0; k < 6; k++) {
+      layers.push({ y: yWheel, w: 620, cls: "spoke", spokeDeg: k * 60 });
+    }
+    REALMS.forEach(function (r, i) {
+      var deg = -60 + i * 60;
+      var rad = deg * Math.PI / 180;
+      var rr = 215;
+      layers.push({
+        y: yWheel - 8, w: 0, name: r, sub: i < 2 || i === 5 ? "三善道" : "三恶道",
+        kind: "realm", side: Math.cos(rad) >= 0 ? 1 : -1, target: "s10b",
+        px: rr * Math.cos(rad), pz: rr * Math.sin(rad)
+      });
+    });
+    stations.push({ y: yWheel, name: "投胎 · 六道", sub: "转轮王核定等级，发四大部洲；六道之中无一处是终点", target: "s10b" });
+
+    var DEEPEST = yWheel + 320;
+
+    /* ---------------- 建 DOM ---------------- */
+
+    var frag = document.createDocumentFragment();
+    var fogged = [];
+
+    layers.forEach(function (L) {
+      if (L.name) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "plate " + L.kind + (L.side < 0 ? " flip" : "");
+        btn.innerHTML = "<b>" + L.name + "</b><i>" + (L.sub || "") + "</i>";
+        var offX = L.px !== undefined ? L.px : L.side * (L.w / 2 + 26);
+        var offZ = L.pz !== undefined ? L.pz : 0;
+        btn.dataset.tx = offX;
+        btn.dataset.tz = offZ;
+        btn.dataset.y = L.y;
+        /* 左侧名牌须向左展开，否则压在层上 */
+        btn.dataset.shift = L.side < 0 ? "1" : "0";
+        if (L.target) {
+          btn.addEventListener("click", function () { jumpTo(L.y, L.target); });
+        } else {
+          btn.addEventListener("click", function () { flyTo(L.y); });
+        }
+        frag.appendChild(btn);
+        fogged.push({ el: btn, y: L.y, plate: true, minor: L.kind === "minor" });
+      } else if (L.cls === "spoke") {
+        var sp = document.createElement("div");
+        sp.className = "spoke";
+        sp.style.width = L.w + "px";
+        sp.style.marginLeft = (-L.w / 2) + "px";
+        sp.style.transform =
+          "translateY(" + L.y + "px) rotateX(90deg) rotateZ(" + L.spokeDeg + "deg)";
+        frag.appendChild(sp);
+        fogged.push({ el: sp, y: L.y, plate: false });
+      } else {
+        var d = document.createElement("div");
+        d.className = "ring " + L.cls;
+        d.style.width = L.w + "px";
+        d.style.height = L.w + "px";
+        d.style.marginLeft = (-L.w / 2) + "px";
+        d.style.marginTop = (-L.w / 2) + "px";
+        d.style.transform = "translateY(" + L.y + "px) rotateX(90deg)";
+        frag.appendChild(d);
+        fogged.push({ el: d, y: L.y, plate: false });
+      }
+    });
+
+    /* 井壁支柱 */
+    for (var s = 0; s < 6; s++) {
+      var a = (s / 6) * Math.PI * 2;
+      var st = document.createElement("div");
+      st.className = "strut";
+      st.style.height = (DEEPEST + 200) + "px";
+      st.style.transform =
+        "translate3d(" + (270 * Math.cos(a)) + "px, -180px, " + (270 * Math.sin(a)) + "px) rotateY(" + (-a) + "rad)";
+      frag.appendChild(st);
+    }
+
+    /* 引魂线 */
+    var thread = document.createElement("div");
+    thread.className = "thread";
+    thread.style.height = (DEEPEST + 400) + "px";
+    thread.style.transform = "translate3d(0, -380px, 0)";
+    frag.appendChild(thread);
+
+    /* 魂 */
+    var soul = document.createElement("div");
+    soul.className = "soul";
+    soul.style.transform = "translateY(200px)";
+    frag.appendChild(soul);
+
+    world.appendChild(frag);
+
+    var plates = Array.prototype.slice.call(world.querySelectorAll(".plate"));
+
+    /* ---------------- 镜头 ---------------- */
+
+    var camY = 120, yaw = 0, pitch = 62, soulY = 200;
+    var minY = -680, maxY = DEEPEST;
+    var target = null, targetSoul = null;
+    var dirty = true;
+
+    function setVars() {
+      root.style.setProperty("--camY", camY.toFixed(1) + "px");
+      root.style.setProperty("--yaw", yaw.toFixed(2) + "deg");
+      root.style.setProperty("--pitch", pitch.toFixed(2) + "deg");
+    }
+
+    function billboard() {
+      var inv = "rotateY(" + (-yaw).toFixed(2) + "deg) rotateX(" + (-pitch).toFixed(2) + "deg)";
+      for (var i = 0; i < plates.length; i++) {
+        var p = plates[i];
+        p.style.transform =
+          "translate3d(" + p.dataset.tx + "px," + p.dataset.y + "px," + p.dataset.tz + "px) " + inv +
+          (p.dataset.shift === "1" ? " translateX(-100%)" : "");
+      }
+    }
+
+    function fog() {
+      for (var i = 0; i < fogged.length; i++) {
+        var f = fogged[i];
+        var d = f.y - camY;
+        var o;
+        if (d < -700) {
+          o = Math.max(0, 1 + (d + 700) / 900);
+        } else if (d > 2100) {
+          o = Math.max(0, 1 - (d - 2100) / 2000);
+        } else {
+          o = 1;
+        }
+        if (f.plate) {
+          if (f.minor) { o *= Math.abs(d) < 900 ? 1 : 0; }
+          f.el.style.opacity = o.toFixed(2);
+          f.el.style.pointerEvents = o > .25 ? "auto" : "none";
+        } else {
+          f.el.style.opacity = (o * .95).toFixed(2);
+        }
+      }
+    }
+
+    function hud() {
+      var best = 0, bd = Infinity;
+      for (var i = 0; i < stations.length; i++) {
+        var d = Math.abs(stations[i].y - camY);
+        if (d < bd) { bd = d; best = i; }
+      }
+      var st = stations[best];
+      document.getElementById("hudIdx").textContent = "第" + "一二三四五六七八九十".charAt(best) + "站 · 共十";
+      document.getElementById("hudName").textContent = st.name;
+      document.getElementById("hudText").textContent = st.sub;
+      document.getElementById("hudDepth").textContent =
+        camY < 0 ? "尚在阳世" : "阴深 " + Math.round(camY / 100) + " 里";
+      var pct = Math.max(0, Math.min(1, (camY - minY) / (maxY - minY))) * 100;
+      document.getElementById("hudBar").style.width = pct.toFixed(1) + "%";
+      railBtns.forEach(function (b, i) { b.setAttribute("aria-current", i === best ? "true" : "false"); });
+    }
+
+    /* 站点导轨 */
+    var rail = document.getElementById("rail");
+    var railBtns = stations.map(function (st) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.textContent = st.name;
+      b.addEventListener("click", function () { flyTo(st.y); });
+      rail.appendChild(b);
+      return b;
+    });
+
+    function render() {
+      setVars();
+      billboard();
+      fog();
+      hud();
+      soul.style.transform = "translateY(" + soulY.toFixed(1) + "px)";
+    }
+
+    function loop() {
+      if (target !== null) {
+        camY += (target - camY) * .075;
+        if (Math.abs(target - camY) < .6) { camY = target; target = null; }
+        dirty = true;
+      }
+      if (targetSoul !== null) {
+        soulY += (targetSoul - soulY) * .06;
+        if (Math.abs(targetSoul - soulY) < .6) { soulY = targetSoul; targetSoul = null; }
+        dirty = true;
+      }
+      if (travelling && !reduce) {
+        camY = Math.min(maxY, camY + travelStep);
+        soulY = camY + 50;
+        dirty = true;
+        if (camY >= maxY) { stopTravel(); }
+      }
+      if (dirty) { render(); dirty = false; }
+      requestAnimationFrame(loop);
+    }
+
+    function flyTo(y) {
+      target = Math.max(minY, Math.min(maxY, y));
+      targetSoul = target + 50;
+      stopTravel();
+    }
+
+    function jumpTo(y, id) {
+      flyTo(y);
+      var sec = document.getElementById(id);
+      if (!sec) { return; }
+      sec.classList.add("flash");
+      setTimeout(function () { sec.classList.remove("flash"); }, 1500);
+    }
+
+    /* 拖动旋转 */
+    var dragging = false, lastX = 0, lastY = 0, moved = 0;
+
+    scene.addEventListener("pointerdown", function (e) {
+      if (e.target.closest("button, .hud, .controls, nav")) { return; }
+      dragging = true; moved = 0;
+      lastX = e.clientX; lastY = e.clientY;
+      scene.classList.add("dragging");
+      scene.setPointerCapture(e.pointerId);
+      stopTravel();
+    });
+
+    scene.addEventListener("pointermove", function (e) {
+      if (!dragging) { return; }
+      var dx = e.clientX - lastX, dy = e.clientY - lastY;
+      lastX = e.clientX; lastY = e.clientY;
+      moved += Math.abs(dx) + Math.abs(dy);
+      yaw += dx * .3;
+      pitch = Math.max(18, Math.min(82, pitch + dy * .18));
+      dirty = true;
+    });
+
+    function endDrag(e) {
+      if (!dragging) { return; }
+      dragging = false;
+      scene.classList.remove("dragging");
+      if (e && e.pointerId !== undefined && scene.hasPointerCapture(e.pointerId)) {
+        scene.releasePointerCapture(e.pointerId);
+      }
+    }
+
+    scene.addEventListener("pointerup", endDrag);
+    scene.addEventListener("pointercancel", endDrag);
+
+    /* 滚轮下行；到底或到顶则交还页面 */
+    scene.addEventListener("wheel", function (e) {
+      var d = e.deltaY;
+      if ((d > 0 && camY < maxY) || (d < 0 && camY > minY)) {
+        e.preventDefault();
+        camY = Math.max(minY, Math.min(maxY, camY + d * 1.8));
+        soulY = camY + 50;
+        target = null; targetSoul = null;
+        stopTravel();
+        dirty = true;
+      }
+    }, { passive: false });
+
+    /* 键盘 */
+    scene.setAttribute("tabindex", "0");
+    scene.addEventListener("keydown", function (e) {
+      var step = 340;
+      if (e.key === "ArrowDown") { flyTo(camY + step); e.preventDefault(); }
+      else if (e.key === "ArrowUp") { flyTo(camY - step); e.preventDefault(); }
+      else if (e.key === "ArrowLeft") { yaw -= 12; dirty = true; }
+      else if (e.key === "ArrowRight") { yaw += 12; dirty = true; }
+    });
+
+    /* 随魂下行 */
+    var travelling = false;
+    var travelStep = Math.max(4, (DEEPEST - minY) / 1200);
+    var travelBtn = document.getElementById("travel");
+
+    function stopTravel() {
+      if (!travelling) { return; }
+      travelling = false;
+      travelBtn.setAttribute("aria-pressed", "false");
+      travelBtn.textContent = "随魂下行";
+    }
+
+    travelBtn.addEventListener("click", function () {
+      if (travelling) { stopTravel(); return; }
+      if (camY >= maxY - 5) { camY = minY + 60; soulY = camY + 50; }
+      travelling = true;
+      target = null; targetSoul = null;
+      travelBtn.setAttribute("aria-pressed", "true");
+      travelBtn.textContent = "止 · 停在此处";
+      dirty = true;
+    });
+
+    document.getElementById("loopBack").addEventListener("click", function () {
+      scene.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+      flyTo(200);
+    });
+
+    /* ---------------- 图说：十八狱表 ---------------- */
+
+    var pitsEl = document.getElementById("pits");
+    var PIT_FULL = [
+      ["拔舌", "挑拨离间、谗言诬告、妄语两舌"],
+      ["剪刀", "破人姻缘、唆使守节之妇改嫁"],
+      ["铁树", "离间骨肉、挑拨亲族相争"],
+      ["孽镜", "阳间作恶而侥幸脱罪、未受报者"],
+      ["蒸笼", "长舌造谣、传播是非、诬陷他人"],
+      ["铜柱", "恶意纵火、烧屋灭迹"],
+      ["刀山", "亵渎神明、屠戮无辜生灵"],
+      ["冰山", "谋害亲夫、不孝父母、堕胎溺婴"],
+      ["油锅", "淫恶奸邪、卖良为娼、诬人清白"],
+      ["牛坑", "虐杀牲畜、屠戮无度"],
+      ["石压", "弃婴溺婴、绝情不顾骨肉"],
+      ["舂臼", "浪费五谷、糟蹋粮食"],
+      ["血池", "不敬尊长、行事污秽伤人"],
+      ["枉死", "轻生自尽，不惜天赐之身"],
+      ["磔刑", "盗墓掘坟、辱及死者"],
+      ["火山", "贪占庙产、偷盗香火、放火行凶"],
+      ["石磨", "以权谋私、刻剥百姓、糟蹋五谷"],
+      ["刀锯", "偷工减料、欺行霸市、坑害人命"]
+    ];
+
+    PIT_FULL.forEach(function (p, i) {
+      var row = document.createElement("div");
+      row.className = "pit-row";
+      var w = Math.round((i + 1) / PIT_FULL.length * 100);
+      row.innerHTML =
+        '<span class="pit-n">' + (i + 1 < 10 ? "0" + (i + 1) : i + 1) + "</span>" +
+        '<span class="pit-name">' + p[0] + "地狱</span>" +
+        '<span class="pit-why">' + p[1] + "</span>" +
+        '<span class="pit-depth" title="刑期相对之长"><i style="width:' + w + '%"></i></span>';
+      pitsEl.appendChild(row);
+    });
+
+    /* ---------------- 逐段显现 ---------------- */
+
+    if (!reduce && "IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); }
+        });
+      }, { rootMargin: "0px 0px -12% 0px", threshold: .08 });
+      document.querySelectorAll(".reveal").forEach(function (n) { io.observe(n); });
+    } else {
+      document.querySelectorAll(".reveal").forEach(function (n) { n.classList.add("in"); });
+    }
+
+    /* ---------------- 香灰飘尘 ---------------- */
+
+    if (!reduce) {
+      var canvas = document.getElementById("ash");
+      var ctx = canvas.getContext("2d");
+      var motes = [], W = 0, H = 0;
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+      function size() {
+        var r = scene.getBoundingClientRect();
+        W = r.width; H = r.height;
+        canvas.width = Math.round(W * dpr);
+        canvas.height = Math.round(H * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function seed() {
+        motes = [];
+        var count = Math.round(Math.min(90, W / 12));
+        for (var i = 0; i < count; i++) {
+          motes.push({
+            x: Math.random() * W, y: Math.random() * H,
+            r: Math.random() * 1.6 + .4,
+            vy: -(Math.random() * .26 + .05),
+            vx: (Math.random() - .5) * .18,
+            a: Math.random() * .45 + .1,
+            ember: Math.random() < .18
+          });
+        }
+      }
+
+      function tone() {
+        var probe = getComputedStyle(document.body).backgroundColor;
+        var n = probe.match(/\d+/g);
+        var lum = n ? (+n[0] * .299 + +n[1] * .587 + +n[2] * .114) : 20;
+        return lum < 128 ? { ash: "232,220,200", ember: "216,68,47" }
+                         : { ash: "96,80,62", ember: "163,42,28" };
+      }
+
+      var palette = tone();
+
+      function ashFrame() {
+        ctx.clearRect(0, 0, W, H);
+        for (var i = 0; i < motes.length; i++) {
+          var m = motes[i];
+          m.x += m.vx; m.y += m.vy;
+          if (m.y < -6) { m.y = H + 6; m.x = Math.random() * W; }
+          if (m.x < -6) { m.x = W + 6; } else if (m.x > W + 6) { m.x = -6; }
+          ctx.beginPath();
+          ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(" + (m.ember ? palette.ember : palette.ash) + "," + m.a + ")";
+          ctx.fill();
+        }
+        requestAnimationFrame(ashFrame);
+      }
+
+      size(); seed(); ashFrame();
+
+      var t;
+      window.addEventListener("resize", function () {
+        clearTimeout(t);
+        t = setTimeout(function () { size(); seed(); palette = tone(); dirty = true; }, 180);
+      });
+
+      var mq = window.matchMedia("(prefers-color-scheme: dark)");
+      if (mq.addEventListener) { mq.addEventListener("change", function () { palette = tone(); }); }
+      new MutationObserver(function () { palette = tone(); })
+        .observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    }
+
+    render();
+    loop();
+  }());
+</script>
