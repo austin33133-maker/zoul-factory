@@ -360,22 +360,23 @@
     margin: 0;
   }
 
-  .scene h1 {
+  .scene-title {
     margin: 0;
-    font-size: clamp(2.1rem, 6.5vw, 4.2rem);
-    line-height: 1;
-    letter-spacing: .14em;
+    font-size: clamp(1.5rem, 3.6vw, 2.3rem);
+    line-height: 1.1;
+    letter-spacing: .16em;
     font-weight: 700;
     text-shadow: 0 2px 30px var(--void-deep);
   }
 
-  .scene h1 span {
+  .scene-title span {
     display: block;
-    font-size: clamp(.72rem, 1.9vw, .95rem);
-    letter-spacing: .48em;
+    font-family: var(--sans);
+    font-size: clamp(.7rem, 1.7vw, .8rem);
+    letter-spacing: .16em;
     font-weight: 400;
     color: var(--muted);
-    margin-top: .7rem;
+    margin-top: .6rem;
   }
 
   .hud {
@@ -490,6 +491,114 @@
     .controls { justify-self: start; }
     .hint { text-align: left; }
   }
+
+  /* ============ 一览：五秒读完的总图 ============ */
+
+  .masthead {
+    max-width: var(--wide);
+    margin: 0 auto;
+    padding: clamp(2.5rem, 7vw, 4.5rem) 1.5rem clamp(1.5rem, 3vw, 2rem);
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .masthead h1 {
+    margin: 0;
+    font-size: clamp(2.4rem, 8vw, 4.6rem);
+    line-height: 1;
+    letter-spacing: .14em;
+    font-weight: 700;
+  }
+
+  .masthead h1 span {
+    display: block;
+    font-size: clamp(.75rem, 2vw, .95rem);
+    letter-spacing: .48em;
+    font-weight: 400;
+    color: var(--muted);
+    margin-top: .8rem;
+  }
+
+  .keys {
+    display: grid;
+    gap: 1px;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    background: var(--rule-soft);
+    border: 1px solid var(--rule-soft);
+  }
+
+  .key-item {
+    background: var(--ground);
+    padding: 1rem 1.15rem 1.15rem;
+    display: grid;
+    gap: .4rem;
+    align-content: start;
+  }
+
+  .key-item b {
+    font-size: 1.02rem;
+    letter-spacing: .1em;
+    display: flex;
+    gap: .6rem;
+    align-items: baseline;
+  }
+
+  .key-item b u {
+    text-decoration: none;
+    font-family: var(--mono);
+    font-size: .72rem;
+    color: var(--cinnabar);
+  }
+
+  .key-item span { font-family: var(--sans); font-size: .82rem; color: var(--ink-2); line-height: 1.75; }
+
+  .glance {
+    max-width: 82rem;
+    margin: 0 auto;
+    padding: clamp(1rem, 3vw, 2rem) 1.5rem clamp(2.5rem, 6vw, 4rem);
+    display: grid;
+    gap: 1rem;
+  }
+
+  .glance-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .6rem 1.2rem;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: .7rem;
+  }
+
+  .glance-head h2 { margin: 0; font-size: 1.05rem; letter-spacing: .3em; font-weight: 700; }
+  .glance-head p { margin: 0; font-family: var(--sans); font-size: .78rem; color: var(--muted); }
+
+  .glance-frame { overflow-x: auto; }
+  .glance-frame svg { display: block; width: 100%; min-width: 46rem; height: auto; }
+
+  .gbox { fill: var(--ground-2); stroke: var(--rule); stroke-width: 1; }
+  .gbox.good { stroke: var(--spirit); }
+  .gbox.mid { stroke: var(--gold); }
+  .gbox.bad { stroke: var(--cinnabar); }
+  .gbox.hard { stroke-width: 2; }
+  .gbox.terminal { fill: none; stroke: var(--spirit); stroke-dasharray: 5 4; }
+  .gband { fill: var(--ground-3); stroke: var(--gold); stroke-width: 1; }
+  .gt { fill: var(--ink); font-family: var(--serif); font-size: 16px; font-weight: 700; letter-spacing: .08em; }
+  .gt.sm { font-size: 14.5px; }
+  .gt.good { fill: var(--spirit); }
+  .gs { fill: var(--muted); font-family: var(--sans); font-size: 11px; letter-spacing: .02em; }
+  .gl { fill: var(--cinnabar); font-family: var(--sans); font-size: 10.5px; letter-spacing: .2em; }
+  .gl.quiet { fill: var(--muted); }
+  .gl.good { fill: var(--spirit); }
+  .gline { stroke: var(--rule); stroke-width: 1; fill: none; }
+  .gline.dash { stroke-dasharray: 4 4; }
+  .gflow { stroke: var(--cinnabar); stroke-width: 1.5; fill: none; }
+  .gflow.soft { stroke: var(--rule); }
+  .gflow.good { stroke: var(--spirit); stroke-dasharray: 5 4; }
+  .garrow { fill: var(--cinnabar); }
+  .garrow.soft { fill: var(--rule); }
+  .garrow.good { fill: var(--spirit); }
+  .gsep { stroke: var(--rule-soft); stroke-width: 1; stroke-dasharray: 3 4; }
+  .gsep.hard { stroke: var(--rule); stroke-dasharray: none; }
 
   /* ============ 图说 ============ */
 
@@ -774,6 +883,171 @@
   }
 </style>
 
+<header class="masthead">
+  <p class="eyebrow">阴律 · 全图</p>
+  <h1>地狱全图<span>自殁至投胎</span></h1>
+  <div class="keys">
+    <div class="key-item">
+      <b><u>一</u>先有文书，后有拘拿</b>
+      <span>阴间办事如阳间衙门。城隍申报、阳间焚化路引，无引者进不了鬼门关，滞为孤魂。烧纸不是贿赂，是补文书。</span>
+    </div>
+    <div class="key-item">
+      <b><u>二</u>并非人人都下十八层</b>
+      <span>第一殿孽镜台照见一生所行，先分三路：善多者径送超生，功过两半者直送第十殿，唯恶多者才逐殿受审、入狱受报。</span>
+    </div>
+    <div class="key-item">
+      <b><u>三</u>忘却是制度，不是刑罚</b>
+      <span>不忘则新生难立，旧债缠成死结，轮回不能行。故必饮孟婆汤 —— 忘的是事，带走的是业。</span>
+    </div>
+  </div>
+</header>
+
+<section class="glance" aria-label="一览：自殁至投胎的全程">
+  <div class="glance-head">
+    <h2>一览 · 全程</h2>
+    <p>左右两条短路，中间一条长路。四步之后回到起点 —— 这就是全部。</p>
+  </div>
+  <div class="glance-frame">
+    <svg viewBox="0 0 1200 848" role="img" aria-labelledby="gTitle gDesc">
+      <title id="gTitle">自殁至投胎的全程流程图</title>
+      <desc id="gDesc">阳世寿尽后依次过殁、勾魂、黄泉路、鬼门关四关，至第一殿孽镜台分为三路：善多者径送超生，功过两半者直送第十殿，恶多者押赴第二殿并历二至九殿与十八狱。三路复合于忘川奈何桥、孟婆汤与第十殿转轮王，再分发六道投生，一世行满后重回起点，成一闭环。</desc>
+
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0,1 L9,5 L0,9 z" class="garrow" />
+        </marker>
+        <marker id="ar-soft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0,1 L9,5 L0,9 z" class="garrow soft" />
+        </marker>
+        <marker id="ar-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0,1 L9,5 L0,9 z" class="garrow good" />
+        </marker>
+      </defs>
+
+      <!-- 阳世 -->
+      <rect class="gband" x="40" y="28" width="1100" height="48" />
+      <text class="gt" x="64" y="57">阳世</text>
+      <text class="gs" x="140" y="57">一生 —— 唯此一段能自主造业，也唯此一段能修</text>
+      <path class="gflow" d="M 164 76 L 164 106" marker-end="url(#ar)" />
+      <text class="gl" x="176" y="97">寿尽</text>
+
+      <!-- 一 · 过关 -->
+      <text class="gl" x="40" y="100">一 · 过关</text>
+      <text class="gs" x="1140" y="100" text-anchor="end">阳间：头七、报庙、焚路引</text>
+      <rect class="gbox" x="40" y="112" width="248" height="72" />
+      <rect class="gbox" x="324" y="112" width="248" height="72" />
+      <rect class="gbox" x="608" y="112" width="248" height="72" />
+      <rect class="gbox" x="892" y="112" width="248" height="72" />
+      <text class="gt" x="164" y="145" text-anchor="middle">殁</text>
+      <text class="gs" x="164" y="166" text-anchor="middle">三魂七魄离散，魂多不自知</text>
+      <text class="gt" x="448" y="145" text-anchor="middle">勾魂</text>
+      <text class="gs" x="448" y="166" text-anchor="middle">无常持牌，文书先到</text>
+      <text class="gt" x="732" y="145" text-anchor="middle">黄泉路</text>
+      <text class="gs" x="732" y="166" text-anchor="middle">彼岸花开，唤名不可回头</text>
+      <text class="gt" x="1016" y="145" text-anchor="middle">鬼门关</text>
+      <text class="gs" x="1016" y="166" text-anchor="middle">验路引，无引者滞为孤魂</text>
+      <path class="gflow" d="M 294 148 L 318 148" marker-end="url(#ar)" />
+      <path class="gflow" d="M 578 148 L 602 148" marker-end="url(#ar)" />
+      <path class="gflow" d="M 862 148 L 886 148" marker-end="url(#ar)" />
+      <path class="gflow" d="M 1016 184 L 1016 198 L 590 198 L 590 212" marker-end="url(#ar)" />
+
+      <!-- 二 · 初审分流 -->
+      <text class="gl" x="240" y="206">二 · 初审 —— 此处分流</text>
+      <text class="gs" x="1140" y="212" text-anchor="end">阳间：七七四十九日内，判决落定</text>
+      <rect class="gbox hard" x="240" y="216" width="700" height="64" />
+      <text class="gt" x="590" y="247" text-anchor="middle">第一殿 秦广王 · 孽镜台</text>
+      <text class="gs" x="590" y="267" text-anchor="middle">镜中现的不是形貌，是所行 —— 只分流，不问刑</text>
+
+      <path class="gflow" d="M 590 280 L 590 302" />
+      <path class="gline" d="M 170 302 L 940 302" />
+      <path class="gflow" d="M 170 302 L 170 326" marker-end="url(#ar)" />
+      <path class="gflow" d="M 590 302 L 590 326" marker-end="url(#ar)" />
+      <path class="gflow" d="M 940 302 L 940 326" marker-end="url(#ar)" />
+
+      <rect class="gbox good" x="40" y="330" width="260" height="76" />
+      <text class="gt sm" x="170" y="362" text-anchor="middle">径送超生</text>
+      <text class="gs" x="170" y="383" text-anchor="middle">善多恶少 · 不历诸狱</text>
+
+      <rect class="gbox mid" x="460" y="330" width="260" height="76" />
+      <text class="gt sm" x="590" y="362" text-anchor="middle">直送第十殿</text>
+      <text class="gs" x="590" y="383" text-anchor="middle">功过两半 · 免刑，候发遣</text>
+
+      <rect class="gbox bad" x="740" y="330" width="400" height="76" />
+      <text class="gt sm" x="940" y="362" text-anchor="middle">押赴第二殿</text>
+      <text class="gs" x="940" y="383" text-anchor="middle">恶多 —— 自此逐殿受审，入狱受报</text>
+
+      <!-- 出轮回的岔路 -->
+      <path class="gflow good" d="M 110 406 L 110 448" marker-end="url(#ar-good)" />
+      <rect class="gbox terminal" x="40" y="452" width="260" height="60" />
+      <text class="gt sm good" x="170" y="480" text-anchor="middle">或径赴净土</text>
+      <text class="gl good" x="170" y="499" text-anchor="middle">出此轮回 · 唯一的出口</text>
+
+      <!-- 恶多者的长路 -->
+      <path class="gflow" d="M 940 406 L 940 428" marker-end="url(#ar)" />
+      <rect class="gbox bad" x="740" y="432" width="400" height="64" />
+      <text class="gt sm" x="940" y="462" text-anchor="middle">第二殿 至 第九殿 · 逐审</text>
+      <text class="gs" x="940" y="482" text-anchor="middle">各按所犯，入本殿大狱并十六小狱</text>
+      <path class="gflow" d="M 940 496 L 940 518" marker-end="url(#ar)" />
+      <rect class="gbox bad" x="740" y="522" width="400" height="64" />
+      <text class="gt sm" x="940" y="552" text-anchor="middle">十八狱受报</text>
+      <text class="gs" x="940" y="572" text-anchor="middle">层者刑期，非深浅；期满出狱</text>
+
+      <!-- 三路复合 -->
+      <path class="gflow soft" d="M 230 406 L 230 598" />
+      <path class="gflow" d="M 590 406 L 590 598" />
+      <path class="gflow" d="M 940 586 L 940 598" />
+      <path class="gline" d="M 230 598 L 940 598" />
+      <path class="gflow" d="M 300 598 L 300 616" marker-end="url(#ar)" />
+
+      <text class="gl" x="140" y="614">三 · 点定与忘却</text>
+      <rect class="gbox hard" x="140" y="620" width="1000" height="68" />
+      <text class="gt sm" x="300" y="651" text-anchor="middle">第十殿 转轮王</text>
+      <text class="gs" x="300" y="671" text-anchor="middle">核定等级，发四大部洲</text>
+      <text class="gs" x="470" y="660" text-anchor="middle" font-size="15">→</text>
+      <text class="gt sm" x="640" y="651" text-anchor="middle">忘川 · 奈何桥</text>
+      <text class="gs" x="640" y="671" text-anchor="middle">四桥分渡 · 三生石</text>
+      <text class="gs" x="810" y="660" text-anchor="middle" font-size="15">→</text>
+      <text class="gt sm" x="980" y="651" text-anchor="middle">醧忘台 · 孟婆汤</text>
+      <text class="gs" x="980" y="671" text-anchor="middle">饮之尽忘，业不随忘而消</text>
+      <path class="gflow" d="M 980 688 L 980 714" marker-end="url(#ar)" />
+
+      <!-- 四 · 投生六道 -->
+      <text class="gl" x="40" y="712">四 · 投生</text>
+      <text class="gl quiet" x="316" y="712" text-anchor="middle">三善道</text>
+      <text class="gl quiet" x="864" y="712" text-anchor="middle">三恶道</text>
+      <rect class="gbox" x="40" y="720" width="1100" height="76" />
+      <path class="gsep" d="M 223 720 L 223 796" />
+      <path class="gsep" d="M 407 720 L 407 796" />
+      <path class="gsep hard" d="M 590 720 L 590 796" />
+      <path class="gsep" d="M 773 720 L 773 796" />
+      <path class="gsep" d="M 957 720 L 957 796" />
+      <text class="gt sm" x="132" y="753" text-anchor="middle">天道</text>
+      <text class="gs" x="132" y="774" text-anchor="middle">福厚，福尽仍堕</text>
+      <text class="gt sm" x="315" y="753" text-anchor="middle">人道</text>
+      <text class="gs" x="315" y="774" text-anchor="middle">唯此道可修可悟</text>
+      <text class="gt sm" x="498" y="753" text-anchor="middle">阿修罗道</text>
+      <text class="gs" x="498" y="774" text-anchor="middle">有福而多嗔</text>
+      <text class="gt sm" x="682" y="753" text-anchor="middle">畜生道</text>
+      <text class="gs" x="682" y="774" text-anchor="middle">愚痴，为人所役</text>
+      <text class="gt sm" x="865" y="753" text-anchor="middle">饿鬼道</text>
+      <text class="gs" x="865" y="774" text-anchor="middle">饥渴不得一食</text>
+      <text class="gt sm" x="1048" y="753" text-anchor="middle">地狱道</text>
+      <text class="gs" x="1048" y="774" text-anchor="middle">寿长而刑无间</text>
+
+      <!-- 闭环：任一道行满，复自「殁」始 -->
+      <path class="gline dash" d="M 132 796 L 132 814" />
+      <path class="gline dash" d="M 315 796 L 315 814" />
+      <path class="gline dash" d="M 498 796 L 498 814" />
+      <path class="gline dash" d="M 682 796 L 682 814" />
+      <path class="gline dash" d="M 865 796 L 865 814" />
+      <path class="gline dash" d="M 1048 796 L 1048 814" />
+      <path class="gline" d="M 132 814 L 1180 814" />
+      <path class="gflow" d="M 1180 814 L 1180 52 L 1148 52" marker-end="url(#ar)" />
+      <text class="gl" x="1130" y="834" text-anchor="end">一世行满，复自「殁」始 —— 故谓之轮</text>
+    </svg>
+  </div>
+</section>
+
 <section class="scene" id="scene" aria-label="地狱竖井：可拖动旋转、滚动下行的三维全图">
   <canvas id="ash" aria-hidden="true"></canvas>
 
@@ -783,8 +1057,8 @@
 
   <div class="overlay">
     <div class="title-block">
-      <p class="eyebrow">阴律 · 竖井全图</p>
-      <h1>地狱全图<span>自殁至投胎</span></h1>
+      <p class="eyebrow">细看 · 三维竖井</p>
+      <h2 class="scene-title">随魂下行<span>把上面那张图立起来，一层一层走一遍</span></h2>
     </div>
 
     <div></div>
