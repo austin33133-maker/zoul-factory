@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0e14">
+<title>枪火幸存者 ZOUL SURVIVORS</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app">
+  <canvas id="game"></canvas>
+
+  <!-- ============ 局内 HUD ============ -->
+  <div id="hud" class="screen hidden">
+    <div class="hud-top">
+      <div class="hud-row">
+        <div class="hp-wrap">
+          <div class="hp-bar"><div id="hpFill" class="hp-fill"></div></div>
+          <span id="hpText" class="hp-text">100/100</span>
+        </div>
+        <button id="btnPause" class="icon-btn" aria-label="暂停">❚❚</button>
+      </div>
+      <div class="xp-bar"><div id="xpFill" class="xp-fill"></div></div>
+      <div class="hud-row hud-meta">
+        <span id="lvlText" class="chip">Lv.1</span>
+        <span id="timeText" class="chip time">05:00</span>
+        <span id="killText" class="chip">☠ 0</span>
+      </div>
+    </div>
+    <div id="weaponBar" class="weapon-bar"></div>
+    <div id="toastLayer" class="toast-layer"></div>
+  </div>
+
+  <!-- ============ 主菜单 ============ -->
+  <div id="menu" class="screen overlay">
+    <div class="panel">
+      <div class="logo">
+        <div class="logo-main">枪火幸存者</div>
+        <div class="logo-sub">ZOUL&nbsp;SURVIVORS</div>
+      </div>
+      <div class="best-row">
+        <div class="stat"><span class="stat-v" id="bestTime">--:--</span><span class="stat-k">最佳存活</span></div>
+        <div class="stat"><span class="stat-v" id="bestKill">0</span><span class="stat-k">最高击杀</span></div>
+        <div class="stat"><span class="stat-v" id="goldText">0</span><span class="stat-k">金币</span></div>
+      </div>
+      <button id="btnStart" class="btn btn-primary">开 始 游 戏</button>
+      <div class="btn-row">
+        <button id="btnShop" class="btn">强化</button>
+        <button id="btnSettings" class="btn">设置</button>
+      </div>
+      <p class="hint">按住屏幕任意位置拖动移动 · 自动开火</p>
+    </div>
+  </div>
+
+  <!-- ============ 强化商店（元进度） ============ -->
+  <div id="shop" class="screen overlay hidden">
+    <div class="panel panel-tall">
+      <div class="panel-head">
+        <h2>永久强化</h2>
+        <div class="gold-pill">◆ <span id="shopGold">0</span></div>
+      </div>
+      <div id="shopList" class="shop-list"></div>
+      <button id="btnShopBack" class="btn">返回</button>
+    </div>
+  </div>
+
+  <!-- ============ 三选一升级 ============ -->
+  <div id="levelup" class="screen overlay hidden">
+    <div class="panel">
+      <h2 class="lv-title">升级！<span id="lvNum" class="lv-num"></span></h2>
+      <div id="cards" class="cards"></div>
+      <button id="btnReroll" class="btn btn-ad">
+        <span class="ad-tag">AD</span> 看广告刷新 <span id="rerollLeft" class="dim"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============ 暂停 ============ -->
+  <div id="paused" class="screen overlay hidden">
+    <div class="panel">
+      <h2>暂停</h2>
+      <div id="pauseStats" class="pause-stats"></div>
+      <button id="btnResume" class="btn btn-primary">继续</button>
+      <button id="btnQuit" class="btn btn-danger">放弃本局</button>
+    </div>
+  </div>
+
+  <!-- ============ 死亡 / 复活 ============ -->
+  <div id="dead" class="screen overlay hidden">
+    <div class="panel">
+      <h2 class="dead-title">你 倒 下 了</h2>
+      <div class="revive-timer"><div id="reviveBar" class="revive-fill"></div></div>
+      <button id="btnRevive" class="btn btn-ad btn-big">
+        <span class="ad-tag">AD</span> 看广告原地复活
+      </button>
+      <button id="btnGiveUp" class="btn">放弃</button>
+    </div>
+  </div>
+
+  <!-- ============ 结算 ============ -->
+  <div id="result" class="screen overlay hidden">
+    <div class="panel">
+      <h2 id="resultTitle">本 局 结 算</h2>
+      <div class="result-grid">
+        <div class="stat"><span class="stat-v" id="rTime">00:00</span><span class="stat-k">存活</span></div>
+        <div class="stat"><span class="stat-v" id="rKill">0</span><span class="stat-k">击杀</span></div>
+        <div class="stat"><span class="stat-v" id="rLevel">1</span><span class="stat-k">等级</span></div>
+      </div>
+      <div class="gold-earned">获得 <span id="rGold" class="gold-num">0</span> 金币</div>
+      <button id="btnDouble" class="btn btn-ad btn-big">
+        <span class="ad-tag">AD</span> 看广告金币翻倍
+      </button>
+      <button id="btnAgain" class="btn btn-primary">再 来 一 局</button>
+      <button id="btnHome" class="btn">回主菜单</button>
+    </div>
+  </div>
+
+  <!-- ============ 设置 ============ -->
+  <div id="settings" class="screen overlay hidden">
+    <div class="panel">
+      <h2>设置</h2>
+      <div class="setting-row"><span>音效</span><button class="toggle" data-set="sfx"></button></div>
+      <div class="setting-row"><span>伤害数字</span><button class="toggle" data-set="dmgNum"></button></div>
+      <div class="setting-row"><span>震动反馈</span><button class="toggle" data-set="haptic"></button></div>
+      <div class="setting-row"><span>屏幕震动</span><button class="toggle" data-set="shake"></button></div>
+      <button id="btnResetSave" class="btn btn-danger btn-sm">清除全部存档</button>
+      <button id="btnSetBack" class="btn">返回</button>
+    </div>
+  </div>
+
+  <!-- ============ 模拟广告播放 ============ -->
+  <div id="adOverlay" class="screen overlay hidden ad-overlay">
+    <div class="ad-box">
+      <div class="ad-label">广告位（测试模拟）</div>
+      <div class="ad-spinner"></div>
+      <div class="ad-count"><span id="adCount">3</span> 秒后可领取奖励</div>
+    </div>
+  </div>
+</div>
+
+<script src="js/save.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/monetize.js"></script>
+<script src="js/input.js"></script>
+<script src="js/upgrades.js"></script>
+<script src="js/entities.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
