@@ -1,0 +1,9 @@
+# Profile: audit — layered over config.toml via `codex exec -p audit`
+# Max reasoning, zero write authority. Use for code review, security review, and
+# "give me a second opinion" runs where Codex must not touch the working tree.
+model = "gpt-5.6-sol"
+model_reasoning_effort = "xhigh"
+model_verbosity = "high"
+sandbox_mode = "read-only"
+approval_policy = "never"
+web_search = "live"

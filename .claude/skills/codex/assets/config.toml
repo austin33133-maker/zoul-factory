@@ -1,0 +1,62 @@
+# Codex max-power base config -> install to $CODEX_HOME/config.toml (default ~/.codex/config.toml)
+# Every key below was validated against codex-cli 0.146.0 with `--strict-config`.
+# Re-validate after upgrading Codex:  codex exec --strict-config --skip-git-repo-check < /dev/null
+#
+# NOTE: TOML requires every top-level key to appear BEFORE the first [table].
+# Keep the scalars in this block — moving one below a table silently reparents it.
+
+# ---------------------------------------------------------------- model
+# gpt-5.6-sol is the flagship: strongest complex coding, computer use, research.
+# Swap to gpt-5.6-terra (balanced) or gpt-5.6-luna (fast/cheap) if quota is tight.
+model = "gpt-5.6-sol"
+
+# xhigh ("Extra High") is the deepest reasoning level the CLI exposes.
+model_reasoning_effort = "xhigh"
+
+# Keep plan mode just as deep as execution mode.
+plan_mode_reasoning_effort = "xhigh"
+
+# Full reasoning summaries — the point of a high-effort run is seeing the thinking.
+model_reasoning_summary = "detailed"
+hide_agent_reasoning = false
+
+# Prose length of the final answer. Independent of reasoning depth.
+model_verbosity = "medium"
+
+# Raise the auto-compact trigger so long agentic runs keep more context in-window.
+model_auto_compact_token_limit = 400000
+
+# ---------------------------------------------------------------- autonomy
+# "never" = fully non-interactive; failures are returned to the model to solve.
+# Use "on-request" if you want Codex to be able to ask you mid-run.
+approval_policy = "never"
+
+# workspace-write is the strongest sandbox that is still a sandbox.
+# danger-full-access removes the sandbox entirely — see SKILL.md before using it.
+sandbox_mode = "workspace-write"
+
+# ---------------------------------------------------------------- tools
+# disabled | cached | indexed | live. "live" hits the network per query and is
+# the only setting that sees today's docs. Equivalent to the `--search` flag,
+# which is interactive-only — `codex exec` can only get live search from here.
+web_search = "live"
+
+# ---------------------------------------------------------------- tables
+[sandbox_workspace_write]
+# Required for installing deps, cloning, calling APIs during a run.
+network_access = true
+exclude_slash_tmp = false
+exclude_tmpdir_env_var = false
+
+# Stage/state of every flag on your build:  codex features list
+[features]
+memories = true        # stable but OFF by default: cross-session recall
+multi_agent_v2 = true  # stable but OFF by default: newer sub-agent orchestration
+multi_agent = true     # sub-agent delegation (on by default; pinned explicitly)
+shell_tool = true
+unified_exec = true
+skill_search = true    # lets Codex discover skills by search, not just frontmatter
+tool_suggest = true
+
+[history]
+persistence = "save-all"

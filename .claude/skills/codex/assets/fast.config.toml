@@ -1,0 +1,7 @@
+# Profile: fast — layered over config.toml via `codex exec -p fast`
+# For high-volume, low-complexity work where latency and quota matter more than depth.
+# Note: gpt-5.6-luna and the *-mini models do not support xhigh.
+model = "gpt-5.6-luna"
+model_reasoning_effort = "low"
+model_verbosity = "low"
+web_search = "cached"
