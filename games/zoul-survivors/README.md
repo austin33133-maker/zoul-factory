@@ -6,13 +6,36 @@
 
 ## 立刻试玩
 
+**最省事的方式：把 `dist/standalone.html` 下载下来，双击打开。** 它是一个自包含的单文件，
+没有任何外部依赖——不用装环境、不用起服务器、断网也能玩。想发给别人就直接发这个文件。
+
+想在手机上玩，把这个文件传到手机（微信发给自己 / AirDrop / 网盘都行）再用浏览器打开即可。
+
+<details>
+<summary>其它方式</summary>
+
+**扔到任意静态托管**：`dist/standalone.html` 改名 `index.html` 上传即可，
+GitHub Pages / Netlify / Vercel 都能直接跑。
+
+**改代码时用源文件**（`index.html` 会分别加载 `js/*.js`，改完刷新即可，不用重新打包）：
+
 ```bash
 cd games/zoul-survivors
-python3 -m http.server 8080
-# 手机和电脑连同一个 WiFi，手机浏览器打开 http://<你的电脑IP>:8080
+python3 -m http.server 8080   # 然后浏览器打开 http://localhost:8080
 ```
 
-桌面调试用 WASD / 方向键，或按住鼠标拖动。
+> 注意这条只适用于"你自己电脑上有这个仓库"的情况。如果你是在网页或手机上让 AI 改的代码，
+> 代码在云端，这个端口你连不上——用上面的单文件方式。
+
+**重新打包**（改了 `css/` 或 `js/` 之后）：
+
+```bash
+node build.js   # 重新生成 dist/standalone.html 和 dist/artifact.html
+```
+
+</details>
+
+操作：按住屏幕任意位置拖动走位，自动开火。桌面上也可以用 WASD / 方向键。
 
 ---
 
@@ -46,7 +69,11 @@ python3 -m http.server 8080
 ## 代码结构
 
 ```
-index.html          页面骨架 + 所有 UI 层
+index.html          页面骨架 + 所有 UI 层（开发用，分别加载下面的 js）
+build.js            打包脚本 → dist/ 单文件
+dist/
+  standalone.html   自包含单文件，双击即开 / 可直接托管
+  artifact.html     同上，但去掉了 doctype/html/head/body，供嵌入式页面使用
 css/style.css       移动端优先样式，含安全区适配
 js/
   save.js           localStorage 存档（金币、永久强化、设置）
