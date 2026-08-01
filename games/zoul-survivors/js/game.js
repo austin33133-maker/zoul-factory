@@ -1401,10 +1401,26 @@
         SFX.ui();
       });
     });
+    // 两段式确认，不用 confirm()：
+    // 内嵌页面（Artifact / iframe / WebView）里原生弹窗会被静默拦掉，
+    // 按钮点了没反应，玩家只会以为游戏坏了。
+    var resetArm = 0;
     $('btnResetSave').addEventListener('click', function () {
-      if (confirm('确定清除全部存档？金币与永久强化都会消失。')) {
-        Save.reset(); UI.refreshMenu(); UI.refreshSettings();
+      var btn = $('btnResetSave');
+      if (Date.now() - resetArm < 4000) {
+        resetArm = 0;
+        Save.reset();
+        UI.refreshMenu(); UI.refreshSettings();
+        btn.textContent = '已清除';
+        setTimeout(function () { btn.textContent = '清除全部存档'; }, 1600);
+        return;
       }
+      resetArm = Date.now();
+      btn.textContent = '再点一次确认清除';
+      SFX.ui();
+      setTimeout(function () {
+        if (resetArm) { resetArm = 0; btn.textContent = '清除全部存档'; }
+      }, 4000);
     });
 
     $('btnPause').addEventListener('click', function () {
