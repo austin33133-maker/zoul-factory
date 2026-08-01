@@ -32,26 +32,38 @@ codex exec --skip-git-repo-check "<task>"
 | Dial | Codex default | Here |
 |---|---|---|
 | Model | plan-dependent | `gpt-5.6-sol` — flagship |
-| Reasoning effort | `medium` | `xhigh` — deepest the CLI exposes |
-| Plan-mode reasoning | `medium` | `xhigh` |
+| Reasoning effort | `low` on sol | `ultra` — top of the ladder |
+| Plan-mode reasoning | `medium` | `ultra` |
 | Web search | `cached` | `live` |
 | Sandbox | `read-only` | `workspace-write` |
 | Sandbox network | off | on |
 | Approvals | `untrusted` | `never` — fully headless |
-| Context before compaction | default | 400k tokens |
 | Cross-session memory | off | on |
 | Sub-agent orchestration | v1 | v2 |
+
+The reasoning ladder is `low` < `medium` < `high` < `xhigh` < `max` < `ultra`.
+Published docs stop at `xhigh`; `codex debug models` does not. `ultra` is
+"maximum reasoning with automatic task delegation" and needs `sol` or `terra`.
+Note that `sol`'s own default is `low`, so picking the flagship without setting
+effort gives you the flagship at its shallowest.
 
 `workspace-write` is deliberately the ceiling: it is the strongest sandbox that is
 still a sandbox. Removing it entirely (`--dangerously-bypass-approvals-and-sandbox`)
 is documented in the skill, but is not the default and is not a good idea outside a
 disposable container.
 
+**Know what the sandbox does not do.** Verified with `codex sandbox`: it blocks
+writes outside the workspace, but reads are unrestricted — `/root`, SSH keys,
+`.env` files and neighbouring repos are all readable. Combined with network access
+(on by default here), assume anything on the disk can be read and can leave. Good
+trade in a disposable container; reconsider on a laptop holding production
+credentials.
+
 Two profiles ship alongside it:
 
 ```bash
 codex exec -p fast  "<task>"   # gpt-5.6-luna, low effort — bulk work
-codex exec -p audit "<task>"   # gpt-5.6-sol, xhigh, read-only — review with no write authority
+codex exec -p audit "<task>"   # gpt-5.6-sol, max, read-only — review with no write authority
 ```
 
 ## Layout
@@ -71,17 +83,27 @@ AGENTS.md                   repo instructions for coding agents
 
 ## Verification
 
-Every flag, config key, and feature flag in this repo was checked against
-**codex-cli 0.146.0** by running the binary, not by reading documentation — the
-published docs were wrong about at least three of them (`tools.view_image` is
-removed, `tools.web_search = "live"` as a bare string is rejected, and
-`experimental_instructions_file` is now `model_instructions_file`).
+Every flag, config key, model, and feature flag in this repo was checked against
+**codex-cli 0.146.0** by running the binary, not by reading documentation. The
+published docs were wrong about five things:
+
+- the reasoning ceiling — `max` and `ultra` exist above `xhigh`
+- `tools.view_image` — removed
+- `tools.web_search = "live"` as a bare string — rejected
+- `experimental_instructions_file` — now `model_instructions_file`
+- skill discovery — `$CODEX_HOME/skills` is a scanned root and is undocumented
+
+Skill discovery was established by planting probe skills in each candidate root
+and reading `codex debug prompt-input` back; sandbox limits by running commands
+under `codex sandbox`.
 
 Codex moves fast. After `codex update`, re-check:
 
 ```bash
 codex exec --strict-config --skip-git-repo-check < /dev/null   # config still parses?
 codex features list                                            # what's new / newly stable?
+codex debug models                                             # models, reasoning levels, windows
+codex debug prompt-input "x"                                   # what the model actually receives
 ```
 
 `reference/` marks each entry *verified* (exercised against the binary) or

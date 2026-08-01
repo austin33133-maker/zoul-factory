@@ -2,7 +2,9 @@
 # Max reasoning, zero write authority. Use for code review, security review, and
 # "give me a second opinion" runs where Codex must not touch the working tree.
 model = "gpt-5.6-sol"
-model_reasoning_effort = "xhigh"
+# "max" rather than "ultra": deepest single-agent reasoning, without ultra's
+# automatic task delegation — a review should be one coherent pass.
+model_reasoning_effort = "max"
 model_verbosity = "high"
 sandbox_mode = "read-only"
 approval_policy = "never"

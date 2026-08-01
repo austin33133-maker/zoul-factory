@@ -15,9 +15,9 @@ config reference and are not yet exercised here.
 
 | Key | Values | Status |
 |---|---|---|
-| `model` | `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.5`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.3-codex-spark` | verified |
-| `model_reasoning_effort` | `minimal` \| `low` \| `medium` \| `high` \| `xhigh` | verified (`xhigh`) |
-| `plan_mode_reasoning_effort` | `none` \| `minimal` \| `low` \| `medium` \| `high` \| `xhigh` | verified |
+| `model` | see catalog table below | verified |
+| `model_reasoning_effort` | `low` \| `medium` \| `high` \| `xhigh` \| `max` \| `ultra` | verified (`xhigh`, `max`, `ultra`) |
+| `plan_mode_reasoning_effort` | same ladder | verified (`ultra`) |
 | `model_reasoning_summary` | `auto` \| `concise` \| `detailed` \| `none` | verified |
 | `model_verbosity` | `low` \| `medium` \| `high` | verified |
 | `model_context_window` | integer | verified |
@@ -28,8 +28,37 @@ config reference and are not yet exercised here.
 | `model_supports_reasoning_summaries` | bool | documented |
 | `model_catalog_json` | path | documented |
 
-`xhigh` is the deepest level the CLI exposes. `gpt-5.6-luna` and `gpt-5.4-mini` do
-not support it — the run header shows the effort actually applied.
+### Model catalog
+
+Straight from `codex debug models` on 0.146.0. Every model has a **272,000**-token
+context window at 95% effective, `text` + `image` input, parallel tool calls, and
+search support.
+
+| Slug | Default effort | Reasoning levels | Multi-agent | Listed |
+|---|---|---|---|---|
+| `gpt-5.6-sol` | `low` | low→**ultra** | v2 | yes |
+| `gpt-5.6-terra` | `medium` | low→**ultra** | v2 | yes |
+| `gpt-5.6-luna` | `medium` | low→`max` | v1 | yes |
+| `gpt-5.5` | `medium` | low→`xhigh` | — | yes |
+| `gpt-5.2` | `medium` | low→`xhigh` | — | yes |
+| `gpt-5.4`, `gpt-5.4-mini` | `medium` | low→`xhigh` | — | hidden |
+| `codex-auto-review` | `medium` | low→`xhigh` | — | hidden |
+
+Ladder: `low` < `medium` < `high` < `xhigh` < `max` < `ultra`. Published docs stop
+at `xhigh` and label it "Extra High"; the catalog and the run header both accept
+and report `max` and `ultra`. Catalog descriptions: `max` = "Maximum reasoning
+depth for the hardest problems", `ultra` = "Maximum reasoning with automatic task
+delegation".
+
+`minimal` appears in published docs but not in any model's
+`supported_reasoning_levels` on this build.
+
+Two traps the catalog exposes:
+
+- **sol defaults to `low` effort.** Selecting the flagship without setting effort
+  gives you the flagship at its shallowest.
+- **`model_auto_compact_token_limit` above 272000 is accepted and not clamped.**
+  Auto-compaction then never fires and long runs hit a hard context overflow.
 
 Removed in 0.146.0: **`experimental_instructions_file`** → use `model_instructions_file`.
 
@@ -92,6 +121,17 @@ Stable and already on: `multi_agent`, `shell_tool`, `unified_exec`, `skill_searc
 
 Experimental, off: `network_proxy`, `prevent_idle_sleep`. Leave `under development`
 flags alone for real work.
+
+Feature values are booleans, except a few that also accept a table of options —
+verified: `features.network_proxy` takes sub-keys (`enable_socks5`, …), while
+`features.multi_agent` is boolean-only (`invalid type: map, expected a boolean`).
+
+## Hooks
+
+`[hooks]` is a valid config table on 0.146.0 (the `hooks` feature is stable and on).
+Sub-key surface not yet mapped here. Related flags: `--dangerously-bypass-hook-trust`
+to run hooks without persisted trust, and `--ignore-rules` to skip user/project
+execpolicy `.rules` files.
 
 ## MCP servers
 

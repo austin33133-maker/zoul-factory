@@ -32,7 +32,15 @@ codex --version
 codex exec --help
 codex features list
 codex exec --strict-config --skip-git-repo-check < /dev/null   # validates config.toml
+codex debug models                    # models, reasoning levels, context windows
+codex debug prompt-input "x"          # exact model-visible context
+codex sandbox -- <cmd>                # real sandbox behaviour
 ```
+
+The last three need no auth and cost nothing. `codex debug models` is the
+authority on reasoning levels — the published docs stop at `xhigh` and are wrong;
+`max` and `ultra` exist. `codex debug prompt-input` is how to prove a skill,
+an `AGENTS.md`, or a setting actually reached the model.
 
 `--strict-config` reports unknown fields with file, line, and column. It is the
 authority for anything in `assets/*.toml`.

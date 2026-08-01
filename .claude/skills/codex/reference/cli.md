@@ -17,8 +17,11 @@ Verified against `codex-cli 0.146.0` by reading `--help` on the installed binary
 | `codex mcp` | manage MCP servers |
 | `codex plugin` | `add`, `list`, `remove`, `marketplace` |
 | `codex features` | `list`, `enable`, `disable` |
-| `codex doctor` | diagnose install, config, auth, runtime |
+| `codex doctor` | diagnose install, config, auth, runtime (`--json`, `--summary`) |
 | `codex sandbox` | run a command inside Codex's sandbox |
+| `codex debug models` | raw model catalog as JSON — the authority on reasoning levels and context windows |
+| `codex debug prompt-input [PROMPT]` | the exact model-visible context as JSON: skills list, sub-agent block, permissions block, AGENTS.md |
+| `codex debug app-server` | app-server debugging |
 | `codex update` | self-update |
 | `codex archive` / `unarchive` / `delete` | manage saved sessions |
 | `codex mcp-server` | run Codex itself as an MCP server (stdio) |
@@ -105,7 +108,32 @@ codex doctor                 # config/auth/runtime health
 codex exec --strict-config --skip-git-repo-check < /dev/null
 ```
 
+Add the two zero-cost introspection commands — neither needs auth:
+
+```bash
+codex debug models                 # reasoning levels, context windows, modalities
+codex debug prompt-input "x"       # what the model actually receives
+```
+
 The installed binary is the authority — it validates config with file/line/column
 errors and prints the effective model, effort, approval policy, sandbox, and
 network state in every run header. Prefer it over any documentation, including this
-file.
+file. Published docs were already wrong about the reasoning ceiling (`xhigh` is not
+the top; `max` and `ultra` exist) and about `tools.view_image` and
+`tools.web_search`.
+
+## Sandbox behaviour
+
+Verified with `codex sandbox` under `workspace-write`:
+
+| Operation | Result |
+|---|---|
+| write inside workspace root | allowed |
+| write `/tmp` | allowed |
+| write outside (`/root`) | blocked, `Read-only file system` |
+| **read outside (`/root`)** | **allowed** |
+| network with `network_access=false` | blocked (curl exit, no response) |
+| network with `network_access=true` | reaches the network |
+
+The sandbox is a write boundary, not a read boundary. Everything on the disk is
+readable by the model regardless of sandbox mode.

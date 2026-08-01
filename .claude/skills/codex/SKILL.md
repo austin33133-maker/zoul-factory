@@ -1,6 +1,6 @@
 ---
 name: codex
-description: Delegate coding work to the OpenAI Codex CLI at maximum capability — flagship model, xhigh reasoning, live web search, network-enabled sandbox, full autonomy. Use when the user asks to run/use Codex, wants a second opinion from another model, wants a deep independent code or security review, or wants a long autonomous task farmed out. Also use when setting up, configuring, or tuning Codex itself (config.toml, profiles, feature flags, skills, MCP servers). Do not use for ordinary edits you can make directly.
+description: Delegate coding work to the OpenAI Codex CLI at maximum capability — flagship model, ultra reasoning, live web search, network-enabled sandbox, full autonomy. Use when the user asks to run/use Codex, wants a second opinion from another model, wants a deep independent code or security review, or wants a long autonomous task farmed out. Also use when setting up, configuring, or tuning Codex itself (config.toml, profiles, feature flags, skills, MCP servers). Do not use for ordinary edits you can make directly.
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 ---
 
@@ -40,7 +40,7 @@ on the machine:
 ```bash
 codex exec \
   -m gpt-5.6-sol \
-  -c model_reasoning_effort='"xhigh"' \
+  -c model_reasoning_effort='"ultra"' \
   -c web_search='"live"' \
   -c sandbox_workspace_write.network_access=true \
   --enable memories --enable multi_agent_v2 \
@@ -57,19 +57,35 @@ Booleans and numbers do not: `-c key=true`.
 | Dial | Weak default | Max | How to set |
 |---|---|---|---|
 | Model | plan-dependent | `gpt-5.6-sol` (flagship) | `-m` / `model` |
-| Reasoning | `medium` | `xhigh` | `-c model_reasoning_effort='"xhigh"'` |
-| Plan-mode reasoning | `medium` | `xhigh` | `plan_mode_reasoning_effort` |
+| Reasoning | `low` on sol | `ultra` | `-c model_reasoning_effort='"ultra"'` |
+| Plan-mode reasoning | `medium` | `ultra` | `plan_mode_reasoning_effort` |
 | Web search | `cached` | `live` | `web_search` (see note) |
 | Sandbox | `read-only` | `workspace-write` | `-s workspace-write` |
 | Sandbox network | off | on | `sandbox_workspace_write.network_access=true` |
 | Approvals | `untrusted` | `never` | `-a never` |
-| Context before compaction | default | 400k | `model_auto_compact_token_limit` |
 | Cross-session memory | off | on | `--enable memories` |
 | Sub-agents | v1 | v2 | `--enable multi_agent_v2` |
 
+**Reasoning ladder** (from `codex debug models`, the authoritative catalog):
+
+`low` < `medium` < `high` < `xhigh` < `max` < `ultra`
+
+`xhigh` is *not* the top — published docs stop there, the catalog does not. `max`
+is the deepest single-agent level; `ultra` is "maximum reasoning with automatic
+task delegation". `ultra` needs `gpt-5.6-sol` or `gpt-5.6-terra`; `luna` supports
+up to `max`; `gpt-5.5` and older stop at `xhigh`.
+
+Note sol's **default effort is `low`** — running it without setting effort is
+nowhere near max power, and the run header is the only place that tells you.
+
 Model tiers: `gpt-5.6-sol` (deepest) > `gpt-5.6-terra` (balanced) > `gpt-5.6-luna`
-(fast/cheap). `luna` and the `*-mini` models do **not** support `xhigh` — pairing
-them silently costs you the depth you asked for.
+(fast/cheap). All three share a **272,000-token context window** (95% effective).
+
+Do not set `model_auto_compact_token_limit` above 272000. Codex accepts a larger
+value silently without clamping, and a limit above the window means auto-compaction
+never fires — a long run dies on context overflow instead of compacting.
+
+Check the full matrix any time: `codex debug models | python3 -m json.tool`.
 
 **Web search note:** the `--search` flag is interactive-only. `codex exec` has no
 `--search`, so headless runs get live search *only* from the `web_search = "live"`
@@ -176,7 +192,25 @@ Pick the weakest rung that does the job.
 1. `-s read-only` — analysis, review, answering questions.
 2. `-s workspace-write` + `network_access=true` — **the default here.** Full write
    access inside the workspace, `/tmp`, and `$TMPDIR`; network on for installs and
-   API calls. Everything else on the filesystem is protected.
+   API calls. Writes anywhere else are refused.
+
+   **The sandbox constrains writes, not reads.** Verified with `codex sandbox`:
+   a write to `/root` is blocked, but reading `/root` succeeds. Nothing on the
+   filesystem is hidden from the model — SSH keys, `.env` files, cloud
+   credentials, other repos are all readable. With `network_access = true` the
+   run can also reach the internet, so treat "workspace-write + network" as
+   *everything on this disk is readable and could leave it*. That is the right
+   trade for a disposable container or a machine whose secrets you accept the
+   model seeing; it is the wrong default for a laptop holding production
+   credentials. Turn network off for untrusted work:
+   `-c sandbox_workspace_write.network_access=false`.
+
+   You can verify the boundary yourself without spending a token:
+
+   ```bash
+   codex sandbox -c sandbox_mode='"workspace-write"' -- \
+     bash -c 'touch ./x && echo in-ok; touch /root/x || echo out-blocked'
+   ```
 3. `--dangerously-bypass-approvals-and-sandbox` (alias `--yolo`) — no sandbox, no
    approvals, writes anywhere the user can. This is *more* than max power; it is
    removing the safety rail. Only in a disposable container or CI box that is
@@ -189,12 +223,23 @@ anything with irreversible side effects (deploys, migrations, force pushes).
 
 ## Codex's own skills
 
-Codex loads Agent Skills (`SKILL.md`) from, in scope order:
+Codex loads Agent Skills (`SKILL.md`) from these roots — all five confirmed by
+planting probe skills and reading them back out of `codex debug prompt-input`:
 
+- `$CODEX_HOME/skills` — where the 5 built-in system skills live (`imagegen`,
+  `openai-docs`, `plugin-creator`, `skill-creator`, `skill-installer`, under
+  `.system/`) and where `skill-installer` puts new ones. **Recurses**, so
+  `$CODEX_HOME/skills/<group>/<skill>/SKILL.md` is found too.
 - `$CWD/.agents/skills`
 - `$REPO_ROOT/.agents/skills`
-- `$HOME/.agents/skills`
+- `$HOME/.agents/skills` — note `$HOME`, which is not `$CODEX_HOME`
 - `/etc/codex/skills`
+
+The `.agents/skills` scan walks **from the cwd upward** to the repo root. A
+`sub/.agents/skills` directory *below* your cwd is not picked up — verified.
+
+Symlinked skill directories resolve correctly; the locator reported to the model
+is the real path, not the link.
 
 Frontmatter keys accepted by 0.146.0: `name`, `description` (both required and
 non-empty), plus optional `allowed-tools`, `model`, `version`, `license`,
@@ -205,6 +250,25 @@ explicitly, `/learn` to install from agentskill.sh.
 Keep `skill_search` enabled (it is in the shipped config) so Codex finds skills by
 search rather than only by frontmatter matching — it matters once you have more
 than a handful.
+
+## Inspecting what Codex can actually do
+
+These need no auth and no tokens, and they beat any documentation:
+
+```bash
+codex debug models                 # full model catalog: reasoning levels,
+                                   # context windows, modalities, tool modes
+codex debug prompt-input "x"       # the exact context the model receives:
+                                   # skills list, sub-agent instructions,
+                                   # permissions block, AGENTS.md injection
+codex sandbox -- <cmd>             # run a command under the real sandbox
+codex features list                # every feature flag, stage, effective state
+codex doctor --json                # machine-readable health report
+```
+
+`codex debug prompt-input` is the fastest way to answer "did Codex actually pick
+up my skill / my AGENTS.md / this setting" — the answer is literally in the
+payload. It is how every skill-discovery claim in this document was established.
 
 ## Extending reach
 
@@ -235,7 +299,9 @@ applies to every Codex run without any flags.
 | A top-level key silently reparented under a table | TOML: every top-level scalar must appear **before** the first `[table]`. |
 | `unknown configuration field tools.view_image` | Removed in 0.146.0. |
 | `experimental_instructions_file` rejected | Renamed to `model_instructions_file`. |
-| Runs feel shallow despite `xhigh` | Model does not support `xhigh` (`luna`, `*-mini`). Check the run header — it prints the effective model and effort. |
+| Runs feel shallow despite `xhigh` | `xhigh` is two rungs below the top. Use `max`, or `ultra` on sol/terra. Check the run header for the effective effort. |
+| Long run dies on context overflow | `model_auto_compact_token_limit` set above the 272k window, so compaction never fired. |
+| Sub-agents never spawn | `ultra` effort or `multi_agent_v2` not enabled; confirm with `codex debug prompt-input`, which shows the sub-agent instruction block when active. |
 | Codex cannot reach the network | `sandbox_workspace_write.network_access = true` missing. |
 | Stale answers about libraries/APIs | `web_search` still `cached`; `--search` does not exist on `exec`. |
 | `--strict-config is not supported for codex features` | Use `codex exec --strict-config` to validate instead. |

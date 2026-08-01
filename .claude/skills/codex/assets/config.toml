@@ -10,11 +10,14 @@
 # Swap to gpt-5.6-terra (balanced) or gpt-5.6-luna (fast/cheap) if quota is tight.
 model = "gpt-5.6-sol"
 
-# xhigh ("Extra High") is the deepest reasoning level the CLI exposes.
-model_reasoning_effort = "xhigh"
+# Ceiling per `codex debug models`: low < medium < high < xhigh < max < ultra.
+# ultra = "Maximum reasoning with automatic task delegation" (sol/terra only).
+# Use "max" instead for the deepest single-agent run without auto-delegation.
+# NOTE: sol's *default* is "low" — leaving this unset is very far from max.
+model_reasoning_effort = "ultra"
 
 # Keep plan mode just as deep as execution mode.
-plan_mode_reasoning_effort = "xhigh"
+plan_mode_reasoning_effort = "ultra"
 
 # Full reasoning summaries — the point of a high-effort run is seeing the thinking.
 model_reasoning_summary = "detailed"
@@ -23,8 +26,12 @@ hide_agent_reasoning = false
 # Prose length of the final answer. Independent of reasoning depth.
 model_verbosity = "medium"
 
-# Raise the auto-compact trigger so long agentic runs keep more context in-window.
-model_auto_compact_token_limit = 400000
+# model_auto_compact_token_limit is deliberately NOT set.
+# Every current model has a 272000-token context window (95% effective) — see
+# `codex debug models`. Codex accepts a larger value silently and does not clamp
+# it, and a limit above the window means auto-compaction never fires: a long run
+# hits a hard context overflow instead of compacting. If you tune this, keep it
+# comfortably below 272000.
 
 # ---------------------------------------------------------------- autonomy
 # "never" = fully non-interactive; failures are returned to the model to solve.
