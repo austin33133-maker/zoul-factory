@@ -1,0 +1,69 @@
+name: Update Intel Hub
+
+on:
+  schedule:
+    - cron: "0 * * * *"      # 每小时整点抓取(UTC)
+  workflow_dispatch: {}        # 支持手动触发
+
+# Pages 部署所需权限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 避免两次运行同时部署;不取消进行中的部署
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      # 恢复 72h 滚动归档(用于生成"今日摘要");首次运行无缓存不影响
+      - name: Restore archive cache
+        uses: actions/cache/restore@v4
+        with:
+          path: data/archive.jsonl
+          key: intel-archive-${{ github.run_id }}
+          restore-keys: |
+            intel-archive-
+
+      - name: Fetch & build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # 提高 GitHub API 配额
+        run: python scripts/fetch.py
+
+      # 保存更新后的归档(key 带 run_id 保证每次写入新缓存)
+      - name: Save archive cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data/archive.jsonl
+          key: intel-archive-${{ github.run_id }}
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

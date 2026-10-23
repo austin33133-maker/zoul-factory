@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>情报站 · Intel Hub</title>
+<style>
+  :root {
+    --bg: #0b0e14; --panel: #141a24; --panel2: #1b2330;
+    --text: #e6edf3; --muted: #8b98a9; --line: #232c3a;
+    --accent: #4da3ff; --event: #ff5a5f; --tech: #3fb950;
+    --ai: #a371f7; --news: #d29922;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+          "Microsoft YaHei", Roboto, Helvetica, Arial, sans-serif;
+  }
+  header {
+    position: sticky; top: 0; z-index: 10; background: rgba(11,14,20,.92);
+    backdrop-filter: blur(8px); border-bottom: 1px solid var(--line);
+    padding: 14px 16px;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  h1 .dot { color: var(--event); }
+  .sub { color: var(--muted); font-size: 12px; }
+  .tabs { display: flex; gap: 8px; margin-top: 12px; }
+  .tab {
+    cursor: pointer; padding: 6px 14px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--muted); font-size: 13px;
+    background: var(--panel); user-select: none;
+  }
+  .tab.active { color: #fff; border-color: var(--accent); background: var(--panel2); }
+  .controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  input[type=search] {
+    flex: 1; min-width: 160px; background: var(--panel); border: 1px solid var(--line);
+    color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 14px;
+  }
+  select {
+    background: var(--panel); border: 1px solid var(--line); color: var(--text);
+    border-radius: 8px; padding: 8px 10px; font-size: 14px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 8px 16px 60px; }
+  .card {
+    display: block; text-decoration: none; color: inherit;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px; margin: 10px 0; transition: border-color .15s, transform .05s;
+  }
+  .card:hover { border-color: var(--accent); }
+  .card:active { transform: scale(.998); }
+  .card.event { border-left: 3px solid var(--event); }
+  .rank { color: var(--muted); font-variant-numeric: tabular-nums; margin-right: 8px; }
+  .title { font-size: 15.5px; font-weight: 600; }
+  .meta { margin-top: 7px; font-size: 12px; color: var(--muted);
+          display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .badge {
+    display: inline-block; padding: 1px 7px; border-radius: 6px; font-size: 11px;
+    border: 1px solid var(--line);
+  }
+  .badge.event { color: #fff; background: var(--event); border-color: var(--event); }
+  .badge.tech { color: var(--tech); border-color: #1f4a2a; }
+  .badge.ai { color: var(--ai); border-color: #3b2a63; }
+  .badge.news { color: var(--news); border-color: #5a4512; }
+  .badge.kw { color: var(--accent); border-color: #1d4266; }
+  .srcs { color: var(--muted); }
+  .hot { color: var(--event); font-weight: 600; }
+  .discuss { color: var(--accent); }
+  .empty { text-align: center; color: var(--muted); padding: 40px 0; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 20px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1><span class="dot">●</span> 情报站 <span style="color:var(--muted);font-weight:400;font-size:13px">Intel Hub</span></h1>
+    <div class="sub" id="sub">加载中…</div>
+    <div class="tabs">
+      <div class="tab active" data-view="latest">实时热榜</div>
+      <div class="tab" data-view="digest">今日摘要</div>
+    </div>
+    <div class="controls">
+      <input type="search" id="q" placeholder="搜索标题 / 关键词…" />
+      <select id="filter">
+        <option value="">全部来源</option>
+        <option value="event">🔥 仅热门事件(跨源)</option>
+        <option value="tech">科技</option>
+        <option value="ai">AI</option>
+        <option value="news">新闻</option>
+      </select>
+    </div>
+  </div>
+</header>
+
+<main id="list"><div class="empty">加载中…</div></main>
+<footer>
+  数据每小时自动更新 · 由 GitHub Actions 驱动 ·
+  <a href="https://github.com/" id="repo-link">源码</a>
+</footer>
+
+<script>
+const state = { view: "latest", data: { latest: [], digest: [] }, meta: {} };
+
+function timeAgo(iso) {
+  if (!iso) return "";
+  const d = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (d < 60) return "刚刚";
+  if (d < 3600) return Math.floor(d / 60) + " 分钟前";
+  if (d < 86400) return Math.floor(d / 3600) + " 小时前";
+  return Math.floor(d / 86400) + " 天前";
+}
+function esc(s) {
+  return (s || "").replace(/[&<>"]/g, c => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+function render() {
+  const list = document.getElementById("list");
+  const q = document.getElementById("q").value.trim().toLowerCase();
+  const f = document.getElementById("filter").value;
+  let items = state.data[state.view] || [];
+
+  if (f === "event") items = items.filter(i => i.is_event);
+  else if (f) items = items.filter(i => i.source_type === f);
+  if (q) items = items.filter(i =>
+    (i.title || "").toLowerCase().includes(q) ||
+    (i.sources || []).join(" ").toLowerCase().includes(q) ||
+    (i.keywords || []).join(" ").toLowerCase().includes(q));
+
+  if (!items.length) {
+    list.innerHTML = '<div class="empty">暂无数据(可能首次抓取尚未完成,或该筛选无结果)</div>';
+    return;
+  }
+
+  list.innerHTML = items.map((i, idx) => {
+    const type = ["tech", "ai", "news"].includes(i.source_type) ? i.source_type : "news";
+    const typeLabel = { tech: "科技", ai: "AI", news: "新闻" }[type];
+    const srcs = (i.sources || [i.source]).slice(0, 4).join(" · ");
+    const kw = (i.keywords || []).map(k =>
+      `<span class="badge kw">${esc(k)}</span>`).join(" ");
+    const eventBadge = i.is_event
+      ? `<span class="badge event">🔥 ${i.source_count} 源共振</span>` : "";
+    const native = i.native_label ? `<span class="hot">${esc(i.native_label)}</span>` : "";
+    const stats = [];
+    if (i.score) stats.push("▲ " + i.score);
+    if (i.comments) stats.push("💬 " + i.comments);
+    const discuss = i.discuss && i.discuss !== i.url
+      ? ` · <a class="discuss" href="${esc(i.discuss)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">讨论</a>` : "";
+
+    return `<a class="card ${i.is_event ? "event" : ""}" href="${esc(i.url)}" target="_blank" rel="noopener">
+      <div class="title"><span class="rank">${idx + 1}.</span>${esc(i.title)}</div>
+      <div class="meta">
+        ${eventBadge}
+        <span class="badge ${type}">${typeLabel}</span>
+        ${kw}
+        ${native}
+        <span class="srcs">${esc(srcs)}</span>
+        ${stats.length ? "· " + stats.join(" ") : ""}
+        · ${timeAgo(i.published)}${discuss}
+      </div>
+    </a>`;
+  }).join("");
+}
+
+async function load() {
+  try {
+    const bust = "?t=" + Math.floor(Date.now() / 60000);
+    const [l, d] = await Promise.all([
+      fetch("data/latest.json" + bust).then(r => r.json()),
+      fetch("data/digest.json" + bust).then(r => r.json()),
+    ]);
+    state.data.latest = l.items || [];
+    state.data.digest = d.items || [];
+    state.meta = l.meta || {};
+    if (state.meta.title) document.title = state.meta.title;
+    const gen = state.meta.generated_at ? timeAgo(state.meta.generated_at) : "";
+    document.getElementById("sub").textContent =
+      `共 ${state.data.latest.length} 条热榜 · 摘要 ${state.data.digest.length} 条 · 更新于 ${gen}`;
+  } catch (e) {
+    document.getElementById("sub").textContent = "数据加载失败,请稍后刷新";
+  }
+  render();
+}
+
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
+  document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+  t.classList.add("active");
+  state.view = t.dataset.view;
+  render();
+});
+document.getElementById("q").oninput = render;
+document.getElementById("filter").onchange = render;
+
+load();
+setInterval(load, 10 * 60 * 1000); // 每 10 分钟自动刷新
+</script>
+</body>
+</html>

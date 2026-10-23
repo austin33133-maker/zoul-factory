@@ -1,0 +1,6 @@
+# 生成产物(由 Actions 构建并直接部署到 Pages,无需入库)
+/public/
+# 滚动归档(由 Actions cache 持久化,不入 git 历史)
+/data/
+__pycache__/
+*.pyc
