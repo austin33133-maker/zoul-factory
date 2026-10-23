@@ -1,0 +1,94 @@
+{
+    // dry_run=true 表示模拟盘（纸上交易），不花真钱、不需要 API key。
+    // 想真实交易再改成 false，并在 .env 或下面 exchange 里填密钥。
+    "dry_run": true,
+    "dry_run_wallet": 1000,
+
+    "max_open_trades": 3,
+    "stake_currency": "USDT",
+    "stake_amount": 100,
+    "tradable_balance_ratio": 0.99,
+    "fiat_display_currency": "USD",
+    "timeframe": "5m",
+
+    "cancel_open_orders_on_exit": false,
+    "trading_mode": "spot",
+    "margin_mode": "",
+
+    "unfilledtimeout": {
+        "entry": 10,
+        "exit": 10,
+        "exit_timeout_count": 0,
+        "unit": "minutes"
+    },
+
+    "entry_pricing": {
+        "price_side": "same",
+        "use_order_book": true,
+        "order_book_top": 1,
+        "price_last_balance": 0.0,
+        "check_depth_of_market": {
+            "enabled": false,
+            "bids_to_ask_delta": 1
+        }
+    },
+
+    "exit_pricing": {
+        "price_side": "same",
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+
+    "exchange": {
+        // name 换成你用的交易所：binance / okx / bybit / gate 等。
+        // dry-run 下 key/secret 留空也能跑（只读公开行情）。
+        "name": "binance",
+        "key": "",
+        "secret": "",
+        "ccxt_config": {},
+        "ccxt_async_config": {},
+        "pair_whitelist": [
+            "BTC/USDT",
+            "ETH/USDT",
+            "SOL/USDT",
+            "BNB/USDT"
+        ],
+        "pair_blacklist": [
+            ".*(UP|DOWN|BULL|BEAR)/.*",
+            ".*(3L|3S|5L|5S)/.*"
+        ]
+    },
+
+    "pairlists": [
+        {"method": "StaticPairList"}
+    ],
+
+    // 想用 Telegram 远程查看/控制再打开，填你自己的 bot token 和 chat_id。
+    "telegram": {
+        "enabled": false,
+        "token": "",
+        "chat_id": ""
+    },
+
+    // 网页看盘用。username/password/jwt 一定要改掉默认值，别暴露在公网。
+    "api_server": {
+        "enabled": true,
+        "listen_ip_address": "0.0.0.0",
+        "listen_port": 8080,
+        "verbosity": "error",
+        "enable_openapi": false,
+        "jwt_secret_key": "CHANGE_ME_to_a_random_long_string",
+        "ws_token": "CHANGE_ME_too",
+        "CORS_origins": [],
+        "username": "freqtrader",
+        "password": "CHANGE_ME_password"
+    },
+
+    "bot_name": "zoul-bot",
+    "initial_state": "running",
+    "force_entry_enable": false,
+
+    "internals": {
+        "process_throttle_secs": 5
+    }
+}

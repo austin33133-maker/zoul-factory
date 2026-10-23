@@ -1,0 +1,21 @@
+services:
+  freqtrade:
+    image: freqtradeorg/freqtrade:stable
+    container_name: freqtrade
+    restart: unless-stopped
+    volumes:
+      - "./user_data:/freqtrade/user_data"
+    # Web UI / REST API 端口（可选，想用网页看盘再开）
+    ports:
+      - "127.0.0.1:8080:8080"
+    # env_file 里放交易所 API key（真实交易时才需要），dry-run 不需要。
+    # required: false 表示没有 .env 也能启动（模拟盘场景）。
+    env_file:
+      - path: .env
+        required: false
+    command: >
+      trade
+      --logfile /freqtrade/user_data/logs/freqtrade.log
+      --db-url sqlite:////freqtrade/user_data/tradesv3.sqlite
+      --config /freqtrade/user_data/config.json
+      --strategy SampleStrategy
