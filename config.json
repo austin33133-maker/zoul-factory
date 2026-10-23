@@ -1,0 +1,60 @@
+{
+  "_comment": "情报站配置。改这里即可增删源，无需改代码。改完提交推送，下次定时任务生效。",
+
+  "site_title": "情报站 · Intel Hub",
+
+  "keywords_highlight": [
+    "AI", "OpenAI", "Anthropic", "Claude", "GPT", "LLM", "Gemini",
+    "大模型", "英伟达", "Nvidia", "芯片", "开源", "黑客", "漏洞",
+    "融资", "收购", "IPO", "发布"
+  ],
+
+  "hacker_news": {
+    "enabled": true,
+    "limit": 30
+  },
+
+  "github": {
+    "enabled": true,
+    "days": 14,
+    "per_query": 10,
+    "languages": ["", "python", "typescript", "rust", "go"]
+  },
+
+  "_reddit_note": "Reddit 现封数据中心 IP(Actions 云 IP 会 403),默认关闭。要开:注册 Reddit App 拿 OAuth,改造 fetch_reddit 走 https://oauth.reddit.com,再把 enabled 设为 true。",
+  "reddit": {
+    "enabled": false,
+    "window": "day",
+    "limit": 12,
+    "subreddits": [
+      "technology",
+      "programming",
+      "artificial",
+      "MachineLearning",
+      "LocalLLaMA",
+      "worldnews",
+      "news"
+    ]
+  },
+
+  "rss": [
+    { "name": "Hacker News Best", "type": "tech", "url": "https://hnrss.org/best" },
+    { "name": "The Verge",        "type": "tech", "url": "https://www.theverge.com/rss/index.xml" },
+    { "name": "Ars Technica",     "type": "tech", "url": "https://feeds.arstechnica.com/arstechnica/index" },
+    { "name": "TechCrunch",       "type": "tech", "url": "https://techcrunch.com/feed/" },
+    { "name": "MIT Tech Review",  "type": "tech", "url": "https://www.technologyreview.com/feed/" },
+    { "name": "arXiv cs.AI",      "type": "ai",   "url": "http://export.arxiv.org/rss/cs.AI" },
+    { "name": "Hugging Face Blog","type": "ai",   "url": "https://huggingface.co/blog/feed.xml" },
+    { "name": "Google News 科技", "type": "news", "url": "https://news.google.com/rss/search?q=%E7%A7%91%E6%8A%80%20OR%20AI%20when:1d&hl=zh-CN&gl=CN&ceid=CN:zh-Hans" },
+    { "name": "Google News 热点", "type": "news", "url": "https://news.google.com/rss?hl=zh-CN&gl=CN&ceid=CN:zh-Hans" },
+    { "name": "BBC World",        "type": "news", "url": "https://feeds.bbci.co.uk/news/world/rss.xml" },
+    { "name": "Reuters Tech",     "type": "news", "url": "https://www.reutersagency.com/feed/?best-topics=tech&post_type=best" }
+  ],
+
+  "output": {
+    "latest_limit": 90,
+    "digest_limit": 30,
+    "archive_hours": 72,
+    "digest_hours": 24
+  }
+}
