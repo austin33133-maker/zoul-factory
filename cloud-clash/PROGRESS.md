@@ -11,6 +11,8 @@ Rules version 0.1.0. Phases per spec §18: A env+rules · B full greybox+tutoria
 - Per-unit contribution + economy logging + damage attribution. — `sim/battle.gd`, `sim/unit.gd`
 - **Tutorial Level 1 state machine** (T01–T08: summon/merge/upgrade/hero, pause, grants, mini-boss, win/fail/retry). — `sim/tutorial.gd`
 - **Interactive greybox play scene** (board/path/unit/enemy render, drag-to-merge with legal highlight, action buttons, HUD, pause). — `game/play.gd`
+- **Levels 2–5** distinct configs (random-summon / fast+snow / combos / dual-board versus) + PvE runner. — `config/levels.gd`, `sim/level_runner.gd`
+- **Save system** (versioned; settings+deck+progress; first-launch / missing-field / corrupt / incompatible-version safe fallback with backup; progression persists). — `sim/save.gd`
 - Docs with requirement IDs + acceptance traceability. — `docs/`
 
 ## 已运行验证 (run-verified, this session, Godot 4.3 headless)
@@ -20,6 +22,12 @@ Rules version 0.1.0. Phases per spec §18: A env+rules · B full greybox+tutoria
   grant-once; hero-locked-before-T7; forced-placement-only-tutorial; retry-resets; no-skip-to-victory).
 - `res://game/play.tscn --quit-after 600 -- --auto` → **no script errors** across all render paths
   (board/units/enemies/boss/mark/drag-highlight/HUD) driven through the real UI controller.
+- `res://tests/levels.tscn` → **35 passed, 0 failed, exit 0** (levels distinct + prerequisite chain;
+  L2 clears; L3 exercises snow slow; L4 exercises chain/pierce multi; L5 versus resolves;
+  save first-launch/roundtrip/missing-field-repair/corrupt-backup/version-fallback/progression-persist).
+- **Balance note (not a bug):** under the baseline AI+waves, L2 clears but **L3 and L4 end in defeat**
+  (waves currently too hard for the baseline deck/AI). Rules are correct and mechanics fire; these are
+  **tuning items**, recorded per spec §9 — not claimed balanced.
 - Covers §14 rule-correctness list, the §8 damage example (32.292), attribution-sum invariant,
   simultaneous-zero draw, seed/config/command reproducibility. Calibration: path 5.70u, traversal 5.70s.
 - **NOT verified:** on-screen visual appearance / touch feel (needs a device or desktop Godot — not faked here).
@@ -27,9 +35,9 @@ Rules version 0.1.0. Phases per spec §18: A env+rules · B full greybox+tutoria
 ## 待验证 / 待实现 (pending)
 - **On-device visual/touch verification** of the play scene — logic + render paths are smoke-clean
   headless, but appearance and touch feel are unconfirmed (open `game/play.tscn` in Godot on a Mac). (phase B/D)
-- **Tutorial levels 2–5** configs (spec §23) — only Level 1 built. (phase B)
+- **Balance tuning** of L3/L4 waves vs baseline deck (currently AI-defeated). (phase C)
+- **UI for levels 2–5 / map / result / settings pages** — only the L1 play scene exists. (phase D)
 - **Full battle UI polish** (merge preview tier label, enemy spawn telegraph, settings panel, result page). (phase D)
-- **Save / settings / progress**, corrupt-save fallback — not built. (phase B)
 - **Replay runner** (command log → re-sim → first-divergence) — log captured, runner pending. (phase C)
 - **Simulation matrix** (multi-seed, cross-deck, position-swap, strategy comparison report) — pending. (phase C)
 - **6th tower in live deck validation flow**, deck editor — core supports flower; UI pending. (phase C)

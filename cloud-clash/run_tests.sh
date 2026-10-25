@@ -7,5 +7,7 @@ echo "== core rules + determinism =="
 godot --headless --path . res://tests/tests.tscn
 echo "== tutorial level 1 acceptance =="
 godot --headless --path . res://tests/tutorial.tscn
+echo "== levels 2-5 + save acceptance =="
+godot --headless --path . res://tests/levels.tscn
 echo "== play scene render smoke (auto) =="
 godot --headless --path . res://game/play.tscn --quit-after 600 -- --auto >/dev/null 2>&1 && echo "render smoke: no script errors"

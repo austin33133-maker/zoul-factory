@@ -330,6 +330,7 @@ func _fire(u: CCUnit, tdef: Dictionary, cell: int, alive: Array,
 			var dur := CCConfig.secs_to_steps(CCConfig.SNOW_SLOW_DURATION_SEC)
 			alive[main].add_slow(sf, step + dur)
 			u.control_steps += dur
+			_log("slow", {"by": u.uid, "enemy": alive[main].uid, "factor": sf})
 		"splash":
 			var center: Vector2 = alive[main].position()
 			var idxs := CCGeo.splash_targets(center, float(tdef.splash_radius), main,
@@ -344,12 +345,16 @@ func _fire(u: CCUnit, tdef: Dictionary, cell: int, alive: Array,
 			for k in idxs.size():
 				var f := 1.0 if k == 0 else float(tdef.falloff[k - 1])
 				_hit_one(u, alive[idxs[k]], base, tier, lvl, flower, f)
+			if idxs.size() >= 2:
+				_log("chain_multi", {"by": u.uid, "count": idxs.size()})
 		"pierce":
 			var idxs := CCGeo.pierce_targets(CCConfig.cell_center(cell), alive[main].position(),
 				float(tdef.ray_width), positions, uids, int(tdef.max_targets))
 			for k in idxs.size():
 				var f := 1.0 if k == 0 else float(tdef.falloff[k - 1])
 				_hit_one(u, alive[idxs[k]], base, tier, lvl, flower, f)
+			if idxs.size() >= 2:
+				_log("pierce_multi", {"by": u.uid, "count": idxs.size()})
 
 func _hit_one(u: CCUnit, e: CCEnemy, base: float, tier: int, lvl: int,
 		flower: float, factor: float) -> void:

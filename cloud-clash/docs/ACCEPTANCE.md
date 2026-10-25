@@ -53,6 +53,22 @@ Verified by: `godot --headless --path cloud-clash res://tests/tests.tscn` → **
 | completion persists across restart | — | ⬜ save not built (flag set in memory) |
 | manual playtest (affordances, no deadlock) | — | ⬜ needs device/desktop |
 
+## Levels 2–5 + Save acceptance (spec §13, §23) — `tests/levels.tscn` → 35 passed, 0 failed
+
+| Check | Test | Status |
+|-------|------|--------|
+| 5 levels, distinct names + waves, prerequisite chain | `t_levels_distinct` | ✅ |
+| L2 reaches terminal, uses random summons | `t_level2_runs` | ✅ (clears) |
+| L3 reaches terminal, exercises snow slow | `t_level3_teaches_slow` | ✅ (AI defeated — balance TODO) |
+| L4 reaches terminal, exercises chain/pierce multi | `t_level4_teaches_combos` | ✅ (AI defeated — balance TODO) |
+| L5 versus resolves to valid result | `t_level5_versus_resolves` | ✅ |
+| save first-launch default | `t_save_first_launch` | ✅ |
+| save roundtrip | `t_save_roundtrip` | ✅ |
+| missing fields repaired | `t_save_missing_fields_repaired` | ✅ |
+| corrupt → fallback + backup (no silent loss) | `t_save_corrupt_fallback_backup` | ✅ |
+| incompatible version → fallback + backup | `t_save_incompatible_version` | ✅ |
+| progression persists across restart | `t_progression_persists` | ✅ |
+
 ## Spec areas by phase
 
 | Area | Status | Note |
