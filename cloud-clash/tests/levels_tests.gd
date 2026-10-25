@@ -47,13 +47,13 @@ func t_level2_runs() -> void:
 
 func t_level3_teaches_slow() -> void:
 	var r := CCLevel.new(CCLevels.level(3), 202).run()
-	ok(r.cleared or r.defeated, "L3 reaches a terminal state")
+	ok(r.cleared, "L3 cleared by baseline AI (tuned)")
 	ok(r.slow_fired, "L3 exercises snow slow")
 	print("  L3: cleared=%s lives=%d slow=%s step=%d" % [r.cleared, r.lives, r.slow_fired, r.step])
 
 func t_level4_teaches_combos() -> void:
 	var r := CCLevel.new(CCLevels.level(4), 303).run()
-	ok(r.cleared or r.defeated, "L4 reaches a terminal state")
+	ok(r.cleared, "L4 cleared by baseline AI (tuned)")
 	ok(r.chain_multi or r.pierce_multi, "L4 exercises chain/pierce multi-hit")
 	print("  L4: cleared=%s chain=%s pierce=%s step=%d" % [r.cleared, r.chain_multi, r.pierce_multi, r.step])
 

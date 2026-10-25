@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ccanalysistests"]
+
+[ext_resource type="Script" path="res://tests/analysis_tests.gd" id="1_an"]
+
+[node name="AnalysisTests" type="Node"]
+script = ExtResource("1_an")

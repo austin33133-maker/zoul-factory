@@ -31,9 +31,9 @@ static func level(n: int) -> Dictionary:
 			"deck": [&"snow", &"mint", &"popcorn", &"pierce", &"lightning"],
 			"ai": 2,  # MERGE_PRESSURE
 			"waves": [
-				{"type": &"roller", "count": 16, "spacing": 0.35, "lead": 0.0},
-				{"type": &"roller", "count": 20, "spacing": 0.30, "lead": 12.0},
-				{"type": &"windup", "count": 8,  "spacing": 0.6,  "lead": 26.0},
+				{"type": &"roller", "count": 8,  "spacing": 0.6, "lead": 6.0},
+				{"type": &"roller", "count": 10, "spacing": 0.5, "lead": 22.0},
+				{"type": &"windup", "count": 8,  "spacing": 0.6, "lead": 40.0},
 			],
 			"win": "survive",
 		}
@@ -43,9 +43,9 @@ static func level(n: int) -> Dictionary:
 			"deck": [&"lightning", &"pierce", &"flower", &"mint", &"popcorn"],
 			"ai": 2,
 			"waves": [
-				{"type": &"windup", "count": 18, "spacing": 0.25, "lead": 0.0},
-				{"type": &"windup", "count": 18, "spacing": 0.25, "lead": 8.0},
-				{"type": &"heavy",  "count": 4,  "spacing": 1.2,  "lead": 18.0},
+				{"type": &"windup", "count": 10, "spacing": 0.35, "lead": 6.0},
+				{"type": &"windup", "count": 12, "spacing": 0.35, "lead": 22.0},
+				{"type": &"heavy",  "count": 2,  "spacing": 1.2,  "lead": 40.0},
 			],
 			"win": "survive",
 		}

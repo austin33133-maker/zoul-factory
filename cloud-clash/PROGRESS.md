@@ -13,7 +13,9 @@ Rules version 0.1.0. Phases per spec §18: A env+rules · B full greybox+tutoria
 - **Interactive greybox play scene** (board/path/unit/enemy render, drag-to-merge with legal highlight, action buttons, HUD, pause). — `game/play.gd`
 - **Levels 2–5** distinct configs (random-summon / fast+snow / combos / dual-board versus) + PvE runner. — `config/levels.gd`, `sim/level_runner.gd`
 - **Save system** (versioned; settings+deck+progress; first-launch / missing-field / corrupt / incompatible-version safe fallback with backup; progression persists). — `sim/save.gd`
-- Docs with requirement IDs + acceptance traceability. — `docs/`
+- **Phase C tooling**: deterministic replay (record resolved commands + state-hash trail → re-sim → first-divergence), versus simulation matrix (multi-seed × strategy pairs), per-unit contribution leaderboard. — `sim/replay.gd`, `sim/analysis.gd`
+- L3/L4 waves **tuned** so the baseline AI now clears them (before: AI-defeated). — `config/levels.gd`
+- Docs with requirement IDs + acceptance traceability + commercialization gap analysis. — `docs/`
 
 ## 已运行验证 (run-verified, this session, Godot 4.3 headless)
 - `res://tests/tests.tscn` → **70 checks passed, 0 failed, exit 0** (core rules + determinism).
@@ -23,11 +25,13 @@ Rules version 0.1.0. Phases per spec §18: A env+rules · B full greybox+tutoria
 - `res://game/play.tscn --quit-after 600 -- --auto` → **no script errors** across all render paths
   (board/units/enemies/boss/mark/drag-highlight/HUD) driven through the real UI controller.
 - `res://tests/levels.tscn` → **35 passed, 0 failed, exit 0** (levels distinct + prerequisite chain;
-  L2 clears; L3 exercises snow slow; L4 exercises chain/pierce multi; L5 versus resolves;
+  L2/L3/L4 all clear after tuning; L3 snow slow + L4 chain/pierce fire; L5 versus resolves;
   save first-launch/roundtrip/missing-field-repair/corrupt-backup/version-fallback/progression-persist).
-- **Balance note (not a bug):** under the baseline AI+waves, L2 clears but **L3 and L4 end in defeat**
-  (waves currently too hard for the baseline deck/AI). Rules are correct and mechanics fire; these are
-  **tuning items**, recorded per spec §9 — not claimed balanced.
+- `res://tests/analysis.tscn` → **8 passed, 0 failed, exit 0** (replay reproduces identical trail +
+  detects divergence; simulation matrix deterministic + tallies; contribution report sorted).
+- **Total: 142 checks across 4 suites, all green.** Still logic-only — no rendered gameplay or device test.
+- **Balance signal (recorded, not concluded):** the matrix shows strong strategy dominance
+  (merge_pressure beats upgrade_first 3:0). Bot win-rate ≠ competitive balance — needs human playtests.
 - Covers §14 rule-correctness list, the §8 damage example (32.292), attribution-sum invariant,
   simultaneous-zero draw, seed/config/command reproducibility. Calibration: path 5.70u, traversal 5.70s.
 - **NOT verified:** on-screen visual appearance / touch feel (needs a device or desktop Godot — not faked here).

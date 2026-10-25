@@ -51,6 +51,19 @@ var hero_enabled: bool = true          # gate hero skill until the tutorial unlo
 var boss_skill_enabled: bool = true    # tutorial mini-boss has no cell-disable
 var _grants: Dictionary = {}           # tag -> true (one-time energy grants)
 
+# Replay recording (R-REPLAY-01): resolved commands + the step they were issued.
+var recording: bool = false
+var recorded: Array = []               # [{step, cmd}] with summon's resolved type/cell
+
+func state_hash() -> int:
+	var s := "%d|%d|%.4f|" % [step, lives, energy]
+	for c in board:
+		s += "-," if c == null else "%s%d," % [c.type, c.tier]
+	for e in enemies:
+		if e.alive:
+			s += "%d:%.3f;" % [e.uid, e.hp]
+	return s.hash()
+
 func _init(master_seed: int, stream_offset: int, p_deck: Array, wave_config: Array) -> void:
 	_master_seed = master_seed
 	_stream_offset = stream_offset
@@ -142,6 +155,7 @@ func _cmd_summon(cmd: Dictionary) -> Dictionary:
 	u.summon_cost = cost
 	board[cell] = u
 	_log("summon", {"uid": u.uid, "type": type, "cell": cell, "cost": cost})
+	_record({"t": "summon", "force_type": type, "force_cell": cell})
 	return {"ok": true, "reason": "", "uid": u.uid, "cell": cell, "type": type}
 
 func _cmd_merge(cmd: Dictionary) -> Dictionary:
@@ -166,6 +180,7 @@ func _cmd_merge(cmd: Dictionary) -> Dictionary:
 	board[from] = null
 	_log("merge", {"uid": merged.uid, "type": merged.type, "tier": merged.tier,
 		"from": from, "to": to, "sources": merged.merge_sources})
+	_record({"t": "merge", "from": from, "to": to})
 	return {"ok": true, "reason": "", "uid": merged.uid}
 
 func _cmd_upgrade(cmd: Dictionary) -> Dictionary:
@@ -182,6 +197,7 @@ func _cmd_upgrade(cmd: Dictionary) -> Dictionary:
 	energy_spent += float(cost)
 	type_upgrades[type] = lvl + 1
 	_log("upgrade", {"type": type, "level": lvl + 1, "cost": cost})
+	_record({"t": "upgrade", "type": type})
 	return {"ok": true, "reason": "", "level": lvl + 1}
 
 func _cmd_hero(_cmd: Dictionary) -> Dictionary:
@@ -202,7 +218,12 @@ func _cmd_hero(_cmd: Dictionary) -> Dictionary:
 		marked.append(alive[i].uid)
 	hero_cd = CCConfig.secs_to_steps(CCConfig.HERO_MARK_COOLDOWN_SEC)
 	_log("hero_mark", {"targets": marked})
+	_record({"t": "hero"})
 	return {"ok": true, "reason": "", "marked": marked}
+
+func _record(cmd: Dictionary) -> void:
+	if recording:
+		recorded.append({"step": step, "cmd": cmd})
 
 # ---------------------------------------------------------------- simulation step
 
