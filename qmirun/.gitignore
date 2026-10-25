@@ -1,0 +1,7 @@
+# Godot 4 import cache / editor state — regenerated on import, never committed.
+.godot/
+# Exported builds
+/build/
+*.tmp
+# OS cruft
+.DS_Store
