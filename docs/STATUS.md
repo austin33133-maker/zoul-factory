@@ -70,7 +70,25 @@ Real systems, primitive art. Verified by headless tests (not screenshots).
   integrate into Godot, replacing primitives.
 - **M3**: iOS export config + your Mac/Xcode signing + submission.
 
+## M2 — art pass (planned, 2026-10-25)
+
+Decision locked with you: **2D sprites faithful to the concept images** (not Blender 3D —
+procedural 3D with no GPU/artist would drift from the art; the images themselves are the art).
+Blender 4.2.3 was verified working headless (glTF export OK) but is **not used for M2**.
+
+Planning deliverables (committed, per `create-game-assets` skill, anti-drift):
+- `qmirun/assets/art-direction-brief.md` — technical frame, palette roles, shape language locked to the 5 images.
+- `qmirun/assets/asset-manifest.json` — every asset, its size, and its source (extract vs gpt-image) + approval gate.
+- `qmirun/assets/gpt-image-prompts.md` — locked ChatGPT/GPT-Image prompts for the gaps.
+
+**ChatGPT reality:** this Claude session cannot call ChatGPT/GPT-Image (no OpenAI tool or key here).
+Two faithful paths: (a) **you** run the locked prompts in ChatGPT and send PNGs back; I normalize +
+import + verify in-engine. (b) I **extract** sprites directly from image3 (towers) and image4
+(characters) — zero generation, zero drift — for everything those images already cover.
+
 ## Next action needed from you
 
-1. Playtest M1 on your Mac (or say "looks good from the tests") → approve moving to M2.
-2. Paste `QmiRun-Claude-Game-Production.md` if you want its spec/UI corrections applied.
+1. Pick the art path: **(a)** you generate the gap assets in ChatGPT with my locked prompts, and/or
+   **(b)** I extract sprites from your images #3/#4 now (I can start immediately, no tool needed).
+2. Playtest M1 on your Mac (or accept the test results) to confirm the greybox feel before art lands.
+3. Paste `QmiRun-Claude-Game-Production.md` if you want its spec/UI corrections applied.

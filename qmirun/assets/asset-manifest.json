@@ -1,0 +1,40 @@
+{
+  "project": "QmiRun - Cloud Voyage",
+  "milestone": "M2 - art pass (2D sprites faithful to concept images)",
+  "conventions": {
+    "dir": "qmirun/assets/sprites/<family>/<id>_<state>.png",
+    "format": "PNG RGBA, transparent, trimmed to content + 4px padding",
+    "anchor": "bottom-center for units/towers; center for projectiles/icons",
+    "outline": "#4a3a2a soft, light from top-left, baked soft ground shadow"
+  },
+  "sources": {
+    "extract": "cut directly from a provided concept image (zero drift)",
+    "gpt-image": "generate in ChatGPT using the locked prompt + the named concept image as reference"
+  },
+  "assets": [
+    {"id": "tower_popcorn", "states": ["lv1","lv2","lv3"], "size": "96x120", "source": "extract", "from": "image3 row POPCORN", "approval": "pending"},
+    {"id": "tower_frost",   "states": ["lv1","lv2","lv3"], "size": "96x120", "source": "extract", "from": "image3 row FROST", "approval": "pending"},
+    {"id": "tower_rocket",  "states": ["lv1","lv2","lv3"], "size": "96x120", "source": "extract", "from": "image3 row ROCKET", "approval": "pending"},
+    {"id": "tower_pierce",  "states": ["lv1","lv2","lv3"], "size": "96x120", "source": "extract", "from": "image3 row PIERCE", "approval": "pending"},
+
+    {"id": "enemy_windup",  "states": ["walk"], "size": "64x72",  "source": "extract", "from": "image4 WINDUP", "approval": "pending"},
+    {"id": "enemy_runner",  "states": ["walk"], "size": "64x64",  "source": "extract", "from": "image4 RUNNER", "approval": "pending"},
+    {"id": "enemy_shield",  "states": ["walk"], "size": "72x72",  "source": "extract", "from": "image4 SHIELD", "approval": "pending"},
+    {"id": "enemy_repair",  "states": ["walk"], "size": "64x72",  "source": "extract", "from": "image4 REPAIR", "approval": "pending"},
+    {"id": "boss_magnet",   "states": ["walk"], "size": "200x200","source": "extract", "from": "image4 MAGNET BOSS", "approval": "pending"},
+
+    {"id": "hero_captain",  "states": ["idle"], "size": "140x160","source": "extract", "from": "image4 CAPTAIN", "approval": "pending"},
+    {"id": "hero_engineer", "states": ["idle"], "size": "120x150","source": "extract", "from": "image4 ENGINEER", "approval": "pending"},
+
+    {"id": "ui_coin",  "size": "48x48", "source": "extract", "from": "image1/2 coin", "approval": "pending"},
+    {"id": "ui_gem",   "size": "48x48", "source": "extract", "from": "image2 gem", "approval": "pending"},
+    {"id": "ui_heart", "size": "48x48", "source": "extract", "from": "image5 heart", "approval": "pending"},
+
+    {"id": "board_grass_tile", "size": "96x96",  "source": "gpt-image", "ref": "image5", "approval": "pending"},
+    {"id": "board_path_tile",  "size": "96x96",  "source": "gpt-image", "ref": "image5", "approval": "pending"},
+    {"id": "bg_sky",           "size": "1080x1920","source": "gpt-image", "ref": "image2", "approval": "pending"},
+    {"id": "fx_muzzle",        "size": "64x64",  "source": "gpt-image", "ref": "image5", "approval": "pending"},
+    {"id": "fx_explosion",     "states": ["f1","f2","f3","f4"], "size": "96x96", "source": "gpt-image", "ref": "image5", "approval": "pending"}
+  ],
+  "provenance_note": "Concept images provided by user 2026-10-25; rights/ownership to be confirmed by user before any store submission. Generated assets must record the GPT-Image prompt + reference image used."
+}
