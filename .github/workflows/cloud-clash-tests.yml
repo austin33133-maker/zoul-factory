@@ -1,0 +1,52 @@
+name: cloud-clash headless tests
+
+on:
+  push:
+    paths: ["cloud-clash/**", ".github/workflows/cloud-clash-tests.yml"]
+  pull_request:
+    paths: ["cloud-clash/**", ".github/workflows/cloud-clash-tests.yml"]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Godot 4.3 (headless)
+        run: |
+          set -e
+          curl -sSL -o godot.zip \
+            https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+          unzip -o godot.zip
+          chmod +x Godot_v4.3-stable_linux.x86_64
+          sudo mv Godot_v4.3-stable_linux.x86_64 /usr/local/bin/godot
+          godot --headless --version
+
+      - name: Import project
+        working-directory: cloud-clash
+        run: godot --headless --path . --import || true
+
+      - name: Core rules + determinism
+        working-directory: cloud-clash
+        run: godot --headless --path . res://tests/tests.tscn
+
+      - name: Tutorial Level 1 acceptance
+        working-directory: cloud-clash
+        run: godot --headless --path . res://tests/tutorial.tscn
+
+      - name: Levels 2-5 + save
+        working-directory: cloud-clash
+        run: godot --headless --path . res://tests/levels.tscn
+
+      - name: Phase C tooling (replay / matrix / contribution)
+        working-directory: cloud-clash
+        run: godot --headless --path . res://tests/analysis.tscn
+
+      - name: App navigation + deck + progression
+        working-directory: cloud-clash
+        run: godot --headless --path . res://tests/app.tscn
+
+      - name: Play scene render smoke (auto)
+        working-directory: cloud-clash
+        run: godot --headless --path . res://game/play.tscn --quit-after 600 -- --auto

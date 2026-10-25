@@ -15,6 +15,8 @@ Rules version 0.1.0. Phases per spec §18: A env+rules · B full greybox+tutoria
 - **Save system** (versioned; settings+deck+progress; first-launch / missing-field / corrupt / incompatible-version safe fallback with backup; progression persists). — `sim/save.gd`
 - **Phase C tooling**: deterministic replay (record resolved commands + state-hash trail → re-sim → first-divergence), versus simulation matrix (multi-seed × strategy pairs), per-unit contribution leaderboard. — `sim/replay.gd`, `sim/analysis.gd`
 - L3/L4 waves **tuned** so the baseline AI now clears them (before: AI-defeated). — `config/levels.gd`
+- **App navigation + progression logic** (home/deck/play/result state, save-backed level unlock, runner dispatch) and **deck editor rules** (pick 5 of 6, validate, persist). — `sim/app.gd`, `sim/deck.gd`
+- **CI gate**: GitHub Actions runs all headless suites on push/PR. — `.github/workflows/cloud-clash-tests.yml`
 - Docs with requirement IDs + acceptance traceability + commercialization gap analysis. — `docs/`
 
 ## 已运行验证 (run-verified, this session, Godot 4.3 headless)
