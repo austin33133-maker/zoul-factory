@@ -31,8 +31,27 @@ Verified by: `godot --headless --path cloud-clash res://tests/tests.tscn` → **
 | R-BAL-02 damage formula (§8 = 32.292) | `t_damage_formula_example` | ✅ |
 | R-LOG-ATTR attribution sums to effective dmg | `t_attribution_sums` | ✅ |
 | rematch resets all in-battle state | `t_rematch_resets` | ✅ |
-| drag cancel safety | (UI layer) | ⬜ UI not built |
+| drag cancel / illegal-drag safety | `game/play.gd` + `t_illegal_merge_no_change` | 🟡 logic verified; touch feel unverified on device |
 | save restore / corrupt fallback | — | ⬜ save system not built |
+
+## Tutorial Level 1 acceptance (spec §24) — `tests/tutorial.tscn` → 29 passed, 0 failed
+
+| Check | Test | Status |
+|-------|------|--------|
+| first entry starts at T01 | `t_full_playthrough` | ✅ |
+| summon costs 80 / 90 (/100 at T05) | `t_full_playthrough` | ✅ |
+| forced type/cell only in tutorial | `t_forced_placement_only_tutorial` | ✅ |
+| tutorial pause doesn't advance battle | `t_pause_no_advance` | ✅ |
+| illegal drag = no board change | `t_illegal_merge_no_change` | ✅ |
+| merge tier correct | `t_full_playthrough` | ✅ |
+| tutorial grant once-only | `t_grant_once` | ✅ |
+| upgrade affects existing + future | `t_full_playthrough` (mint L1) | ✅ |
+| hero locked before T07, fires at T07 | `t_hero_locked_before_t7`, `t_full_playthrough` | ✅ |
+| no skip to victory | `t_no_skip_to_victory` | ✅ |
+| fail retryable / retry resets | `t_retry_resets` | ✅ |
+| level 2 restores random summon | `t_forced_placement_only_tutorial` (normal summon is RNG) | 🟡 Level 2 not built; rule verified |
+| completion persists across restart | — | ⬜ save not built (flag set in memory) |
+| manual playtest (affordances, no deadlock) | — | ⬜ needs device/desktop |
 
 ## Spec areas by phase
 

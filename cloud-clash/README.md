@@ -10,6 +10,13 @@ No interactive UI or tutorial yet — see `PROGRESS.md`.
 ## Requirements
 Godot **4.3** (standard build). Blender used offline for assets only (not real-time 3D).
 
+## Play Level 1 (interactive greybox tutorial)
+```bash
+godot --path cloud-clash res://game/play.tscn    # open on a desktop/Mac to see & play
+```
+Tap **召唤/继续/强化/白隼** as prompted; **drag** one tower onto a same-type/same-tier tower to merge.
+Logic + render paths are headless-smoke-clean; on-screen visuals need a device check.
+
 ## Run the tests (headless, no GUI, no device needed)
 ```bash
 cd cloud-clash

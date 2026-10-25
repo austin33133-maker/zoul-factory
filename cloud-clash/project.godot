@@ -5,6 +5,7 @@ config_version=5
 [application]
 
 config/name="QmiRun Cloud Clash"
+run/main_scene="res://game/play.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
 config/icon="res://icon.svg"
 

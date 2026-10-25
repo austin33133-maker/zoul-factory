@@ -46,6 +46,11 @@ var _boss_next_skill: int = -1
 var _master_seed: int = 0
 var _stream_offset: int = 0
 
+# Tutorial hooks (kept here as plain flags so tutorial logic stays in CCTutorial, not scattered).
+var hero_enabled: bool = true          # gate hero skill until the tutorial unlocks it
+var boss_skill_enabled: bool = true    # tutorial mini-boss has no cell-disable
+var _grants: Dictionary = {}           # tag -> true (one-time energy grants)
+
 func _init(master_seed: int, stream_offset: int, p_deck: Array, wave_config: Array) -> void:
 	_master_seed = master_seed
 	_stream_offset = stream_offset
@@ -180,6 +185,8 @@ func _cmd_upgrade(cmd: Dictionary) -> Dictionary:
 	return {"ok": true, "reason": "", "level": lvl + 1}
 
 func _cmd_hero(_cmd: Dictionary) -> Dictionary:
+	if not hero_enabled:
+		return _reject("hero_locked", false)      # tutorial: hidden until T07
 	if hero_cd > 0:
 		return _reject("hero_cooldown", false)
 	var alive := _alive_enemies()
@@ -241,6 +248,8 @@ func _update_boss_skill() -> void:
 	# re-enable an expired disable
 	if _disabled_cell != -1 and step >= _disable_expire:
 		_disabled_cell = -1
+	if not boss_skill_enabled:
+		return                                      # tutorial mini-boss: no cell-disable
 	var boss := _find_boss()
 	if boss == null:
 		return
@@ -327,6 +336,8 @@ func _fire(u: CCUnit, tdef: Dictionary, cell: int, alive: Array,
 				positions, uids, int(tdef.max_targets))
 			for i in idxs:
 				_hit_one(u, alive[i], base, tier, lvl, flower, 1.0)
+			if idxs.size() >= 2:
+				_log("splash_multi", {"by": u.uid, "count": idxs.size()})
 		"chain":
 			var idxs := CCGeo.chain_targets(main, float(tdef.hop_range),
 				positions, uids, int(tdef.max_targets))
@@ -362,7 +373,7 @@ func _hit_one(u: CCUnit, e: CCEnemy, base: float, tier: int, lvl: int,
 		u.kills += 1
 		energy += float(e.bounty)
 		energy_income += float(e.bounty)
-		_log("kill", {"by": u.uid, "enemy": e.uid, "bounty": e.bounty})
+		_log("kill", {"by": u.uid, "enemy": e.uid, "etype": e.type, "bounty": e.bounty})
 
 # ---------------------------------------------------------------- helpers
 
@@ -408,6 +419,22 @@ func _cleanup_enemies() -> void:
 func _spawn(type: StringName) -> void:
 	var e := CCEnemy.new(_next_uid(), type, _enemies_def[type])
 	enemies.append(e)
+
+## Scripted spawn (tutorial / tests). Returns the enemy so callers can position it.
+func spawn_enemy(type: StringName) -> CCEnemy:
+	var e := CCEnemy.new(_next_uid(), type, _enemies_def[type])
+	enemies.append(e)
+	return e
+
+## One-time, visible, separately-logged energy grant (tutorial, R-TUT-GRANT). Not repeatable per tag.
+func grant_energy(amount: float, tag: String) -> bool:
+	if _grants.has(tag):
+		return false
+	_grants[tag] = true
+	energy += amount
+	energy_income += amount
+	_log("tutorial_grant", {"tag": tag, "amount": amount})
+	return true
 
 func _new_unit(type: StringName, tier: int, cell: int) -> CCUnit:
 	var u := CCUnit.new(_next_uid(), type, tier, cell, step)
