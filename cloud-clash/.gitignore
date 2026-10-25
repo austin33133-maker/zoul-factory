@@ -1,0 +1,5 @@
+# Godot 4 import cache — regenerated, never committed.
+.godot/
+/build/
+*.tmp
+.DS_Store
